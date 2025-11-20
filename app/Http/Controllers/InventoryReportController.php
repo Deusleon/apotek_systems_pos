@@ -7,6 +7,8 @@ use App\Category;
 use App\CurrentStock;
 use App\IssueReturn;
 use App\Product;
+use App\Requisition;
+use App\RequisitionDetail;
 use App\Setting;
 use App\StockAdjustment;
 use App\StockIssue;
@@ -294,7 +296,17 @@ try {
                 //stock issue report
                 $dates = explode(" - ", $request->issue_date);
                 if ($request->stock_issue == null || $request->stock_issue == '0') {
-
+                    // All: combine issued and pending
+                    $data = $this->getAllRequisitions($dates);
+                    if ($data == []) {
+                        return response()->view('error_pages.pdf_zero_data');
+                    }
+                $pdf = PDF::loadView( 'inventory_reports.stock_issue_report_pdf',
+                compact( 'data', 'pharmacy' ) )
+                ->setPaper( 'a4', '' );
+                return $pdf->stream( 'stock_issue_report.pdf' );
+                } elseif ($request->stock_issue == '1') {
+                    // Issued
                     $data = $this->stockIssueReport($dates);
                     if ($data == []) {
                         return response()->view('error_pages.pdf_zero_data');
@@ -303,28 +315,16 @@ try {
                 compact( 'data', 'pharmacy' ) )
                 ->setPaper( 'a4', '' );
                 return $pdf->stream( 'stock_issue_report.pdf' );
-                } else {
-
-                    //stock issue return report
-                    if ($request->stock_issue == 2) {
-                        $data = $this->stockIssueReturnReport($request->stock_issue, $dates);
-                        if (empty($data)) {
-                            return response()->view('error_pages.pdf_zero_data');
-                        }
-                $pdf = PDF::loadView( 'inventory_reports.issue_return_report_pdf',
-                compact( 'data', 'pharmacy' ) )
-                ->setPaper( 'a4', '' );
-                return $pdf->stream( 'issue_return_report.pdf' );
-                    } else {
-                        $data = $this->stockIssueReturnReport($request->stock_issue, $dates);
-                        if (empty($data)) {
-                            return response()->view('error_pages.pdf_zero_data');
-                        }
-                $pdf = PDF::loadView( 'inventory_reports.issue_issued_report_pdf',
-                compact( 'data', 'pharmacy' ) )
-                ->setPaper( 'a4', '' );
-                return $pdf->stream( 'issue_issued_report.pdf' );
+                } elseif ($request->stock_issue == '2') {
+                    // Pending
+                    $data = $this->getPendingRequisitions($dates);
+                    if ($data == []) {
+                        return response()->view('error_pages.pdf_zero_data');
                     }
+                $pdf = PDF::loadView( 'inventory_reports.stock_issue_report_pdf',
+                compact( 'data', 'pharmacy' ) )
+                ->setPaper( 'a4', '' );
+                return $pdf->stream( 'stock_issue_report.pdf' );
                 }
             case 9:
                 //stock transfer
@@ -680,7 +680,6 @@ try {
                         gc_collect_cycles();
                     }
                 }
-                
             } while ($chunkRecords->count() === $chunkSize);
             
         } catch ( \Exception $e ) {
@@ -1485,6 +1484,76 @@ try {
             'increaseAdjustments',
             'decreaseAdjustments'
         ) );
+    }
+
+    private function getAllRequisitions($dates)
+    {
+        $start = date('Y-m-d', strtotime($dates[0]));
+        $end = date('Y-m-d', strtotime($dates[1]));
+
+        $requisitions = Requisition::whereIn('status', [0, 1])
+            ->whereBetween(DB::raw('date(created_at)'), [$start, $end])
+            ->with(['reqDetails.products_', 'creator', 'fromStore', 'toStore'])
+            ->get();
+
+        return $this->formatRequisitionData($requisitions, $dates);
+    }
+
+    private function getPendingRequisitions($dates)
+    {
+        $start = date('Y-m-d', strtotime($dates[0]));
+        $end = date('Y-m-d', strtotime($dates[1]));
+
+        $requisitions = Requisition::where('status', 0)
+            ->whereBetween(DB::raw('date(created_at)'), [$start, $end])
+            ->with(['reqDetails.products_', 'creator', 'fromStore', 'toStore'])
+            ->get();
+
+        return $this->formatRequisitionData($requisitions, $dates);
+    }
+
+    private function formatRequisitionData($requisitions, $dates)
+    {
+        $to_pdf = [];
+        $total_bp = 0;
+        $total_sp = 0;
+
+        foreach ($requisitions as $req) {
+            foreach ($req->reqDetails as $detail) {
+                $product = $detail->products_;
+                if (!$product) continue;
+
+                $buy_price = 0; // Can be enhanced to get actual prices if needed
+                $sell_price = 0;
+                $issue_qty = $detail->quantity;
+
+                $buy_price_sub_total = $issue_qty * $buy_price;
+                $sell_price_sub_total = $issue_qty * $sell_price;
+
+                $total_bp += $buy_price_sub_total;
+                $total_sp += $sell_price_sub_total;
+
+                $to_pdf[] = [
+                    'product_id' => $product->id,
+                    'name' => $product->name . ' ' . ($product->brand ?? '') . ' ' . ($product->pack_size ?? '') . ($product->sales_uom ?? ''),
+                    'buy_price' => $buy_price,
+                    'sell_price' => $sell_price,
+                    'issue_qty' => $issue_qty,
+                    'sub_total' => $sell_price_sub_total,
+                    'issue_no' => $req->req_no,
+                    'issued_by' => $req->creator->name ?? '',
+                    'issued_date' => date('Y-m-d', strtotime($req->created_at)),
+                    'issued_to' => $req->toStore->name ?? '',
+                    'buy_price_sb' => $buy_price_sub_total,
+                    'sell_price_sb' => $sell_price_sub_total,
+                    'total_bp' => $total_bp,
+                    'total_sp' => $total_sp,
+                    'dates' => $dates
+                ];
+            }
+        }
+
+        return $to_pdf;
     }
 
 }

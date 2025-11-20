@@ -232,7 +232,7 @@
                                         class="js-example-basic-single form-control drop">
                                         <option value="0" selected="true">All</option>
                                         <option value="1">Issued</option>
-                                        <option value="2">Returned</option>
+                                        <option value="2">Pending</option>
                                     </select>
                                 </div>
                             </div>

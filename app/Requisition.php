@@ -43,4 +43,14 @@ class Requisition extends Model
     {
         return $this->belongsTo(User::class, 'updated_by', 'id');
     }
+
+    public function fromStore()
+    {
+        return $this->belongsTo(Store::class, 'from_store');
+    }
+
+    public function toStore()
+    {
+        return $this->belongsTo(Store::class, 'to_store');
+    }
 }
