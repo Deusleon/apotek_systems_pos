@@ -82,11 +82,11 @@ class HomeController extends Controller {
 
         //Admin Users
         if ( is_all_store() ) {
-            $outOfStock = CurrentStock::where( 'quantity', 0 )
-            ->groupby( 'product_id' )->get();
+            $outOfStock = CurrentStock::groupBy('product_id')
+                          ->havingRaw('SUM(quantity) = 0')->get();
             $outOfStock = $outOfStock->count();
-            $outOfStockList = CurrentStock::where( 'quantity', 0 )
-            ->groupby( 'product_id' )->get();
+            $outOfStockList = CurrentStock::groupBy('product_id')
+                          ->havingRaw('SUM(quantity) = 0')->get();
                         
             $belowMinLevel = $this->lowStock(false);
 
@@ -121,17 +121,15 @@ class HomeController extends Controller {
             , 'purchase_data', 'expense_data', 'all_stores', 'store_id', 'transport_data' ] ) );
         }
 
-        $outOfStock = CurrentStock::where( 'quantity', 0 )
-        ->where( 'store_id', $store_id )->groupby( 'product_id' )->get();
+        $outOfStock = CurrentStock::groupBy('product_id')
+                          ->havingRaw('SUM(quantity) = 0')
+        ->where( 'store_id', $store_id )->get();
         $outOfStock = $outOfStock->count();
-        $outOfStockList = CurrentStock::where( 'quantity', 0 )
-        ->where( 'store_id', $store_id )->groupby( 'product_id' )->get();
-        
+        $outOfStockList = CurrentStock::groupBy('product_id')
+                          ->havingRaw('SUM(quantity) = 0')
+        ->where( 'store_id', $store_id )->get();
+
         $belowMinLevel = $this->lowStock(false);
-
-
-        $outOfStockList = CurrentStock::where( 'quantity', 0 )
-        ->where( 'store_id', $store_id )->groupby( 'product_id' )->get();
 
         $fast_moving = DB::table( 'sales_details' )->select( 'sales.receipt_number as receipt_number', 'inv_products.name as product_name', 'inv_products.brand as brand', 'inv_products.pack_size as pack_size', 'inv_products.sales_uom as sales_uom',
         DB::raw( 'count(inv_products.name) as occurrence' ), 'inv_products.id as product_id' )
