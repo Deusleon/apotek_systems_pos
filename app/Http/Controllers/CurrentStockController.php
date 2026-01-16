@@ -19,7 +19,6 @@ use Illuminate\Support\Facades\Validator;
 
 class CurrentStockController extends Controller
 {
-
     public function currentStock()
     {
         if (!Auth()->user()->checkPermission('View Current Stock')) {
@@ -148,7 +147,6 @@ class CurrentStockController extends Controller
             'expireEnabled' => $expireEnabled
         ]);
     }
-
     //Current Stock
     public function allStock()
     {
@@ -485,7 +483,6 @@ class CurrentStockController extends Controller
 
         return $stocks;
     }
-
     //Old Stock
     public function oldStock()
     {

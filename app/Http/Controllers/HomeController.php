@@ -71,100 +71,183 @@ class HomeController extends Controller {
     * @return Renderable
     */
 
-    public function index() {
+    // public function index() {
 
-        /*return default store*/
+    //     /*return default store*/
 
-        $store_id = current_store_id();
-        $all_stores = Store::all();
-        $expireSettings = Setting::where('id', 123)->value('value');
-        $expireEnabled = $expireSettings === 'YES';
+    //     $store_id = current_store_id();
+    //     $all_stores = Store::all();
+    //     $expireSettings = Setting::where('id', 123)->value('value');
+    //     $expireEnabled = $expireSettings === 'YES';
 
-        //Admin Users
-        if ( is_all_store() ) {
-            $outOfStock = CurrentStock::groupBy('product_id')
-                          ->havingRaw('SUM(quantity) = 0')->get();
-            $outOfStock = $outOfStock->count();
-            $outOfStockList = CurrentStock::groupBy('product_id')
-                          ->havingRaw('SUM(quantity) = 0')->get();
+    //     //Admin Users
+    //     if ( is_all_store() ) {
+    //         $outOfStock = CurrentStock::groupBy('product_id')
+    //                       ->havingRaw('SUM(quantity) = 0')->get();
+    //         $outOfStock = $outOfStock->count();
+    //         $outOfStockList = CurrentStock::groupBy('product_id')
+    //                       ->havingRaw('SUM(quantity) = 0')->get();
                         
-            $belowMinLevel = $this->lowStock(false);
+    //         $belowMinLevel = $this->lowStock(false);
 
-            $fast_moving = DB::table( 'sales_details' )->select( 'sales.receipt_number as receipt_number', 'inv_products.name as product_name', 'inv_products.brand as brand', 'inv_products.pack_size as pack_size', 'inv_products.sales_uom as sales_uom',
-            DB::raw( 'count(inv_products.name) as occurrence' ), 'inv_products.id as product_id' )
-            ->join( 'sales', 'sales.id', '=', 'sales_details.sale_id' )
-            ->join( 'inv_current_stock', 'inv_current_stock.id', '=', 'sales_details.stock_id' )
-            ->join( 'inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id' )
-            ->whereRaw( 'date(sales.date) >= date(now()) - interval 90 day' )
-            ->groupBy( ['receipt_number', 'product_name'] )
+    //         $fast_moving = DB::table( 'sales_details' )->select( 'sales.receipt_number as receipt_number', 'inv_products.name as product_name', 'inv_products.brand as brand', 'inv_products.pack_size as pack_size', 'inv_products.sales_uom as sales_uom',
+    //         DB::raw( 'count(inv_products.name) as occurrence' ), 'inv_products.id as product_id' )
+    //         ->join( 'sales', 'sales.id', '=', 'sales_details.sale_id' )
+    //         ->join( 'inv_current_stock', 'inv_current_stock.id', '=', 'sales_details.stock_id' )
+    //         ->join( 'inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id' )
+    //         ->whereRaw( 'date(sales.date) >= date(now()) - interval 90 day' )
+    //         ->groupBy( ['receipt_number', 'product_name'] )
+    //         ->get();
+
+    //         $fast_moving = $this->fastMovingCalculation( $fast_moving );
+    //         $deadStock = $this->deadStock(false);
+    //         $expireSoon = $this->expireInThreeMonths(false);
+    //         if ( $fast_moving != [] ) {
+    //             $fast_moving = sizeof( $fast_moving );
+    //         } else {
+    //             $fast_moving = 0;
+    //         }
+
+    //         $expired = CurrentStock::where( 'quantity', '>', 0 )
+    //         ->whereRaw( 'expiry_date <=  date(now())' )
+    //         ->count();
+
+    //         $pharmacy_data = $this->pharmacyDashboard();
+    //         $purchase_data = $this->purchaseDashboard();
+    //         $expense_data = $this->expenseDashboard();
+    //         $transport_data = $this->transportDashboard();
+
+    //         return view( 'home', compact( [ 'outOfStock', 'outOfStockList', 'belowMinLevel', 'deadStock', 'expireSoon', 'expireEnabled', 'expired', 'fast_moving', 'pharmacy_data'
+    //         , 'purchase_data', 'expense_data', 'all_stores', 'store_id', 'transport_data' ] ) );
+    //     }
+
+    //     $outOfStock = CurrentStock::groupBy('product_id')
+    //                       ->havingRaw('SUM(quantity) = 0')
+    //     ->where( 'store_id', $store_id )->get();
+    //     $outOfStock = $outOfStock->count();
+    //     $outOfStockList = CurrentStock::groupBy('product_id')
+    //                       ->havingRaw('SUM(quantity) = 0')
+    //     ->where( 'store_id', $store_id )->get();
+
+    //     $belowMinLevel = $this->lowStock(false);
+
+    //     $fast_moving = DB::table( 'sales_details' )->select( 'sales.receipt_number as receipt_number', 'inv_products.name as product_name', 'inv_products.brand as brand', 'inv_products.pack_size as pack_size', 'inv_products.sales_uom as sales_uom',
+    //     DB::raw( 'count(inv_products.name) as occurrence' ), 'inv_products.id as product_id' )
+    //     ->join( 'sales', 'sales.id', '=', 'sales_details.sale_id' )
+    //     ->join( 'inv_current_stock', 'inv_current_stock.id', '=', 'sales_details.stock_id' )
+    //     ->join( 'inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id' )
+    //     ->whereRaw( 'date(sales.date) >= date(now()) - interval 90 day' )
+    //     ->where( 'inv_current_stock.store_id', $store_id )
+    //     ->groupBy( ['receipt_number', 'product_name'] )
+    //     ->get();
+
+    //     $fast_moving = $this->fastMovingCalculation( $fast_moving );
+    //     $deadStock = $this->deadStock(false);
+    //     $expireSoon = $this->expireInThreeMonths(false);
+
+    //     if ( $fast_moving != [] ) {
+    //         $fast_moving = sizeof( $fast_moving );
+    //     } else {
+    //         $fast_moving = 0;
+    //     }
+
+    //     $expired = CurrentStock::where( 'quantity', '>', 0 )
+    //     ->where( 'store_id', $store_id )
+    //     ->whereRaw( 'expiry_date <=  date(now())' )
+    //     ->count();
+
+    //     $pharmacy_data = $this->pharmacyDashboard();
+    //     $purchase_data = $this->purchaseDashboard();
+    //     $expense_data = $this->expenseDashboard();
+    //     $transport_data = $this->transportDashboard();
+
+    //     return view( 'home', compact( [ 'outOfStock', 'outOfStockList', 'belowMinLevel', 'deadStock', 'expireSoon', 'expired', 'expireEnabled', 'fast_moving', 'pharmacy_data'
+    //     , 'purchase_data', 'expense_data', 'all_stores', 'store_id', 'transport_data' ] ) );
+
+    // }
+    
+    public function index()
+    {
+        $storeId = current_store_id();
+        $allStores = Store::all();
+
+        // Settings
+        $expireEnabled = Setting::where('id', 123)->value('value') === 'YES';
+        $isAdmin = is_all_store();
+
+        // -----------------------------
+        // Out of Stock (Product-level)
+        // -----------------------------
+        $outOfStockList = CurrentStock::select(
+                'product_id',
+                DB::raw('SUM(quantity) as total_quantity')
+            )
+            ->when(!$isAdmin, function ($q) use ($storeId) { return $q->where('store_id', $storeId); })
+            ->groupBy('product_id')
+            ->havingRaw('SUM(quantity) = 0')
             ->get();
+            
+        $outOfStock = $outOfStockList->count(); // number of products out of stock
 
-            $fast_moving = $this->fastMovingCalculation( $fast_moving );
-            $deadStock = $this->deadStock(false);
-            $expireSoon = $this->expireInThreeMonths(false);
-            if ( $fast_moving != [] ) {
-                $fast_moving = sizeof( $fast_moving );
-            } else {
-                $fast_moving = 0;
-            }
-
-            $expired = CurrentStock::where( 'quantity', '>', 0 )
-            ->whereRaw( 'expiry_date <=  date(now())' )
-            ->count();
-
-            $pharmacy_data = $this->pharmacyDashboard();
-            $purchase_data = $this->purchaseDashboard();
-            $expense_data = $this->expenseDashboard();
-            $transport_data = $this->transportDashboard();
-
-            return view( 'home', compact( [ 'outOfStock', 'outOfStockList', 'belowMinLevel', 'deadStock', 'expireSoon', 'expireEnabled', 'expired', 'fast_moving', 'pharmacy_data'
-            , 'purchase_data', 'expense_data', 'all_stores', 'store_id', 'transport_data' ] ) );
-        }
-
-        $outOfStock = CurrentStock::groupBy('product_id')
-                          ->havingRaw('SUM(quantity) = 0')
-        ->where( 'store_id', $store_id )->get();
-        $outOfStock = $outOfStock->count();
-        $outOfStockList = CurrentStock::groupBy('product_id')
-                          ->havingRaw('SUM(quantity) = 0')
-        ->where( 'store_id', $store_id )->get();
-
+        // -----------------------------
+        // Low Stock (Product-level)
+        // -----------------------------
         $belowMinLevel = $this->lowStock(false);
 
-        $fast_moving = DB::table( 'sales_details' )->select( 'sales.receipt_number as receipt_number', 'inv_products.name as product_name', 'inv_products.brand as brand', 'inv_products.pack_size as pack_size', 'inv_products.sales_uom as sales_uom',
-        DB::raw( 'count(inv_products.name) as occurrence' ), 'inv_products.id as product_id' )
-        ->join( 'sales', 'sales.id', '=', 'sales_details.sale_id' )
-        ->join( 'inv_current_stock', 'inv_current_stock.id', '=', 'sales_details.stock_id' )
-        ->join( 'inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id' )
-        ->whereRaw( 'date(sales.date) >= date(now()) - interval 90 day' )
-        ->where( 'inv_current_stock.store_id', $store_id )
-        ->groupBy( ['receipt_number', 'product_name'] )
-        ->get();
+        // -----------------------------
+        // Fast Moving Products
+        // -----------------------------
+        $fastMovingData = $this->fastMoving(false); // returns ranked array
+        $fast_moving_og = !empty($fastMovingData) ? count($fastMovingData) : 0;
+        $fast_moving =  ceil($fast_moving_og * 0.2); // top 20%, rounded up
 
-        $fast_moving = $this->fastMovingCalculation( $fast_moving );
+        // -----------------------------
+        // Dead Stock (Product-level)
+        // -----------------------------
         $deadStock = $this->deadStock(false);
+
+        // -----------------------------
+        // Expiring Soon (Batch-level)
+        // -----------------------------
         $expireSoon = $this->expireInThreeMonths(false);
 
-        if ( $fast_moving != [] ) {
-            $fast_moving = sizeof( $fast_moving );
-        } else {
-            $fast_moving = 0;
-        }
+        // -----------------------------
+        // Expired Stock (Batch-level)
+        // -----------------------------
+        $expired = CurrentStock::where('quantity', '>', 0)
+            ->when(!$isAdmin, function ($q) use ($storeId) { return $q->where('store_id', $storeId); })
+            ->whereDate('expiry_date', '<=', now())
+            ->count();
 
-        $expired = CurrentStock::where( 'quantity', '>', 0 )
-        ->where( 'store_id', $store_id )
-        ->whereRaw( 'expiry_date <=  date(now())' )
-        ->count();
-
-        $pharmacy_data = $this->pharmacyDashboard();
-        $purchase_data = $this->purchaseDashboard();
-        $expense_data = $this->expenseDashboard();
+        // -----------------------------
+        // Other Dashboard Widgets
+        // -----------------------------
+        $pharmacy_data  = $this->pharmacyDashboard();
+        $purchase_data  = $this->purchaseDashboard();
+        $expense_data   = $this->expenseDashboard();
         $transport_data = $this->transportDashboard();
 
-        return view( 'home', compact( [ 'outOfStock', 'outOfStockList', 'belowMinLevel', 'deadStock', 'expireSoon', 'expired', 'expireEnabled', 'fast_moving', 'pharmacy_data'
-        , 'purchase_data', 'expense_data', 'all_stores', 'store_id', 'transport_data' ] ) );
-
+        // -----------------------------
+        // Return View
+        // -----------------------------
+        return view('home', compact(
+            'outOfStock',
+            'outOfStockList',
+            'belowMinLevel',
+            'deadStock',
+            'expireSoon',
+            'expired',
+            'expireEnabled',
+            'fast_moving',
+            'pharmacy_data',
+            'purchase_data',
+            'expense_data',
+            'transport_data',
+            'allStores',
+            'storeId'
+        ));
     }
+
 
     private function fastMovingCalculation( $test ) {
         /*grouped data*/
@@ -641,41 +724,50 @@ class HomeController extends Controller {
 
         echo json_encode( $json_data );
     }
-    public function lowStock($isAjax) {
-        $store_id = current_store_id();
+    
+    public function lowStock($isAjax)
+    {
+        $storeId = current_store_id();
 
-        $query = DB::table('inv_current_stock as cs')
-        ->select(
-            'p.id as product_id',
-            'p.name as product_name',
-            'p.brand',
-            'p.pack_size',
-            'p.sales_uom',
-            'p.min_quantinty',
-            DB::raw('SUM(cs.quantity) as available_qty')
-        )
-        ->join('inv_products as p', 'p.id', '=', 'cs.product_id')
-        ->havingRaw('SUM(cs.quantity) < p.min_quantinty AND SUM(cs.quantity) > 0');
+        $baseQuery = DB::table('inv_current_stock as cs')
+            ->join('inv_products as p', 'p.id', '=', 'cs.product_id')
+            ->select(
+                'p.id as product_id',
+                'p.name as product_name',
+                'p.brand',
+                'p.pack_size',
+                'p.sales_uom',
+                'p.min_quantinty',
+                DB::raw('SUM(cs.quantity) as available_qty')
+            )
+            ->groupBy(
+                'p.id',
+                'p.name',
+                'p.brand',
+                'p.pack_size',
+                'p.sales_uom',
+                'p.min_quantinty'
+            )
+            ->havingRaw('SUM(cs.quantity) < p.min_quantinty')
+            ->havingRaw('SUM(cs.quantity) > 0');
 
         if (!is_all_store()) {
-            $query->where('cs.store_id', $store_id);
+            $baseQuery->where('cs.store_id', $storeId);
         }
 
-        $belowMinLevel = $query->groupBy('p.id')
-                               ->get();
-
-        // Log::info('Low stock data', $belowMinLevel->toArray());
+        $results = $baseQuery->get();
 
         if ($isAjax) {
             return response()->json([
                 'status' => 'success',
-                'data' => $belowMinLevel
+                'recordsTotal' => $results->count(),
+                'recordsFiltered' => $results->count(),
+                'data' => $results
             ]);
         }
 
-        return $belowMinLevel;
+        return $results;
     }
-    
     public function fastMoving()
     {
         $store_id = current_store_id();
