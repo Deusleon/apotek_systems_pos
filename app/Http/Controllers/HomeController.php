@@ -64,107 +64,6 @@ class HomeController extends Controller {
     public function login() {
         return view( 'auth.login' );
     }
-
-    /**
-    * Show the application dashboard.
-    *
-    * @return Renderable
-    */
-
-    // public function index() {
-
-    //     /*return default store*/
-
-    //     $store_id = current_store_id();
-    //     $all_stores = Store::all();
-    //     $expireSettings = Setting::where('id', 123)->value('value');
-    //     $expireEnabled = $expireSettings === 'YES';
-
-    //     //Admin Users
-    //     if ( is_all_store() ) {
-    //         $outOfStock = CurrentStock::groupBy('product_id')
-    //                       ->havingRaw('SUM(quantity) = 0')->get();
-    //         $outOfStock = $outOfStock->count();
-    //         $outOfStockList = CurrentStock::groupBy('product_id')
-    //                       ->havingRaw('SUM(quantity) = 0')->get();
-                        
-    //         $belowMinLevel = $this->lowStock(false);
-
-    //         $fast_moving = DB::table( 'sales_details' )->select( 'sales.receipt_number as receipt_number', 'inv_products.name as product_name', 'inv_products.brand as brand', 'inv_products.pack_size as pack_size', 'inv_products.sales_uom as sales_uom',
-    //         DB::raw( 'count(inv_products.name) as occurrence' ), 'inv_products.id as product_id' )
-    //         ->join( 'sales', 'sales.id', '=', 'sales_details.sale_id' )
-    //         ->join( 'inv_current_stock', 'inv_current_stock.id', '=', 'sales_details.stock_id' )
-    //         ->join( 'inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id' )
-    //         ->whereRaw( 'date(sales.date) >= date(now()) - interval 90 day' )
-    //         ->groupBy( ['receipt_number', 'product_name'] )
-    //         ->get();
-
-    //         $fast_moving = $this->fastMovingCalculation( $fast_moving );
-    //         $deadStock = $this->deadStock(false);
-    //         $expireSoon = $this->expireInThreeMonths(false);
-    //         if ( $fast_moving != [] ) {
-    //             $fast_moving = sizeof( $fast_moving );
-    //         } else {
-    //             $fast_moving = 0;
-    //         }
-
-    //         $expired = CurrentStock::where( 'quantity', '>', 0 )
-    //         ->whereRaw( 'expiry_date <=  date(now())' )
-    //         ->count();
-
-    //         $pharmacy_data = $this->pharmacyDashboard();
-    //         $purchase_data = $this->purchaseDashboard();
-    //         $expense_data = $this->expenseDashboard();
-    //         $transport_data = $this->transportDashboard();
-
-    //         return view( 'home', compact( [ 'outOfStock', 'outOfStockList', 'belowMinLevel', 'deadStock', 'expireSoon', 'expireEnabled', 'expired', 'fast_moving', 'pharmacy_data'
-    //         , 'purchase_data', 'expense_data', 'all_stores', 'store_id', 'transport_data' ] ) );
-    //     }
-
-    //     $outOfStock = CurrentStock::groupBy('product_id')
-    //                       ->havingRaw('SUM(quantity) = 0')
-    //     ->where( 'store_id', $store_id )->get();
-    //     $outOfStock = $outOfStock->count();
-    //     $outOfStockList = CurrentStock::groupBy('product_id')
-    //                       ->havingRaw('SUM(quantity) = 0')
-    //     ->where( 'store_id', $store_id )->get();
-
-    //     $belowMinLevel = $this->lowStock(false);
-
-    //     $fast_moving = DB::table( 'sales_details' )->select( 'sales.receipt_number as receipt_number', 'inv_products.name as product_name', 'inv_products.brand as brand', 'inv_products.pack_size as pack_size', 'inv_products.sales_uom as sales_uom',
-    //     DB::raw( 'count(inv_products.name) as occurrence' ), 'inv_products.id as product_id' )
-    //     ->join( 'sales', 'sales.id', '=', 'sales_details.sale_id' )
-    //     ->join( 'inv_current_stock', 'inv_current_stock.id', '=', 'sales_details.stock_id' )
-    //     ->join( 'inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id' )
-    //     ->whereRaw( 'date(sales.date) >= date(now()) - interval 90 day' )
-    //     ->where( 'inv_current_stock.store_id', $store_id )
-    //     ->groupBy( ['receipt_number', 'product_name'] )
-    //     ->get();
-
-    //     $fast_moving = $this->fastMovingCalculation( $fast_moving );
-    //     $deadStock = $this->deadStock(false);
-    //     $expireSoon = $this->expireInThreeMonths(false);
-
-    //     if ( $fast_moving != [] ) {
-    //         $fast_moving = sizeof( $fast_moving );
-    //     } else {
-    //         $fast_moving = 0;
-    //     }
-
-    //     $expired = CurrentStock::where( 'quantity', '>', 0 )
-    //     ->where( 'store_id', $store_id )
-    //     ->whereRaw( 'expiry_date <=  date(now())' )
-    //     ->count();
-
-    //     $pharmacy_data = $this->pharmacyDashboard();
-    //     $purchase_data = $this->purchaseDashboard();
-    //     $expense_data = $this->expenseDashboard();
-    //     $transport_data = $this->transportDashboard();
-
-    //     return view( 'home', compact( [ 'outOfStock', 'outOfStockList', 'belowMinLevel', 'deadStock', 'expireSoon', 'expired', 'expireEnabled', 'fast_moving', 'pharmacy_data'
-    //     , 'purchase_data', 'expense_data', 'all_stores', 'store_id', 'transport_data' ] ) );
-
-    // }
     
     public function index()
     {
@@ -513,7 +412,6 @@ class HomeController extends Controller {
         return $data;
 
     }
-
     private function expenseDashboard() {
         $data = array();
 
@@ -641,90 +539,106 @@ class HomeController extends Controller {
                 default:
             }
         }
-    }
+    }   
+    public function outOfStock($request)
+    {
+        $storeId = current_store_id();
 
-    public function outOfStock( $request ) {
-        $store_id = current_store_id();
-        $columns = array(
-            0 => 'product_id',
+        $columns = [
+            0 => 'inv_products.name',
             1 => 'product_id',
-            2 => 'batch_number'
-        );
+            2 => 'total_quantity',
+        ];
 
-        $query = CurrentStock::where( 'quantity', 0 )
-        ->groupby( 'product_id' );
+        $limit  = (int) $request->input('length');
+        $start  = (int) $request->input('start');
+        $order  = $columns[$request->input('order.0.column')] ?? 'inv_products.name';
+        $dir    = $request->input('order.0.dir') === 'desc' ? 'desc' : 'asc';
+        $search = trim($request->input('search.value'));
 
-        if(!is_all_store()){
-            $query->where('store_id', $store_id);
+        $baseQuery = CurrentStock::query()
+            ->select(
+                'inv_current_stock.product_id',
+                'inv_products.name',
+                'inv_products.brand',
+                'inv_products.pack_size',
+                'inv_products.sales_uom',
+                'inv_categories.name as category_name'
+            )
+            ->selectRaw('SUM(inv_current_stock.quantity) as total_quantity')
+            ->join('inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id')
+            ->leftJoin('inv_categories', 'inv_categories.id', '=', 'inv_products.category_id')
+            ->groupBy(
+                'inv_current_stock.product_id',
+                'inv_products.name',
+                'inv_products.brand',
+                'inv_products.pack_size',
+                'inv_products.sales_uom',
+                'inv_categories.name'
+            )
+            ->havingRaw('SUM(inv_current_stock.quantity) = 0');
+
+        if (!is_all_store()) {
+            $baseQuery->where('inv_current_stock.store_id', $storeId);
         }
 
-        $totalData = $query->get();
+        $totalData = DB::query()
+            ->fromSub((clone $baseQuery), 'out_of_stock_products')
+            ->count();
 
-        $totalFiltered = $totalData->count();
 
-        $limit = $request->input( 'length' );
-        $start = $request->input( 'start' );
-        $order = $columns[ $request->input( 'order.0.column' ) ];
-        $dir = $request->input( 'order.0.dir' );
+        if ($search !== '') {
+            $baseQuery->where(function ($q) use ($search) {
+                $q->where('inv_products.name', 'ILIKE', "%{$search}%");
+            });
+        }
 
-        if ( empty( $request->input( 'search.value' ) ) ) {
-            $query = CurrentStock::where( 'quantity', 0 )
-            ->groupby( 'product_id' )
-            ->offset( $start )
-            ->limit( $limit )
-            ->orderBy( $order, $dir );
-            if(!is_all_store()){
-                $query->where('store_id', $store_id);
-            }
-            $out_of_stock = $query->get();
-        } else {
-            $search = $request->input( 'search.value' );
+        $totalFiltered = DB::query()
+            ->fromSub((clone $baseQuery), 'out_of_stock_products')
+            ->count();
 
-            $out_of_stock = CurrentStock::join( 'inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id' )
-            ->orwhere( 'quantity', 0 )
-            ->orWhere( 'name', 'LIKE', "%{$search}%" )
-            ->where( 'store_id', $request->input( 'store_id' ) )
-            ->groupby( 'product_id' )
-            ->offset( $start )
-            ->limit( $limit )
-            ->orderBy( $order, $dir )
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pagination + Ordering
+        |--------------------------------------------------------------------------
+        */
+        $products = $baseQuery
+            ->orderBy($order, $dir)
+            ->offset($start)
+            ->limit($limit)
             ->get();
 
-            $totalFiltered = CurrentStock::join( 'inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id' )
-            ->orwhere( 'store_id', $request->input( 'store_id' ) )
-            ->orwhere( 'quantity', 0 )
-            ->orWhere( 'name', 'LIKE', "%{$search}%" )
-            ->groupby( 'product_id' )
-            ->get();
-            $totalFiltered = $totalFiltered->count();
+        /*
+        |--------------------------------------------------------------------------
+        | Format DataTables rows
+        |--------------------------------------------------------------------------
+        */
+        $data = [];
+        foreach ($products as $product) {
+            $data[] = [
+                'product_id'     => $product->product_id,
+                'name'           => $product->name,
+                'brand'          => $product->brand ?? '',
+                'pack_size'      => $product->pack_size ?? '',
+                'sales_uom'      => $product->sales_uom,
+                'category'       => $product->category_name ?? '',
+                'total_quantity' => (int) $product->total_quantity, // always 0
+            ];
         }
 
-        $data = array();
-        if ( !empty( $out_of_stock ) ) {
-            foreach ( $out_of_stock as $adjustment ) {
-                $nestedData[ 'name' ] = $adjustment->product[ 'name' ].' '.($adjustment->product[ 'brand' ].' ' ?? '').($adjustment->product[ 'pack_size' ] ?? '').($adjustment->product[ 'sales_uom' ] ?? '');
-                $nestedData[ 'batch_number' ] = $adjustment->batch_number;
-                $nestedData[ 'brand' ] = $adjustment->product[ 'brand' ];
-                $nestedData[ 'pack_size' ] = $adjustment->product[ 'pack_size' ];
-                $nestedData[ 'sales_uom' ] = $adjustment->product[ 'sales_uom' ];
-                $nestedData[ 'product_id' ] = $adjustment->product[ 'id' ];
-                $nestedData[ 'category' ] = $adjustment->product[ 'category' ][ 'name' ] ?? '';
-
-                $data[] = $nestedData;
-
-            }
-        }
-
-        $json_data = array(
-            'draw' => intval( $request->input( 'draw' ) ),
-            'recordsTotal' => intval( $totalData->count() ),
-            'recordsFiltered' => intval( $totalFiltered ),
-            'data' => $data
-        );
-
-        echo json_encode( $json_data );
+        /*
+        |--------------------------------------------------------------------------
+        | DataTables response
+        |--------------------------------------------------------------------------
+        */
+        return response()->json([
+            'draw'            => intval($request->input('draw')),
+            'recordsTotal'    => $totalData,
+            'recordsFiltered' => $totalFiltered,
+            'data'            => $data,
+        ]);
     }
-    
     public function lowStock($isAjax)
     {
         $storeId = current_store_id();

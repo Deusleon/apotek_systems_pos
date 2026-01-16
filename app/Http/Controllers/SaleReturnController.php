@@ -220,6 +220,12 @@ class SaleReturnController extends Controller
         date_default_timezone_set('Africa/Nairobi');
         $date = date('Y-m-d,H:i:s');
         $details = SalesDetail::find($request->item_id);
+        Log::info('Data is'.$request->item_id);
+            
+        if (!$details) {
+            return back()->with('alert-danger', 'Sale item not found.');
+        }
+
         $sales_return = new SalesReturn;
         $sales_return->sale_detail_id = $request->item_id;
         $sales_return->quantity = $request->quantity;

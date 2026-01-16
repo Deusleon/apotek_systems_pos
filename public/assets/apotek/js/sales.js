@@ -899,37 +899,48 @@ function saleReturn(items, sale_id) {
     localStorage.setItem("id", id);
     document.getElementById("sales").style.display = "none";
     sale_items = [];
-    returned =
-        " <button class='btn btn-sm btn-rounded btn-success' disabled>Return</button>";
-    pending = " <span class='badge badge-secondary'>Pending</span>";
-    rejected = " <span class='badge badge-danger'>Rejected</span>";
+
     items.forEach(function (item) {
         var item_data = [];
-        if (item.status !== 3) {
-            item_data.push(item.id);
-            item_data.push(
-                item.name +
-                    " " +
-                    (item.brand ? item.brand + " " : "") +
-                    (item.pack_size ?? "") +
-                    (item.sales_uom ?? "")
-            );
-            item_data.push(item.quantity);
-            item_data.push(item.price);
-            item_data.push(item.vat);
-            item_data.push(item.discount);
-            item_data.push(item.amount);
-            if (item.status === 2) {
-                item_data.push(pending);
-            }
-            if (item.status === 4) {
-                item_data.push(rejected);
-            }
-            if (item.status === 5) {
-                item_data.push(returned);
-            }
-            sale_items.push(item_data);
+        // Skip fully returned items (status 3)
+        if (item.status === 3 || item.status === '3') {
+            return; // Skip this item entirely
         }
+        
+        item_data.push(item.id);
+        item_data.push(
+            item.name +
+                " " +
+                (item.brand ? item.brand + " " : "") +
+                (item.pack_size ?? "") +
+                (item.sales_uom ?? "")
+        );
+        item_data.push(item.quantity);
+        item_data.push(item.price);
+        item_data.push(item.vat);
+        item_data.push(item.discount);
+        item_data.push(item.amount);
+        
+        // Determine button based on status
+        // Status 2: Pending approval
+        // Status 3: Fully returned (skipped above)
+        // Status 4: Rejected
+        // Status 5: Partially returned
+        if (item.status === 5 || item.status === '5' || item.has_return) {
+            // Already returned (partial or has any return) - no more returns allowed
+            item_data.push(" <button class='btn btn-sm btn-rounded btn-success' disabled>Returned</button>");
+        } else if (item.status === 2 || item.status === '2') {
+            // Waiting for approval
+            item_data.push(" <button class='btn btn-sm btn-rounded btn-warning' disabled>Pending</button>");
+        } else if (item.status === 4 || item.status === '4') {
+            // Return was rejected/cancelled
+            item_data.push(" <button class='btn btn-sm btn-rounded btn-danger' disabled>Cancelled</button>");
+        } else {
+            // Normal item - can be returned
+            item_data.push(" <button type='button' id='rtn_btn' class='btn btn-sm btn-rounded btn-primary'>Return</button>");
+        }
+        
+        sale_items.push(item_data);
     });
 
     items_table.clear();
