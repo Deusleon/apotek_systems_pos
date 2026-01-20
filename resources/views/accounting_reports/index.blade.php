@@ -81,18 +81,21 @@
                                         @if(auth()->user()->checkPermission('Gross Profit Summary'))
                                             <option value="3">Gross Profit Summary</option>
                                         @endif
+                                        @if(auth()->user()->checkPermission('Petty Cash Report'))
+                                            <option value="4">Petty Cash Report</option>
+                                        @endif
                                         @if(auth()->user()->checkPermission('Expense Report'))
-                                            <option value="4">Expense Report</option>
+                                            <option value="5">Expense Report</option>
                                         @endif
                                         @if(auth()->user()->checkPermission('Income Statement Report'))
-                                            <option value="5">Income Statement Report</option>
+                                            <option value="6">Income Statement Report</option>
                                         @endif
                                         @if (\App\Setting::where('id', 123)->value('value') === 'YES')
                                             @if(auth()->user()->checkPermission('Cost of Expired Products'))
-                                                <option value="6">Cost of Expired Products Report</option>
+                                                <option value="7">Cost of Expired Products Report</option>
                                             @endif
                                             @if(auth()->user()->checkPermission('Cost of Expired Products'))
-                                                <option value="7">Cost of Products Near to Expire Report</option>
+                                                <option value="8">Cost of Products Near to Expire Report</option>
                                             @endif
                                         @endif
                                     </select>
@@ -149,7 +152,7 @@
                                 <div class="form-group">
                                     <label for="price-category">Price Category<font color="red">*</font></label>
                                     <select id="price-category-expire" name="price_category_id_expire" onchange=""
-                                        class="js-example-basic-single form-control drop" required>
+                                        class="js-example-basic-single form-control drop">
                                         <option value="" selected="true" disabled="disabled">Select Category...</option>
                                         @foreach($price_categories as $category)
                                             <option value="{{$category->id}}">{{$category->name}}</option>
@@ -273,14 +276,14 @@
                 $('#date_row').show();
             }
 
-            if (Number(report_option_index) === 6) {
+            if (Number(report_option_index) === 7) {
                 $("#price-category-expire").prop("required", true);
                 $('#expired-product-cost').show();
                 $('#date_row').hide();
                 $('#dateDiv').hide();
                 $('#current-stock-value').hide();
-            }            
-            if (Number(report_option_index) === 7) {
+            }
+            if (Number(report_option_index) === 8) {
                 $("#price-category-expire").prop("required", true);
                 $('#expired-product-cost').show();
                 $('#date_row').hide();
