@@ -108,6 +108,7 @@
                                     <th>Pay Method</th>
                                     <th>Amount</th>
                                     <th>Category</th>
+                                    <th>Description</th>
                                     <th>Updated by</th>
                                     <th>Action</th>
                                 </tr>
@@ -157,11 +158,12 @@
                     }
                 },
                 { 'data': 'expense_Category' },
+                { 'data': 'description' },
                 { 'data': 'user' },
                 {
                     data: 'action',
                     defaultContent: `
-                                    <button class="btn btn-info btn-rounded btn-sm" type="button" id="show_btn">Show</button>
+                                    <button class="btn btn-success btn-rounded btn-sm" type="button" id="show_btn">Show</button>
                                 @if(auth()->user()->checkPermission('Edit Expenses'))
                                     <button class="btn btn-primary btn-rounded btn-sm" type="button" id="edit_btn">Edit</button>
                                 @endif
