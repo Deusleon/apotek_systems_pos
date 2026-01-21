@@ -305,22 +305,7 @@ $store_id = Auth::user()->store_id;
                 </li>
                 <li>
                     <div class="dropdown">
-                        @php
-                            $notificationCount = 0;
-                            foreach(auth()->user()->unreadNotifications as $notification) {
-                                $data = $notification->data;
-                                if(isset($data['out_of_stock_count']) && $data['out_of_stock_count'] > 0) $notificationCount += 1;
-                                if(isset($data['below_min_level_count']) && $data['below_min_level_count'] > 0) $notificationCount += 1;
-                                if(isset($data['expired_count']) && $data['expired_count'] > 0) $notificationCount += 1;
-                                if(isset($data['expiring_soon_count']) && $data['expiring_soon_count'] > 0) $notificationCount += 1;
-                            }
-                        @endphp
-                        @if($notificationCount > 0)
-                            <span class="badge text-white badge-pill badge-notify"
-                                id="span_counter">{{ $notificationCount }}</span>
-                        @else
-                            <span class="badge text-white badge-pill badge-notify" id="span_counter"></span>
-                        @endif
+                        <span class="badge text-white badge-pill badge-notify" id="span_counter"></span>
                         <a class="dropdown-toggle" href="#" data-toggle="dropdown"><i
                                 class="icon feather icon-bell"></i></a>
                         <div class="dropdown-menu dropdown-menu-right notification">
@@ -332,48 +317,14 @@ $store_id = Auth::user()->store_id;
                                 </div>
                             </div>
                             <ul class="noti-body" id="notification">
-                                @forelse(auth()->user()->unreadNotifications as $notification)
-                                    @php
-                                        $data = $notification->data;
-                                    @endphp
-                                        {{-- 1. Out of Stock --}}
-                                        @if(isset($data['out_of_stock_count']))
-                                            <div class="p-1 pl-3">
-                                                <span>Out of Stock:</span>
-                                                <span class="text-c-red">{{ number_format($data['out_of_stock_count']) }}</span>
-                                            </div>
-                                        @endif
-                                        {{-- 2. Below Min Level --}}
-                                        @if(isset($data['below_min_level_count']))
-                                            <div class="p-1 pl-3">
-                                                <span>Below Min Level:</span>
-                                                <span class="text-c-yellow">{{ number_format($data['below_min_level_count']) }}</span>
-                                            </div>
-                                        @endif
-                                        @if ($expiryEnabled)
-                                            {{-- 3. Expired --}}
-                                            @if(isset($data['expired_count']))
-                                                <div class="p-1 pl-3">
-                                                    <span>Expired:</span>
-                                                    <span class="text-c-red">{{ number_format($data['expired_count']) }}</span>
-                                                </div>
-                                            @endif
-                                        @endif
-                                        @if ($expiryEnabled)
-                                            {{-- 4. Expired --}}
-                                            @if(isset($data['expiring_soon_count']))
-                                                <div class="p-1 pl-3">
-                                                    <span>Expire in 3 Months:</span>
-                                                    <span class="text-c-yellow">{{ number_format($data['expiring_soon_count']) }}</span>
-                                                </div>
-                                            @endif
-                                        @endif
-                                @empty
-                                    <div class="text-muted p-3 text-sm">No new notifications</div>
-                                @endforelse
+                                <li class="notification">
+                                    <div class="media">
+                                        <div class="media-body">
+                                            <p class="text-muted p-3 text-sm">Loading...</p>
+                                        </div>
+                                    </div>
+                                </li>
                             </ul>
-
-
                         </div>
                     </div>
                 </li>
@@ -602,59 +553,63 @@ $store_id = Auth::user()->store_id;
             }
         };
 
-        // $(document).ready(function () {
-        //     setInterval(checkStock, 60000)
+        // Fetch inventory notifications on page load
+        $(document).ready(function() {
+            loadInventoryNotifications();
+        });
 
-        //     // Auto-hide alerts after 5 seconds
-        //     setTimeout(function () {
-        //         $('.alert').fadeOut('slow');
-        //     }, 5000);
-
-        //     // Handle alert close button
-        //     $('.alert .close').on('click', function () {
-        //         $(this).closest('.alert').fadeOut('slow');
-        //     });
-        // });
-
-        // Toast notification function
-        function showToast(message, type = 'success') {
-            const alertClass = type === 'success' ? 'alert-success' :
-                type === 'error' ? 'alert-danger' :
-                    type === 'warning' ? 'alert-warning' : 'alert-info';
-
-            const icon = type === 'success' ? 'feather icon-check-circle' :
-                type === 'error' ? 'feather icon-alert-circle' :
-                    type === 'warning' ? 'feather icon-alert-triangle' : 'feather icon-info';
-
-            const title = type === 'success' ? 'Success!' :
-                type === 'error' ? 'Error!' :
-                    type === 'warning' ? 'Warning!' : 'Info!';
-
-            const toast = $(`
-            <div class="alert ${alertClass} alert-dismissible fade show alert-top-right" role="alert">
-                <i class="${icon}"></i>
-                <strong>${title}</strong> ${message}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        `);
-
-            $('body').append(toast);
-
-            // Auto-hide after 5 seconds
-            setTimeout(function () {
-                toast.fadeOut('slow', function () {
-                    $(this).remove();
-                });
-            }, 5000);
-
-            // Handle close button
-            toast.find('.close').on('click', function () {
-                toast.fadeOut('slow', function () {
-                    $(this).remove();
-                });
+        function loadInventoryNotifications() {
+            $.ajax({
+                url: '{{ route("inventory.notifications") }}',
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    updateNotificationBadge(data);
+                    updateNotificationDropdown(data);
+                },
+                error: function() {
+                    $('#notification').html('<li class="notification"><div class="media"><div class="media-body"><p class="text-muted p-3 text-sm">Failed to load notifications</p></div></div></li>');
+                }
             });
+        }
+
+        function updateNotificationBadge(data) {
+            if (data.notificationCount > 0) {
+                $('#span_counter').text(data.notificationCount);
+            } else {
+                $('#span_counter').text('');
+            }
+        }
+
+        function updateNotificationDropdown(data) {
+            var html = '';
+            var hasNotifications = false;
+
+            if (data.outOfStockCount > 0) {
+                hasNotifications = true;
+                html += '<li class="notification" style="font-size: 14px; padding: 10px;"><span class="pl-1">Out of Stock:</span> <span class="text-c-red"><strong>' + data.outOfStockCount.toLocaleString() + '</strong></span></li>';
+            }
+
+            if (data.belowMinLevelCount > 0) {
+                hasNotifications = true;
+                html += '<li class="notification" style="font-size: 14px; padding: 10px;"><span class="pl-1">Below Min Level:</span> <span class="text-c-yellow"><strong>' + data.belowMinLevelCount.toLocaleString() + '</strong></span></li>';
+            }
+
+            if (data.expiryEnabled && data.expiredCount > 0) {
+                hasNotifications = true;
+                html += '<li class="notification" style="font-size: 14px; padding: 10px;"><span class="pl-1">Expired:</span> <span class="text-c-red"><strong>' + data.expiredCount.toLocaleString() + '</strong></span></li>';
+            }
+
+            if (data.expiryEnabled && data.expiringSoonCount > 0) {
+                hasNotifications = true;
+                html += '<li class="notification" style="font-size: 14px; padding: 10px;"><span class="pl-1">Expire in 3 Months:</span> <span class="text-c-yellow"><strong>' + data.expiringSoonCount.toLocaleString() + '</strong></span></li>';
+            }
+
+            if (!hasNotifications) {
+                html = '<li class="notification" style="font-size: 15px;"><div class="media"><div class="media-body">No new notifications</div></div></li>';
+            }
+
+            $('#notification').html(html);
         }
 
         $('#mark_as_read').on('click', function () {

@@ -727,3 +727,4 @@ Route::delete('/documents/{document}', 'DocumentController@destroy')->name('docu
 // Transport Reports Routes
 Route::get('/transport-reports', 'TransportReportController@index')->name('transport-reports.index');
 Route::post('/transport-reports/generate', 'TransportReportController@generateReport')->name('transport-reports.generate');
+Route::get('/inventory-notifications', 'HomeController@getInventoryNotifications')->name('inventory.notifications')->middleware('auth');
