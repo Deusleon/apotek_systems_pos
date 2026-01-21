@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\CommonFunctions;
 use App\CurrentStock;
 use App\Expense;
+use App\PettyCash;
 use App\PriceCategory;
 use App\PriceList;
 use App\Sale;
@@ -73,6 +74,14 @@ class AccountingReportController extends Controller
 
             case 4:
                 $dates = explode(" - ", $request->date_range);
+                $data = $this->pettyCashReport($dates);
+                $pdf = PDF::loadView('accounting_reports.petty_cash_report_pdf',
+                    compact('data', 'pharmacy'))
+                    ->setPaper('a4', '');
+                return $pdf->stream('petty_cash_report.pdf');
+
+            case 5:
+                $dates = explode(" - ", $request->date_range);
                 $data = $this->expenseReport($dates);
                 if ($data->isEmpty()) {
                     return response()->view('error_pages.pdf_zero_data');
@@ -81,8 +90,8 @@ class AccountingReportController extends Controller
                     compact('data', 'pharmacy'))
                     ->setPaper('a4', '');
                 return $pdf->stream('expense_report.pdf');
-         
-            case 5:
+
+            case 6:
                 $dates = explode(" - ", $request->date_range);
                 $data = $this->incomeStatementReport($dates);
                 if ($data->isEmpty()) {
@@ -92,7 +101,7 @@ class AccountingReportController extends Controller
                     compact('data', 'pharmacy'))
                     ->setPaper('a4', '');
                 return $pdf->stream('income_statement_report.pdf');
-            case 6:
+            case 7:
 
                 if ($request->expire_date_range != null) {
                     $dates = explode(" - ", $request->expire_date_range);
@@ -108,7 +117,7 @@ class AccountingReportController extends Controller
                     ->setPaper('a4', '');
                 return $pdf->stream('cost_of_expired_products_report.pdf');
 
-            case 7:
+            case 8:
                 $expMonth = $request->months;
                 $data = $this->costOfNearToExpireProduct($expMonth, $request->price_category_id_expire);
                 if ($data == []) {
@@ -665,6 +674,30 @@ private function grossProfitSummary(array $dates)
         return $to_print;
 
 
+    }
+
+    private function pettyCashReport($dates)
+    {
+        $date[0] = date('Y-m-d', strtotime($dates[0]));
+        $date[1] = date('Y-m-d', strtotime($dates[1]));
+
+        $records = PettyCash::with(['store', 'creator'])
+            ->whereBetween('date', [$date[0], $date[1]])
+            ->orderBy('date')
+            ->get();
+
+        $total_amount_received = $records->sum('amount_received');
+        $total_expenses = $records->sum('expenses_total');
+        $total_debts = $records->sum('debts');
+
+        return [
+            'records' => $records,
+            'from' => $date[0],
+            'to' => $date[1],
+            'total_amount_received' => $total_amount_received,
+            'total_expenses' => $total_expenses,
+            'total_debts' => $total_debts
+        ];
     }
 
 

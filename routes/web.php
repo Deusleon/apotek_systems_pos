@@ -429,6 +429,17 @@ Route::middleware(["auth","main_branch"])->group(function () {
         'index'
     ]);
 
+    /*petty cash routes*/
+    Route::resource('petty-cash', 'PettyCashController')->only([
+        'index', 'store', 'update', 'destroy'
+    ]);
+
+    Route::post('petty-cash/{pettyCash}/add-expense', 'PettyCashController@addExpense')->name('petty-cash.add-expense');
+    Route::get('petty-cash/{pettyCash}/expenses', 'PettyCashController@getExpenses')->name('petty-cash.expenses');
+    Route::get('petty-cash-filter-by-date', 'PettyCashController@filterByDate')->name('petty-cash.filter-by-date');
+    Route::get('petty-cash-previous-closing', 'PettyCashController@getPreviousDayClosingBalance')->name('petty-cash.previous-closing');
+
+
     /*expense routes*/
     Route::resource('expenses/expense', 'ExpenseController')->only([
         'index', 'store', 'update', 'destroy'

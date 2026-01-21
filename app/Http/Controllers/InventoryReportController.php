@@ -7,6 +7,8 @@ use App\Category;
 use App\CurrentStock;
 use App\IssueReturn;
 use App\Product;
+use App\Requisition;
+use App\RequisitionDetail;
 use App\Setting;
 use App\StockAdjustment;
 use App\StockIssue;
@@ -15,8 +17,6 @@ use App\StockTransfer;
 use App\StockCountSchedule;
 use App\Store;
 use App\SalesDetail;
-use App\Requisition;
-use App\RequisitionDetail;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -296,7 +296,17 @@ try {
                 //stock issue report
                 $dates = explode(" - ", $request->issue_date);
                 if ($request->stock_issue == null || $request->stock_issue == '0') {
-
+                    // All: combine issued and pending
+                    $data = $this->getAllRequisitions($dates);
+                    if ($data == []) {
+                        return response()->view('error_pages.pdf_zero_data');
+                    }
+                $pdf = PDF::loadView( 'inventory_reports.stock_issue_report_pdf',
+                compact( 'data', 'pharmacy' ) )
+                ->setPaper( 'a4', '' );
+                return $pdf->stream( 'stock_issue_report.pdf' );
+                } elseif ($request->stock_issue == '1') {
+                    // Issued
                     $data = $this->stockIssueReport($dates);
                     if ($data == []) {
                         return response()->view('error_pages.pdf_zero_data');
@@ -305,28 +315,16 @@ try {
                 compact( 'data', 'pharmacy' ) )
                 ->setPaper( 'a4', '' );
                 return $pdf->stream( 'stock_issue_report.pdf' );
-                } else {
-
-                    //stock issue return report
-                    if ($request->stock_issue == 2) {
-                        $data = $this->stockIssueReturnReport($request->stock_issue, $dates);
-                        if (empty($data)) {
-                            return response()->view('error_pages.pdf_zero_data');
-                        }
-                $pdf = PDF::loadView( 'inventory_reports.issue_return_report_pdf',
-                compact( 'data', 'pharmacy' ) )
-                ->setPaper( 'a4', '' );
-                return $pdf->stream( 'issue_return_report.pdf' );
-                    } else {
-                        $data = $this->stockIssueReturnReport($request->stock_issue, $dates);
-                        if (empty($data)) {
-                            return response()->view('error_pages.pdf_zero_data');
-                        }
-                $pdf = PDF::loadView( 'inventory_reports.issue_issued_report_pdf',
-                compact( 'data', 'pharmacy' ) )
-                ->setPaper( 'a4', '' );
-                return $pdf->stream( 'issue_issued_report.pdf' );
+                } elseif ($request->stock_issue == '2') {
+                    // Pending
+                    $data = $this->getPendingRequisitions($dates);
+                    if ($data == []) {
+                        return response()->view('error_pages.pdf_zero_data');
                     }
+                $pdf = PDF::loadView( 'inventory_reports.stock_issue_report_pdf',
+                compact( 'data', 'pharmacy' ) )
+                ->setPaper( 'a4', '' );
+                return $pdf->stream( 'stock_issue_report.pdf' );
                 }
             case 9:
                 //stock transfer
@@ -694,7 +692,6 @@ try {
                         gc_collect_cycles();
                     }
                 }
-                
             } while ($chunkRecords->count() === $chunkSize);
             
         } catch ( \Exception $e ) {

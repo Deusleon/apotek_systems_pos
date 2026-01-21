@@ -126,6 +126,11 @@
             <span class="pcoded-mtext">Accounting</span>
         </a>
         <ul class="pcoded-submenu">
+            @if(auth()->user()->checkPermission('View Petty Cash'))
+                <li class="nav-item"><a href="{{route('petty-cash.index')}}" class="nav-link">
+                        <span class="pcoded-mtext">Petty Cash</span></a>
+                </li>
+            @endif
             @if(auth()->user()->checkPermission('View Expenses'))
                 <li class="nav-item"><a href="{{route('expense.index')}}" class="nav-link">
                         <span class="pcoded-mtext">Expenses</span></a>

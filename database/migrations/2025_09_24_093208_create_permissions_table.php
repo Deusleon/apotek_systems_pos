@@ -138,6 +138,8 @@ class CreatePermissionsTable extends Migration
             ['name' => 'View Upload Price', 'guard_name' => 'web', 'created_at' => '2024-11-11 20:00:48', 'updated_at' => '2024-11-11 20:00:48', 'category' => 'SETTINGS'],
             
             // Accounting Sub Modules
+            ['name' => 'View Petty Cash', 'guard_name' => 'web', 'created_at' => '2024-11-23 08:24:55', 'updated_at' => '2024-11-23 08:24:55', 'category' => 'ACCOUNTING'],
+            ['name' => 'Add Petty Cash', 'guard_name' => 'web', 'created_at' => '2024-11-23 08:24:55', 'updated_at' => '2024-11-23 08:24:55', 'category' => 'ACCOUNTING'],
             ['name' => 'View Expenses', 'guard_name' => 'web', 'created_at' => '2024-11-23 08:24:55', 'updated_at' => '2024-11-23 08:24:55', 'category' => 'ACCOUNTING'],
             ['name' => 'Add Expenses', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'ACCOUNTING'],
             ['name' => 'Edit Expenses', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'ACCOUNTING'],
@@ -194,6 +196,7 @@ class CreatePermissionsTable extends Migration
             ['name' => 'Current Stock Value', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'REPORTS'],
             ['name' => 'Gross Profit Detail', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'REPORTS'],
             ['name' => 'Gross Profit Summary', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'REPORTS'],
+            ['name' => 'Petty Cash Report', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'REPORTS'],
             ['name' => 'Expense Report', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'REPORTS'],
             ['name' => 'Invoice Summary Report', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'REPORTS'],
             ['name' => 'Income Statement Report', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'REPORTS'],
