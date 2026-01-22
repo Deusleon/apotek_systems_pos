@@ -241,7 +241,7 @@ class HomeController extends Controller {
             ->join( 'inv_categories', 'inv_categories.id', '=', 'inv_products.category_id' )
             ->wherenull( 'sales_details.status' )
             ->orwhere( 'sales_details.status', '!=', 3 )
-            ->groupBy( ['category'] )
+            ->groupBy( ['category' ] )
             ->get();
 
             $data[ 'avgDailySales' ] = $avgDailySales;
@@ -313,7 +313,7 @@ class HomeController extends Controller {
         ->wherenull( 'sales_details.status' )
         ->orwhere( 'sales_details.status', '!=', 3 )
         ->where( 'inv_current_stock.store_id', '=', $store_id )
-        ->groupBy( ['category'] )
+        ->groupBy( ['category' ] )
         ->get();
 
         $data[ 'avgDailySales' ] = $avgDailySales;
@@ -639,6 +639,20 @@ class HomeController extends Controller {
             'data'            => $data,
         ]);
     }
+    public function outOfStockCount($storeId)
+    {
+        $outOfStockList = CurrentStock::select(
+                'product_id',
+                DB::raw('SUM(quantity) as total_quantity')
+            )
+            ->when($storeId, function ($q) use ($storeId) { return $q->where('store_id', $storeId); })
+            ->groupBy('product_id')
+            ->havingRaw('SUM(quantity) = 0')
+            ->get();
+            
+        $outOfStock = $outOfStockList->count();
+        return $outOfStock;
+    }
     public function lowStock($isAjax)
     {
         $storeId = current_store_id();
@@ -949,6 +963,15 @@ class HomeController extends Controller {
 
         echo json_encode( $json_data );
     }
+    public function expiredCount( $storeId ) {
+        
+        $expired = CurrentStock::where('quantity', '>', 0)
+            ->when($storeId, function ($q) use ($storeId) { return $q->where('store_id', $storeId); })
+            ->whereDate('expiry_date', '<=', now())
+            ->count();
+
+            return $expired;
+    }
     public function taskSchedule( Request $request ) {
         if ( $request->ajax() ) {
             $commonFunction = new CommonFunctions();
@@ -988,6 +1011,50 @@ class HomeController extends Controller {
             return 'marked_read';
         }
 
+    }
+
+    /**
+     * Get inventory notification counts for the header bell icon
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getInventoryNotifications()
+    {
+        $expiry = Setting::where('id', 123)->value('value');
+        $expiryEnabled = $expiry === 'YES';
+        $currentStoreId = current_store_id();
+
+        // Out of stock count
+        $outOfStockCount = $this->outOfStockCount($currentStoreId);
+
+        // Below min level count
+        $belowMinLevelCount = $this->lowStock(true)->getData(true)['recordsTotal'] ?? 0;
+
+        // Expired and expiring soon counts
+        $expiredCount = 0;
+        $expiringSoonCount = 0;
+
+        if ($expiryEnabled) {
+            $expiredCount = $this->expiredCount( $currentStoreId );
+
+            $expiringSoonCount = $this->expireInThreeMonths(true)->getData(true)['recordsTotal'] ?? 0;
+        }
+
+        // Calculate total notification count
+        $notificationCount = 0;
+        if ($outOfStockCount > 0) $notificationCount++;
+        if ($belowMinLevelCount > 0) $notificationCount++;
+        if ($expiryEnabled && $expiredCount > 0) $notificationCount++;
+        if ($expiryEnabled && $expiringSoonCount > 0) $notificationCount++;
+
+        return response()->json([
+            'outOfStockCount' => $outOfStockCount,
+            'belowMinLevelCount' => $belowMinLevelCount,
+            'expiredCount' => $expiredCount,
+            'expiringSoonCount' => $expiringSoonCount,
+            'notificationCount' => $notificationCount,
+            'expiryEnabled' => $expiryEnabled,
+        ]);
     }
 
 }
