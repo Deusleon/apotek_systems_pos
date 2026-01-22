@@ -13,12 +13,12 @@
                 <div class="modal-body">
                     <input type="hidden" id="petty_cash_id" name="petty_cash_id">
                     <div class="form-group">
-                        <label for="details">Details</label>
+                        <label for="details">Purpose / Details</label>
                         <input type="text" class="form-control" id="details" name="details" required>
                     </div>
                     <div class="form-group">
-                        <label for="amount">Amount (Tsh)</label>
-                        <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
+                        <label for="amount">Amount Spent</label>
+                        <input type="text" class="form-control" id="amount" name="amount" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -29,9 +29,3 @@
         </div>
     </div>
 </div>
-
-<script>
-$(document).ready(function() {
-    console.log('Add expense modal JavaScript loaded');
-});
-</script>

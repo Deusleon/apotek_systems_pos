@@ -136,6 +136,32 @@ if (typeof jQuery === 'undefined') {
 }
 $(document).ready(function() {
 console.log('Petty cash page ready, jQuery available:', typeof $);
+
+// Initialize date picker for set opening modal
+$('#d_auto_91').daterangepicker({
+    singleDatePicker: true,
+    showDropdowns: true,
+    maxDate: moment(),
+    autoUpdateInput: true,
+    locale: {
+        format: 'YYYY-MM-DD'
+    }
+});
+
+// Set default value to today's date when modal is shown
+$('#set-opening').on('shown.bs.modal', function() {
+    var today = moment().format('YYYY-MM-DD');
+    $('#d_auto_91').val(today);
+    updatePreviousClosingBalance(today);
+});
+
+// Update previous closing balance when date changes
+$('#d_auto_91').on('change', function() {
+    var selectedDate = $(this).val();
+    if (selectedDate) {
+        updatePreviousClosingBalance(selectedDate);
+    }
+});
 /*petty cash filter table results*/
 console.log('Initializing petty cash DataTable');
 var hasAddPermission = @json(auth()->user()->checkPermission('Add Petty Cash'));
@@ -435,6 +461,79 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
     } catch (e) {
     }
 }
+
+/* Update previous closing balance */
+function updatePreviousClosingBalance(date) {
+    $.ajax({
+        url: '{{ route("petty-cash.previous-closing") }}',
+        type: 'GET',
+        data: {
+            date: date
+        },
+        success: function(response) {
+            if (response.closing_balance !== undefined) {
+                $('#previous_closing_balance').val(formatMoney(response.closing_balance));
+            } else {
+                $('#previous_closing_balance').val('0.00');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error fetching previous closing balance:', error);
+            $('#previous_closing_balance').val('0.00');
+        }
+    });
+}
+
+// Amount formatting for add expense modal
+$('#amount').on('blur', function() {
+    var value = $(this).val().replace(/,/g, '');
+    if (!isNaN(value) && value !== '') {
+        $(this).val(parseFloat(value).toLocaleString());
+    }
+});
+
+$('#amount').on('focus', function() {
+    var value = $(this).val().replace(/,/g, '');
+    $(this).val(value);
+});
+
+// Clean the value on form submit to send numeric value
+$('#add-expense-form').on('submit', function() {
+    var amount = $('#amount').val().replace(/,/g, '');
+    $('#amount').val(amount);
+});
+
+// Also clean on button click in case it's AJAX
+$('#add-expense-submit').on('click', function() {
+    var amount = $('#amount').val().replace(/,/g, '');
+    $('#amount').val(amount);
+});
+
+// Amount formatting for set opening balance modal
+$('#opening_balance').on('blur', function() {
+    var value = $(this).val().replace(/,/g, '');
+    if (!isNaN(value) && value !== '') {
+        $(this).val(parseFloat(value).toLocaleString());
+    }
+});
+
+$('#opening_balance').on('focus', function() {
+    var value = $(this).val().replace(/,/g, '');
+    $(this).val(value);
+});
+
+// Clean the value on form submit to send numeric value
+$('#set-opening-form').on('submit', function() {
+    var amount = $('#opening_balance').val().replace(/,/g, '');
+    $('#opening_balance').val(amount);
+});
+
+// Also clean on button click in case it's AJAX
+$('#set-opening-submit').on('click', function() {
+    var amount = $('#opening_balance').val().replace(/,/g, '');
+    $('#opening_balance').val(amount);
+});
+
 });
 
 </script>
