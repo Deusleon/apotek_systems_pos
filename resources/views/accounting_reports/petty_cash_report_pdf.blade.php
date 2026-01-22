@@ -144,26 +144,24 @@
                 <thead>
                 <tr style="background: #1f273b; color: white;">
                     <th style="width: 5%">#</th>
-                    <th align="left" style="width: 12%;">Date</th>
-                    <th align="left" style="width: 15%;">Branch</th>
-                    <th align="left" style="width: 12%;">Opening Balance</th>
-                    <th align="left" style="width: 12%;">Amount Received</th>
-                    <th align="left" style="width: 12%;">Expenses</th>
-                    <th align="left" style="width: 12%;">Closing Balance</th>
-                    <th align="center" style="width: 12%;">Debts</th>
-                    <th align="left" style="width: 10%;">Created By</th>
+                    <th align="left" style="width: 15%;">Date</th>
+                    <th align="right" style="width: 15%;">Opening Balance</th>
+                    <th align="right" style="width: 15%;">Amount Received</th>
+                    <th align="right" style="width: 15%;">Expenses</th>
+                    <th align="right" style="width: 15%;">Closing Balance</th>
+                    <th align="right" style="width: 15%;">Debts</th>
+                    <th align="left" style="width: 15%;">Created By</th>
                 </tr>
                 </thead>
-                @foreach($data['records'] as $record)
+                @foreach($data['records']->reverse() as $record)
                     <tr>
                         <td>{{ $loop->index + 1 }}</td>
                         <td align="left">{{date('Y-m-d',strtotime($record->date))}}</td>
-                        <td align="left">{{$record->store->name ?? 'N/A'}}</td>
                         <td align="right">{{number_format($record->opening_balance, 2)}}</td>
                         <td align="right">{{number_format($record->amount_received, 2)}}</td>
                         <td align="right">{{number_format($record->expenses_total, 2)}}</td>
                         <td align="right">{{number_format($record->closing_balance, 2)}}</td>
-                        <td align="center">{{number_format($record->debts, 2)}}</td>
+                        <td align="right">{{number_format($record->debts, 2)}}</td>
                         <td align="left">{{$record->creator->name ?? 'N/A'}}</td>
                     </tr>
                 @endforeach
@@ -181,15 +179,15 @@
             <div class="col-15"></div>
             <div class="col-50">
                 <div class="full-row">
-                    <div class="col-50" align="left"><b>Total Received: </b></div>
+                    <div class="col-50" align="right"><b>Received: </b></div>
                     <div class="col-50" align="right">{{number_format($data['total_amount_received'], 2)}}</div>
                 </div>
                 <div class="full-row">
-                    <div class="col-50" align="left"><b>Total Expenses: </b></div>
+                    <div class="col-50" align="right"><b>Expenses: </b></div>
                     <div class="col-50" align="right">{{number_format($data['total_expenses'], 2)}}</div>
                 </div>
                 <div class="full-row">
-                    <div class="col-50" align="left"><b>Total Debts: </b></div>
+                    <div class="col-50" align="right"><b>Debts: </b></div>
                     <div class="col-50" align="right">{{number_format($data['total_debts'], 2)}}</div>
                 </div>
             </div>
