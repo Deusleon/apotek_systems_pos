@@ -90,8 +90,14 @@ class PurchaseReturnController extends Controller
             'current_date' => date('Y-m-d')
         ]);
 
-        $query = PurchaseReturn::with(['goodsReceiving' => function($q) {
+        $store_id = current_store_id();
+        $useStoreFilter = !is_all_store();
+        
+        $query = PurchaseReturn::with(['goodsReceiving' => function($q) use ($useStoreFilter, $store_id) {
             $q->with(['product', 'supplier']);
+            if ($useStoreFilter) {
+                $q->where('store_id', $store_id);
+            }
         }])
             ->where(DB::Raw("DATE(purchase_returns.date)"), '>=', $from)
             ->where(DB::Raw("DATE(purchase_returns.date)"), '<=', $to);
