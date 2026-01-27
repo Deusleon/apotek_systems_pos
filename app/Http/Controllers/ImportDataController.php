@@ -156,8 +156,8 @@ class ImportDataController extends Controller {
             $sheet->setCellValueExplicit('B2', '1234567890123', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
             $sheet->setCellValue( 'C2', 'Sample Brand' );
             $sheet->setCellValue( 'D2', '500' );
-            $sheet->setCellValue( 'E2', 'ml' );
-            $sheet->setCellValue( 'F2', 'General' );
+            $sheet->setCellValue( 'E2', 'General' );
+            $sheet->setCellValue( 'F2', 'ml' );
             $sheet->setCellValue( 'G2', '10' );
             $sheet->setCellValue( 'H2', '100' );
         }
@@ -166,7 +166,7 @@ class ImportDataController extends Controller {
             // $sheet->setCellValue( 'A2', '100001' );
             $sheet->setCellValue( 'A2', 'Sample Product' );
             $sheet->setCellValueExplicit('B2', '1234567890123', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-            $sheet->setCellValue( 'C2', 'BEVERAGE' );
+            $sheet->setCellValue( 'C2', 'General' );
             // $sheet->setCellValue( 'E2', 'ml' );
             $sheet->setCellValue( 'D2', '10' );
         }

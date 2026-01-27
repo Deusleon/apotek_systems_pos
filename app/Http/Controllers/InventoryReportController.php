@@ -40,6 +40,7 @@ class InventoryReportController extends Controller
             $products = DB::table( 'product_ledger' )
             ->join( 'inv_products', 'inv_products.id', '=', 'product_ledger.product_id' )
             ->select( 'product_id', 'product_name', 'brand', 'pack_size', 'sales_uom' )
+            ->where('inv_products.status', 1)
             ->groupby( [ 'product_id', 'product_name' ] )
             ->orderBy( 'product_name', 'asc' )
             ->get();

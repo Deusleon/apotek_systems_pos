@@ -126,7 +126,7 @@
                                             <td>{{ is_numeric($row['data'][3]) ? number_format($row['data'][3], 0) : '' }}</td>
                                         @endif
                                         @if ($is_detailed === 'Normal')
-                                            <td>{{ $row['data'][3] ?? '' }}</td>
+                                            <td>{{ is_numeric($row['data'][3]) ? number_format($row['data'][3], 0) : '' }}</td>
                                         @endif
                                         @if ($is_detailed === 'Detailed')
                                             <td>{{ $row['data'][4] ?? '' }}</td>

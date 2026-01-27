@@ -93,7 +93,7 @@
                         <p>Are you sure you want to create a new database backup? This process may take a few moments
                             depending on the database size.</p>
                         <div class="alert alert-info">
-                            <i class="fas fa-info-circle"></i> The backup will be saved in the storage/backups directory and
+                            <i class="fas fa-info-circle"></i> The backup will be saved and
                             can be downloaded later.
                         </div>
                     </div>

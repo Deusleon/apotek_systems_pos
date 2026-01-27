@@ -20,12 +20,14 @@ class StoreController extends Controller
         $count = $stores->count();
         foreach ( $stores as $store ) {
             $store_count = DB::table( 'users' )->where( 'store_id', $store->id )->count();
+            $stock_count_data = DB::table('inv_current_stock')->where('store_id', $store->id)->count();
+            $transfer_count_data = DB::table('inv_stock_transfers')->where('to_store', $store->id)->count();
 
-            if ( $store_count > 0 ) {
+            if ( $store_count > 0 || $stock_count_data > 0 || $transfer_count_data > 0) {
                 $store[ 'is_used' ] = 'yes';
             }
 
-            if ( $store_count == 0 ) {
+            if ( $store_count == 0 && $stock_count_data == 0 && $transfer_count_data == 0) {
                 $store[ 'is_used' ] = 'no';
             }
 
@@ -62,6 +64,17 @@ class StoreController extends Controller
 
         try {
             $check_store = Store::find($request->id);
+            // check if store has any users or stock
+            $user_count = DB::table('users')->where('store_id', $check_store->id)->count();
+            if ($user_count > 0) {
+                session()->flash("alert-danger", "Branch in use!");
+                return back();
+            }
+            $stock_count = DB::table('inv_current_stock')->where('store_id', $check_store->id)->count();
+            if ($stock_count > 0) {
+                session()->flash("alert-danger", "Branch in use!");
+                return back();
+            }
 
             if ($default_store === $check_store->name) {
                 session()->flash("alert-danger", "Please change default branch in settings!");

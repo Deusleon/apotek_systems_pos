@@ -40,26 +40,32 @@ function customRound($num) {
 
         th,
         td {
-            padding: 2px;
+            padding-top: 2px;
+            padding-bottom: 2px;
             word-wrap: break-word;
         }
 
         #table-detail thead th {
+            border-top: 1px solid #000;
             border-bottom: 1px solid #000;
+            padding-top: 4px;
+            padding-bottom: 4px;
         }
-
+        
         #table-detail tbody tr td {
             border-bottom: 1px dotted #000;
+            padding-top: 4px;
+            padding-bottom: 4px;
         }
 
         #table-detail tbody tr:last-child td {
             border-bottom: none;
-        }
+        }      
 
         hr {
             border: none;
-            border-bottom: 1px dashed #000;
-            margin: 4px 0;
+            border-bottom: 1px solid #000;
+            margin: 3px 0;
         }
 
         h3,
@@ -81,6 +87,12 @@ function customRound($num) {
         <h5>{{$pharmacy['phone']}}</h5>
         <h5>TIN: {{$pharmacy['tin_number'] ?? 'N/A'}}</h5>
         {{-- @dd($data) --}}
+        @php
+            $subTotal = 0;
+            $vat = 0;
+            $discount = 0;
+            $grandTotal = 0;
+        @endphp
         @foreach($data as $datas => $dat)
             <table>
                 <tr>
@@ -89,6 +101,7 @@ function customRound($num) {
                         <span>Sales Date:</span> {{date('Y-m-d', strtotime($dat[0]['created_at']))}}<br>
                         <span>Customer:</span> {{$dat[0]['customer'] ?? 'CASH'}}<br>
                         <span>TIN:</span> {{$dat[0]['customer_tin'] ?? 'N/A'}}<br>
+                        <span>VRN:</span> {{$pharmacy['vrn_number'] ?? 'N/A'}}<br>
                         <span>Printed On:</span> {{date('Y-m-d H:i:s')}}
                     </td>
                 </tr>
@@ -97,9 +110,9 @@ function customRound($num) {
             <table id="table-detail">
                 <thead>
                     <tr>
-                        <th align="left" style="width: 45%;">Description</th>
+                        <th align="left" style="width: ;">Description</th>
                         <th align="center" style="width: 15%;">Qty</th>
-                        <th align="right" style="width: 40%;">Amount</th>
+                        <th align="right" style="width: 35%;">Amount</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -136,8 +149,8 @@ function customRound($num) {
                 </tbody>
             </table>
             <hr>
-            <h5><b>Issued By: {{$dat[0]['sold_by']}}</b></h5>
-            <h5 style="font-style: italic; font-weight: bold;">{{$pharmacy['slogan']}}</h5>
+            <h5>Issued By: {{$dat[0]['sold_by']}}</h5>
+            <h5 style="font-style: italic;">{{$pharmacy['slogan']}}</h5>
         @endforeach
     </div>
 </body>

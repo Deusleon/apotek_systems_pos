@@ -125,7 +125,7 @@ class CreatePermissionsTable extends Migration
             ['name' => 'View Users', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'SETTINGS'],
             ['name' => 'Add Users', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'SETTINGS'],
             ['name' => 'Edit Users', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'SETTINGS'],
-            // ['name' => 'Permit Users', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'SETTINGS'],
+            ['name' => 'Activate/Deactivate Users', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'SETTINGS'],
             ['name' => 'View Tools', 'guard_name' => 'web', 'created_at' => '2024-11-11 20:00:48', 'updated_at' => '2024-11-11 20:00:48', 'category' => 'SETTINGS'],
             ['name' => 'View Database Backup', 'guard_name' => 'web', 'created_at' => '2024-11-11 20:00:48', 'updated_at' => '2024-11-11 20:00:48', 'category' => 'SETTINGS'],
             ['name' => 'Create Database Backup', 'guard_name' => 'web', 'created_at' => '2024-11-11 20:00:48', 'updated_at' => '2024-11-11 20:00:48', 'category' => 'SETTINGS'],

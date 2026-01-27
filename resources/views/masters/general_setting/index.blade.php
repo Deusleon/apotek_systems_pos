@@ -62,25 +62,13 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="proforma_invoice_terms">Proforma Invoice</label>
+                                <label for="proforma_invoice_terms">Sales Order</label>
                                 <textarea class="form-control" id="proforma_invoice_terms" name="proforma_invoice_terms"
-                                    rows="4" placeholder="Enter terms & conditions for proforma invoices"
+                                    rows="4" placeholder="Enter terms & conditions for sales order"
                                     @if(!auth()->user()->checkPermission('Edit Terms and Conditions')) readonly
                                     @endif>{{old('proforma_invoice_terms', $setting->proforma_invoice_terms)}}</textarea>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="purchase_order_terms">Purchase Order</label>
-                                <textarea class="form-control" id="purchase_order_terms" name="purchase_order_terms"
-                                    rows="4" placeholder="Enter terms & conditions for purchase orders"
-                                    @if(!auth()->user()->checkPermission('Edit Terms and Conditions')) readonly
-                                    @endif>{{old('purchase_order_terms', $setting->purchase_order_terms)}}</textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="delivery_note_terms">Delivery Note</label>
@@ -90,7 +78,9 @@
                                     @endif>{{old('delivery_note_terms', $setting->delivery_note_terms)}}</textarea>
                             </div>
                         </div>
+                    </div>
 
+                    <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="credit_note_terms">Credit Note</label>
@@ -98,6 +88,15 @@
                                     placeholder="Enter terms & conditions for credit note"
                                     @if(!auth()->user()->checkPermission('Edit Terms and Conditions')) readonly
                                     @endif>{{old('credit_note_terms', $setting->credit_note_terms)}}</textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="purchase_order_terms">Purchase Order</label>
+                                <textarea class="form-control" id="purchase_order_terms" name="purchase_order_terms"
+                                    rows="4" placeholder="Enter terms & conditions for purchase orders"
+                                    @if(!auth()->user()->checkPermission('Edit Terms and Conditions')) readonly
+                                    @endif>{{old('purchase_order_terms', $setting->purchase_order_terms)}}</textarea>
                             </div>
                         </div>
                     </div>

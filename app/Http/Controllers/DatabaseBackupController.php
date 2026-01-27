@@ -179,9 +179,9 @@ class DatabaseBackupController extends Controller
             Log::info("Database backup created successfully: {$backupName} ({$processedTables} tables processed, {$skippedTables} skipped, " . $this->formatBytes($fileSize) . ")");
 
             $message = "Database backup created successfully!";
-            if ($skippedTables > 0) {
-                $message .= " {$skippedTables} tables were skipped (see logs for details).";
-            }
+            // if ($skippedTables > 0) {
+            //     $message .= " {$skippedTables} tables were skipped (see logs for details).";
+            // }
 
             return redirect()->back()->with('success', $message);
 
@@ -511,10 +511,10 @@ class DatabaseBackupController extends Controller
 
             Log::info("Database cleared successfully by user: {$userName} (ID: {$userId}). Cleared {$clearedTables} tables, {$failedTables} tables failed.");
 
-            $message = "Database cleared successfully! Cleared {$clearedTables} tables.";
-            if ($failedTables > 0) {
-                $message .= " {$failedTables} tables could not be cleared (see logs for details).";
-            }
+            $message = "Database cleared successfully!.";
+            // if ($failedTables > 0) {
+            //     $message .= " {$failedTables} tables could not be cleared (see logs for details).";
+            // }
             $message .= " Critical system data has been preserved.";
 
             return redirect()->back()->with('success', $message);

@@ -40,17 +40,22 @@ function customRound($num) {
 
         th,
         td {
-            padding: 2px;
+            padding-top: 2px;
+            padding-bottom: 2px;
             word-wrap: break-word;
         }
 
         #table-detail thead th {
             border-top: 1px solid #000;
             border-bottom: 1px solid #000;
+            padding-top: 5px;
+            padding-bottom: 5px;
         }
         
         #table-detail tbody tr td {
             border-bottom: 1px dotted #000;
+            padding-top: 4px;
+            padding-bottom: 4px;
         }
 
         #table-detail tbody tr:last-child td {
@@ -95,7 +100,14 @@ function customRound($num) {
         <h5>{{$pharmacy['address']}}</h5>
         <h5>{{$pharmacy['phone']}}</h5>
         <h5>TIN: {{$pharmacy['tin_number'] ?? 'N/A'}}</h5>
+        <h5>VRN: {{$pharmacy['vrn_number'] ?? 'N/A'}}</h5>
 
+        @php
+            $subTotal = 0;
+            $vat = 0;
+            $discount = 0;
+            $grandTotal = 0;
+        @endphp
         @foreach($data as $datas => $dat)
             <table>
                 <tr>
@@ -112,8 +124,8 @@ function customRound($num) {
             <table id="table-detail">
                 <thead>
                     <tr>
-                        <th align="left" style="width: 40%;">Description</th>
-                        <th class="text-center" style="width: 20%;">Qty</th>
+                        <th align="left" style="width: 45%;">Description</th>
+                        <th class="text-center" style="width: 18%;">Qty</th>
                         <th class="text-right">Amount</th>
                     </tr>
                 </thead>
@@ -122,7 +134,7 @@ function customRound($num) {
                         <tr>
                             <td>{{$item['name']}} {{$item['brand'] ?? ''}} {{$item['pack_size'] ?? ''}}{{$item['sales_uom'] ?? ''}}</td>
                             <td class="text-center">{{number_format($item['quantity'], 0)}}</td>
-                            <td class="text-right">{{customRound($item['price'] * $item['quantity'])}}</td>
+                            <td class="text-right" >{{customRound($item['price'] * $item['quantity'])}}</td>
                         </tr>
                     @endforeach
                 </tbody>

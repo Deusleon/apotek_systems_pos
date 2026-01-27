@@ -607,6 +607,8 @@ class SaleController extends Controller
             $pharmacy['address'] = Setting::where('id', 106)->value('value');
             $pharmacy['tin_number'] = Setting::where('id', 102)->value('value');
             $pharmacy['phone'] = Setting::where('id', 107)->value('value');
+            $pharmacy[ 'website' ] = Setting::where( 'id', 109 )->value( 'value' );
+            $pharmacy[ 'email' ] = Setting::where( 'id', 108 )->value( 'value' );
             $pharmacy['slogan'] = Setting::where('id', 104)->value('value');
             $pharmacy['vrn_number'] = Setting::where('id', 103)->value('value');
 
@@ -746,61 +748,60 @@ class SaleController extends Controller
 
     }
     public function storeCreditSale(Request $request)
-{
-    Log::info($request->all());
+    {
+        Log::info($request->all());
 
-    if (!Auth()->user()->checkPermission('View Credit Sales')) {
-        abort(403, 'Access Denied');
-    }
-
-    if ($request->ajax()) {
-        $decoded = null;
-        if (is_array($request->customer_id)) {
-            $decoded = $request->customer_id;
-        } else {
-            $decoded = @json_decode($request->customer_id, true);
+        if (!Auth()->user()->checkPermission('View Credit Sales')) {
+            abort(403, 'Access Denied');
         }
 
-        if (is_array($decoded) && isset($decoded['id'])) {
-            $request->merge(['customer_id' => $decoded['id']]);
-            $this->store($request);
-
-            $receipt_print = Setting::where('id', 117)->value('value');
-            if($receipt_print === "YES"){
-                return response()->json([
-                    'to' => 'receipt',
-                    'redirect_to' => route('getCashReceipt', '-1')
-                ]);
-            }else{
-                return response()->json([
-                    'to' => 'sale',
-                    'redirect_to' => route('credit-sales.creditSale') 
-                ]);
+        if ($request->ajax()) {
+            $decoded = null;
+            if (is_array($request->customer_id)) {
+                $decoded = $request->customer_id;
+            } else {
+                $decoded = @json_decode($request->customer_id, true);
             }
-        }
 
-        if (is_numeric($request->customer_id) || is_int($decoded)) {
-            $request->merge(['customer_id' => (int) $request->customer_id]);
-            $this->store($request);
-            $receipt_print = Setting::where('id', 117)->value('value');
-            if($receipt_print === "YES"){
-                return response()->json([
-                    'to' => 'receipt',
-                    'redirect_to' => route('getCashReceipt', '-1')
-                ]);
-            }else{
-                return response()->json([
-                    'to' => 'sale',
-                    'redirect_to' => route('credit-sales.creditSale') 
-                ]);
+            if (is_array($decoded) && isset($decoded['id'])) {
+                $request->merge(['customer_id' => $decoded['id']]);
+                $this->store($request);
+
+                $receipt_print = Setting::where('id', 117)->value('value');
+                if($receipt_print === "YES"){
+                    return response()->json([
+                        'to' => 'receipt',
+                        'redirect_to' => route('getCashReceipt', '-1')
+                    ]);
+                }else{
+                    return response()->json([
+                        'to' => 'sale',
+                        'redirect_to' => route('credit-sales.creditSale') 
+                    ]);
+                }
             }
+
+            if (is_numeric($request->customer_id) || is_int($decoded)) {
+                $request->merge(['customer_id' => (int) $request->customer_id]);
+                $this->store($request);
+                $receipt_print = Setting::where('id', 117)->value('value');
+                if($receipt_print === "YES"){
+                    return response()->json([
+                        'to' => 'receipt',
+                        'redirect_to' => route('getCashReceipt', '-1')
+                    ]);
+                }else{
+                    return response()->json([
+                        'to' => 'sale',
+                        'redirect_to' => route('credit-sales.creditSale') 
+                    ]);
+                }
+            }
+
+            session()->flash("alert-danger", "Customer Name is Required");
+            return back();
         }
-
-        session()->flash("alert-danger", "Customer Name is Required");
-        return back();
     }
-}
-
     public function getSalesHistory(Request $request)
     {
         if (!Auth()->user()->checkPermission('View Sales History')) {
@@ -938,6 +939,8 @@ class SaleController extends Controller
         $pharmacy['address'] = Setting::where('id', 106)->value('value');
         $pharmacy['tin_number'] = Setting::where('id', 102)->value('value');
         $pharmacy['phone'] = Setting::where('id', 107)->value('value');
+        $pharmacy[ 'website' ] = Setting::where( 'id', 109 )->value( 'value' );
+        $pharmacy[ 'email' ] = Setting::where( 'id', 108 )->value( 'value' );
         $pharmacy['slogan'] = Setting::where('id', 104)->value('value');
         $pharmacy['vrn_number'] = Setting::where('id', 103)->value('value');
 

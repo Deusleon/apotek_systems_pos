@@ -18,9 +18,9 @@ class PriceTemplateExport implements FromCollection, WithHeadings, ShouldAutoSiz
     public function headings(): array
     {
         return [
-            'code',
-            'product name',
-            'price'
+            'Code',
+            'Product Name',
+            'Price'
         ];
     }
 
