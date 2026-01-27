@@ -110,12 +110,73 @@
         @endif
     </div>
 
+    <!-- Return Details Modal -->
+    <div class="modal fade" id="return-details-modal" tabindex="-1" role="dialog" aria-labelledby="returnDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="returnDetailsModalLabel">Return Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group row">
+                                <label class="col-md-4 col-form-label text-md-right font-weight-bold">Description:</label>
+                                <div class="col-md-8">
+                                    <input type="text" class="form-control" id="return_modal_description" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-4 col-form-label text-md-right font-weight-bold">Qty Received:</label>
+                                <div class="col-md-8">
+                                    <input type="text" class="form-control" id="return_modal_qty_received" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-4 col-form-label text-md-right font-weight-bold">Receive Date:</label>
+                                <div class="col-md-8">
+                                    <input type="text" class="form-control" id="return_modal_receive_date" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-4 col-form-label text-md-right font-weight-bold">Qty Return:</label>
+                                <div class="col-md-8">
+                                    <input type="text" class="form-control" id="return_modal_qty_return" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-4 col-form-label text-md-right font-weight-bold">Refund Amount:</label>
+                                <div class="col-md-8">
+                                    <input type="text" class="form-control" id="return_modal_refund_amount" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-4 col-form-label text-md-right font-weight-bold">Returned By:</label>
+                                <div class="col-md-8">
+                                    <input type="text" class="form-control" id="return_modal_returned_by" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @push("page_scripts")
     @include('partials.notification')
 
     <script type="text/javascript">
+        var currentStoreId = '{{ session("current_store_id", auth()->user()->store_id) }}';
+
         $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -153,10 +214,25 @@
             setTimeout(function () { getPurchaseReturns(); }, 100);
         });
 
+        $('#purchase_returns_table tbody').on('click', '#show_details', function () {
+            var rowData = purchase_returns_table.row($(this).parents('tr')).data();
+
+            // Populate modal fields
+            $("#return_modal_description").val((rowData.goods_receiving.product.name || '') + ' ' + (rowData.goods_receiving.product.brand || '') + ' ' + (rowData.goods_receiving.product.pack_size || '') + (rowData.goods_receiving.product.sales_uom || ''));
+            $("#return_modal_qty_received").val(numberWithCommas(rowData.goods_receiving.quantity));
+            $("#return_modal_receive_date").val(moment(rowData.goods_receiving.created_at).format('YYYY-MM-DD'));
+            $("#return_modal_qty_return").val(numberWithCommas(rowData.quantity));
+            $("#return_modal_refund_amount").val(formatMoney(rowData.goods_receiving.unit_cost * rowData.quantity));
+            $("#return_modal_returned_by").val(rowData.creator ? rowData.creator.name : 'N/A');
+
+            $("#return-details-modal").modal("show");
+        });
+
         $('#purchase_returns_table tbody').on('click', '#approve', function () {
             var rowData = purchase_returns_table.row($(this).parents('tr')).data();
             getPurchaseReturns('approve', {
                 id: rowData.goods_receiving.id,
+                return_id: rowData.id,
                 product_id: rowData.goods_receiving.product_id,
                 quantity: rowData.goods_receiving.quantity
             });
@@ -166,6 +242,7 @@
             var rowData = purchase_returns_table.row($(this).parents('tr')).data();
             getPurchaseReturns('reject', {
                 id: rowData.goods_receiving.id,
+                return_id: rowData.id,
                 product_id: rowData.goods_receiving.product_id,
                 quantity: rowData.goods_receiving.quantity
             });
@@ -223,22 +300,28 @@
                             {
                         data: "action",
                         render: function (data, type, row) {
-                            // Only show action buttons for pending returns (status 2)
-                            if (row.goods_receiving && row.goods_receiving.status == '2') {
-                                return "<button type='button' id='approve' class='btn btn-sm btn-rounded btn-primary'>Approve</button> <button type='button' id='reject' class='btn btn-sm btn-rounded btn-danger'>Reject</button>";
+                            var buttons = "<button type='button' id='show_details' class='btn btn-success btn-sm btn-rounded mr-1' title='Show Details'>Show</button>";
+
+                            // Only show action buttons for pending returns and if not in 'ALL' branch
+                            if (currentStoreId != '1') {
+                                buttons += "<button type='button' id='approve' class='btn btn-sm btn-rounded btn-primary mr-1'>Approve</button><button type='button' id='reject' class='btn btn-sm btn-rounded btn-danger'>Reject</button>";
                             } else {
-                                return "";
+                                buttons += "<span class='text-muted'></span>";
                             }
+
+                            return buttons;
                         },
                         visible: function(row) {
-                            // Hide the entire column for approved/rejected returns
-                            return row.goods_receiving && row.goods_receiving.status == '2';
+                            // Always show action column since Show button is always available
+                            return true;
                         }
                     }
                 @else
                         {
-                            data: "",
-                            defaultContent: "", visible: false
+                            data: "action",
+                            render: function (data, type, row) {
+                                return "<button type='button' id='show_details' class='btn btn-info btn-sm btn-rounded' title='Show Details'>Show</button>";
+                            }
                         }
                     @endif
                 ],
@@ -261,7 +344,8 @@
                     "date": date,
                     "status": status,
                     "action": action,
-                    "goods_receiving": goods_receiving
+                    "goods_receiving": goods_receiving,
+                    "store_id": '{{ session("current_store_id", auth()->user()->store_id) }}'
                 },
                 type: 'post',
                 dataType: 'json',

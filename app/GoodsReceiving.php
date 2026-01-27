@@ -10,7 +10,7 @@ class GoodsReceiving extends Model
     use LogsActivity;
 
     protected $table = 'inv_incoming_stock';
-    public $timestamps = 'false';
+    public $timestamps = false;
     protected $fillable = ['id', 'product_id', 'quantity', 'unit_cost', 'total_cost', 'supplier_id', 'store_id',
         'expire_date', 'total_sell', 'item_profit', 'sell_price', 'created_by', 'created_at', 'status'];
 

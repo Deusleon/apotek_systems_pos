@@ -535,9 +535,11 @@ $store_id = Auth::user()->store_id;
     <script src="{{ asset('assets/plugins/intl-tel-input/js/intlTelInput.js') }}"></script>
     <script>
         var input = document.querySelector("#phone");
-        window.intlTelInput(input, {
-            utilsScript: "{{ asset('assets/plugins/intl-tel-input/js/utils.js') }}", // <-- Hapa
-        });
+        if (input) {
+            window.intlTelInput(input, {
+                utilsScript: "{{ asset('assets/plugins/intl-tel-input/js/utils.js') }}", // <-- Hapa
+            });
+        }
     </script>
 
     {{-- custom java scripts for the page --}}
