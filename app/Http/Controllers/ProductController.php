@@ -558,11 +558,11 @@ class ProductController extends Controller
 
             // Validate headers
             $headers = array_keys($data[0]);
-            $expectedHeaders = ['code', 'product name', 'price'];
+            $expectedHeaders = ['Code', 'Product Name', 'Price'];
             Log::info('Validating file headers: ' . implode(', ', $headers));
 
-            if (count($headers) !== 3 || !empty(array_diff($expectedHeaders, array_map('strtolower', $headers)))) {
-                return back()->with('error', 'Invalid file format. Expected columns: code, product name,  price');
+            if (count($headers) !== 3 || !empty(array_diff($expectedHeaders,  $headers))) {
+                return back()->with('error', 'Invalid file format. Expected columns: Code, Product Name,  Price');
             }
 
             // Validate data structure and content
@@ -571,13 +571,13 @@ class ProductController extends Controller
                 $rowNumber = $index + 2; // +2 because index starts at 0 and we skip header
 
                 // Check if all required columns have values
-                if (empty(trim($row['code'] ?? '')) && empty(trim($row['product name'] ?? ''))) {
-                    $validationErrors[] = "Row {$rowNumber}: Both code and product name cannot be empty";
+                if (empty(trim($row['Code'] ?? '')) && empty(trim($row['Product Name'] ?? ''))) {
+                    $validationErrors[] = "Row {$rowNumber}: Both Code and Product Name cannot be empty";
                     continue;
                 }
 
                 // Validate price format
-                $price = trim($row['price'] ?? '');
+                $price = trim($row['Price'] ?? '');
                 if (empty($price)) {
                     $validationErrors[] = "Row {$rowNumber}: Price cannot be empty";
                     continue;
@@ -642,9 +642,9 @@ class ProductController extends Controller
         while (($row = fgetcsv($handle)) !== false) {
             if (count($row) >= 3) {
                 $data[] = [
-                    'code' => trim($row[0]),
-                    'product name' => trim($row[1]),
-                    'quantity' => trim($row[2]),
+                    'Code' => trim($row[0]),
+                    'Product Name' => trim($row[1]),
+                    'Quantity' => trim($row[2]),
                 ];
             }
         }
@@ -666,9 +666,9 @@ class ProductController extends Controller
         foreach ($rows as $row) {
             if (count($row) >= 3 && !empty($row[0])) {
                 $data[] = [
-                    'code' => trim($row[0]),
-                    'product name' => trim($row[1]),
-                    'quantity' => trim($row[2]),
+                    'Code' => trim($row[0]),
+                    'Product Name' => trim($row[1]),
+                    'Quantity' => trim($row[2]),
                 ];
             }
         }
@@ -687,9 +687,9 @@ class ProductController extends Controller
         while (($row = fgetcsv($handle)) !== false) {
             if (count($row) >= 3) {
                 $data[] = [
-                    'code' => trim($row[0]),
-                    'product name' => trim($row[1]),
-                    'price' => trim($row[2]),
+                    'Code' => trim($row[0]),
+                    'Product Name' => trim($row[1]),
+                    'Price' => trim($row[2]),
                 ];
             }
         }
@@ -711,9 +711,9 @@ class ProductController extends Controller
         foreach ($rows as $row) {
             if (count($row) >= 3 && !empty($row[0])) {
                 $data[] = [
-                    'code' => trim($row[0]),
-                    'product name' => trim($row[1]),
-                    'price' => trim($row[2]),
+                    'Code' => trim($row[0]),
+                    'Product Name' => trim($row[1]),
+                    'Price' => trim($row[2]),
                 ];
             }
         }
@@ -741,9 +741,9 @@ class ProductController extends Controller
                 $results['processed']++;
 
                 // Validate price
-                $sellingPrice = $this->validateAndParsePrice($row['price']);
+                $sellingPrice = $this->validateAndParsePrice($row['Price']);
                 if ($sellingPrice === false) {
-                    $errorMsg = "Invalid price for product: {$row['code']} - {$row['product name']}";
+                    $errorMsg = "Invalid price for product: {$row['Code']} - {$row['Product Name']}";
                     Log::warning($errorMsg);
                     $results['error_messages'][] = $errorMsg;
                     $results['errors']++;
@@ -751,9 +751,9 @@ class ProductController extends Controller
                 }
 
                 // Find product by name
-                $product = $this->findProduct($row['product name']);
+                $product = $this->findProduct($row['Product Name']);
                 if (!$product) {
-                    $errorMsg = "Product not found: {$row['product name']}";
+                    $errorMsg = "Product not found: {$row['Product Name']}";
                     Log::warning($errorMsg);
                     $results['error_messages'][] = $errorMsg;
                     $results['errors']++;
@@ -833,7 +833,6 @@ class ProductController extends Controller
 
     private function findProduct($name)
     {
-        // Log::info("Looking for product with code: '{$code}' and name: '{$name}'");
 
         // Finally try to find by name
         if (!empty($name)) {
@@ -843,8 +842,6 @@ class ProductController extends Controller
                 return $product;
             }
         }
-
-        // Log::warning("Product not found for code: '{$code}' and name: '{$name}'");
         return null;
     }
 
@@ -856,7 +853,6 @@ class ProductController extends Controller
         ]);
 
         $storeId = $request->store_id;
-        // Log::info('Stock upload initiated for store ID: ' . $storeId);
 
         // Check if the branch has any products
         $totalProductCount = Product::count();
@@ -881,12 +877,12 @@ class ProductController extends Controller
 
             // Validate headers
             $headers = array_keys($data[0]);
-            $expectedHeaders = ['code', 'product name', 'quantity'];
+            $expectedHeaders = ['Code', 'Product Name', 'Quantity'];
             Log::info('Stock upload headers found: ' . implode(', ', $headers));
             Log::info('Stock upload expected headers: ' . implode(', ', $expectedHeaders));
 
-            if (count($headers) !== 3 || !empty(array_diff($expectedHeaders, array_map('strtolower', $headers)))) {
-                return back()->with('error', 'Invalid file format. Expected columns: code, product name, quantity. Found: ' . implode(', ', $headers));
+            if (count($headers) !== 3 || !empty(array_diff($expectedHeaders, $headers))) {
+                return back()->with('error', 'Invalid file format. Expected columns: Code, Product Name, Quantity. Found: ' . implode(', ', $headers));
             }
 
             // Validate data structure and content
@@ -894,17 +890,14 @@ class ProductController extends Controller
             foreach ($data as $index => $row) {
                 $rowNumber = $index + 2; // +2 because index starts at 0 and we skip header
 
-                // Debug: Log the row data
-                // Log::info("Processing row {$rowNumber}: " . json_encode($row));
-
                 // Check if all required columns have values
-                if (empty(trim($row['code'] ?? '')) && empty(trim($row['product name'] ?? ''))) {
+                if (empty(trim($row['Code'] ?? '')) && empty(trim($row['Product Name'] ?? ''))) {
                     $validationErrors[] = "Row {$rowNumber}: Code and Product Name cannot be empty";
                     continue;
                 }
 
                 // Validate quantity format
-                $quantity = trim($row['quantity'] ?? '');
+                $quantity = trim($row['Quantity'] ?? '');
                 if (empty($quantity)) {
                     $validationErrors[] = "Row {$rowNumber}: Quantity cannot be empty";
                     continue;
@@ -974,13 +967,10 @@ class ProductController extends Controller
             foreach ($data as $row) {
                 $results['processed']++;
 
-                // Debug: Log the row being processed
-                // Log::info("Processing stock upload row: " . json_encode($row));
-
                 // Validate quantity
-                $quantity = $this->validateAndParseQuantity($row['quantity']);
+                $quantity = $this->validateAndParseQuantity($row['Quantity']);
                 if ($quantity === false) {
-                    $errorMsg = "Invalid quantity for product: {$row['product name']}";
+                    $errorMsg = "Invalid quantity for product: {$row['Product Name']}";
                     Log::warning($errorMsg);
                     $results['error_messages'][] = $errorMsg;
                     $results['errors']++;
@@ -988,16 +978,14 @@ class ProductController extends Controller
                 }
 
                 // Find product by code or name
-                $product = $this->findProduct($row['product name']);
+                $product = $this->findProduct($row['Product Name']);
                 if (!$product) {
-                    $errorMsg = "Product {$row['product name']} not found";
+                    $errorMsg = "Product {$row['Product Name']} not found";
                     Log::warning($errorMsg);
                     $results['error_messages'][] = $errorMsg;
                     $results['errors']++;
                     continue;
                 }
-
-                // Log::info("Found product: {$product->name} (ID: {$product->id}) for quantity: {$quantity}");
 
                 // Get current stock for this product in the store
                 $currentStocks = CurrentStock::where('product_id', $product->id)
@@ -1012,7 +1000,7 @@ class ProductController extends Controller
                     $adjustmentQuantity = $quantity - $totalCurrentQuantity;
 
                     // Create stock adjustment record
-                    $reference = 'STOCK-UPLOAD-' . time() . '-' . $results['processed'];
+                    $reference = 'Stock Upload: ' . now()->format('Y-m-d') . ' : ' . $results['processed'];
 
                     // Use the same logic as stock adjustment for summary adjustments
                     if ($adjustmentQuantity > 0) {
@@ -1029,7 +1017,7 @@ class ProductController extends Controller
                                 'stock_id' => $latestBatch->id,
                                 'quantity' => $adjustmentQuantity,
                                 'type' => 'increase',
-                                'reason' => 'Stock Upload Adjustment: ' . $adjustment_reason,
+                                'reason' => 'Stock Upload Adjustment',
                                 'description' => "Stock upload for product: {$product->name}",
                                 'created_by' => $userId,
                             ]);
@@ -1037,7 +1025,7 @@ class ProductController extends Controller
                             StockTracking::create([
                                 'stock_id' => $latestBatch->id,
                                 'product_id' => $latestBatch->product_id,
-                                'out_mode' => 'Stock Upload: ' . $adjustment_reason,
+                                'out_mode' => 'Stock Upload',
                                 'quantity' => $adjustmentQuantity,
                                 'store_id' => $storeId,
                                 'created_by' => $userId,
@@ -1054,7 +1042,7 @@ class ProductController extends Controller
                                 'new_quantity' => $latestBatch->quantity,
                                 'adjustment_quantity' => $adjustmentQuantity,
                                 'adjustment_type' => 'increase',
-                                'reason' => 'Stock Upload Adjustment: ' . $adjustment_reason,
+                                'reason' => 'Stock Upload Adjustment',
                                 'reference_number' => $reference,
                             ]);
 
@@ -1065,7 +1053,7 @@ class ProductController extends Controller
                                 'product_id' => $product->id,
                                 'store_id' => $storeId,
                                 'quantity' => $quantity,
-                                'batch_number' => 'UPLOAD-' . time(),
+                                'batch_number' => now()->format('Y-m-d'),
                                 'expiry_date' => null,
                             ]);
 
@@ -1074,7 +1062,7 @@ class ProductController extends Controller
                                 'stock_id' => $newStock->id,
                                 'quantity' => $quantity,
                                 'type' => 'increase',
-                                'reason' => 'Stock Upload Adjustment: '.$adjustment_reason,
+                                'reason' => 'Stock Upload Adjustment',
                                 'description' => "Stock upload for product: {$product->name}",
                                 'created_by' => $userId,
                             ]);
@@ -1082,11 +1070,12 @@ class ProductController extends Controller
                             StockTracking::create([
                                 'stock_id' => $newStock->id,
                                 'product_id' => $newStock->product_id,
-                                'out_mode' => 'Stock Upload: ' . $adjustment_reason,
+                                'out_mode' => 'Stock Upload',
                                 'quantity' => $quantity,
                                 'store_id' => $storeId,
                                 'created_by' => $userId,
                                 'updated_by' => Auth::id(),
+                                'updated_at' => now()->format('Y-m-d'),
                                 'movement' => 'IN',
                             ]);
 
@@ -1125,7 +1114,7 @@ class ProductController extends Controller
                                 'stock_id' => $batch->id,
                                 'quantity' => $deduct,
                                 'type' => 'decrease',
-                                'reason' => 'Stock Upload Adjustment: '. $adjustment_reason,
+                                'reason' => 'Stock Upload Adjustment',
                                 'description' => "Stock upload for product: {$product->name}",
                                 'created_by' => $userId,
                             ]);
@@ -1133,7 +1122,7 @@ class ProductController extends Controller
                             StockTracking::create([
                                 'stock_id' => $batch->id,
                                 'product_id' => $batch->product_id,
-                                'out_mode' => 'Stock Upload: ' . $adjustment_reason,
+                                'out_mode' => 'Stock Upload',
                                 'quantity' => $deduct,
                                 'store_id' => $storeId,
                                 'created_by' => $userId,
@@ -1149,7 +1138,7 @@ class ProductController extends Controller
                                 'new_quantity' => $batch->quantity,
                                 'adjustment_quantity' => $deduct,
                                 'adjustment_type' => 'decrease',
-                                'reason' => 'Stock Upload Adjustment: ' . $adjustment_reason,
+                                'reason' => 'Stock Upload Adjustment',
                                 'reference_number' => $reference,
                             ]);
 
@@ -1228,7 +1217,7 @@ class ProductController extends Controller
             DB::beginTransaction();
 
             $userId = Auth::id();
-            $reference = 'STOCK-RESET-' . time();
+            $reference = 'Stock Reset: '. now()->format('Y-m-d');
             $resetCount = 0;
             $totalQuantityReset = 0;
 
@@ -1249,7 +1238,7 @@ class ProductController extends Controller
                     'stock_id' => $batch->id,
                     'quantity' => $prevQuantity,
                     'type' => 'decrease',
-                    'reason' => 'Stock Reset: ' . $adjustment_reason,
+                    'reason' => 'Stock Reset',
                     'description' => "Complete stock reset for branch '{$storeName}' - Product: {$batch->product->name}",
                     'created_by' => $userId,
                 ]);
@@ -1258,7 +1247,7 @@ class ProductController extends Controller
                 StockTracking::create([
                     'stock_id' => $batch->id,
                     'product_id' => $batch->product_id,
-                    'out_mode' => 'Stock Reset: ' . $adjustment_reason,
+                    'out_mode' => 'Stock Reset',
                     'quantity' => $prevQuantity,
                     'store_id' => $storeId,
                     'created_by' => $userId,
@@ -1276,7 +1265,7 @@ class ProductController extends Controller
                     'new_quantity' => 0,
                     'adjustment_quantity' => $prevQuantity,
                     'adjustment_type' => 'decrease',
-                    'reason' => 'Stock Reset: ' . $adjustment_reason,
+                    'reason' => 'Stock Reset',
                     'reference_number' => $reference,
                 ]);
 
@@ -1290,10 +1279,6 @@ class ProductController extends Controller
             DB::commit();
 
             $message = "Stock reset completed successfully all stock have been set to 0.\n\n";
-            // $message .= "Stock batches reset: {$resetCount}\n";
-            // $message .= "Total quantity reset: {$totalQuantityReset}\n";
-            // $message .= "Reference: {$reference}\n\n";
-            // $message .= "All stock quantities in the current branch have been set to 0.";
 
             Log::info("Stock reset completed for store ID {$storeId}: {$resetCount} batches, {$totalQuantityReset} total quantity");
 

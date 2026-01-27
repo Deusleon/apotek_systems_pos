@@ -40,26 +40,31 @@ function customRound($num) {
 
         th,
         td {
-            padding: 2px;
+            padding-top: 2px;
+            padding-bottom: 2px;
             word-wrap: break-word;
         }
 
         #table-detail thead th {
             border-top: 1px solid #000;
             border-bottom: 1px solid #000;
+            padding-top: 5px;
+            padding-bottom: 5px;
         }
-
+        
         #table-detail tbody tr td {
             border-bottom: 1px dotted #000;
+            padding-top: 4px;
+            padding-bottom: 4px;
         }
 
         #table-detail tbody tr:last-child td {
             border-bottom: none;
-        }
+        }        
 
         hr {
             border: none;
-            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
             margin: 3px 0;
         }
 
@@ -72,6 +77,7 @@ function customRound($num) {
             text-align: center;
         }
 
+        /* Align numeric columns */
         .text-right {
             text-align: right;
         }
@@ -80,16 +86,9 @@ function customRound($num) {
             text-align: center;
         }
 
-        /* Footer table spacing */
+        /* Reduce spacing for thermal */
         #footer-detail td {
             padding: 2px 0;
-        }
-
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 9px;
-            margin-top: 3px;
         }
     </style>
 </head>
@@ -101,6 +100,7 @@ function customRound($num) {
         <h5>{{$pharmacy['address']}}</h5>
         <h5>{{$pharmacy['phone']}}</h5>
         <h5>TIN: {{$pharmacy['tin_number'] ?? 'N/A' }}</h5>
+        <h5>VRN: {{$pharmacy['vrn_number'] ?? 'N/A'}}</h5>
 
         @foreach($data as $datas => $dat)
             <table>
@@ -118,8 +118,8 @@ function customRound($num) {
             <table id="table-detail">
                 <thead>
                     <tr>
-                        <th align="left" style="width: 40%;">Description</th>
-                        <th class="text-center" style="width: 20%">Qty</th>
+                        <th align="left" style="width: 45%;">Description</th>
+                        <th class="text-center" style="width: 18%">Qty</th>
                         <th class="text-right">Amount</th>
                     </tr>
                 </thead>

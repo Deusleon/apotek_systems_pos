@@ -67,7 +67,6 @@ class SaleQuoteController extends Controller {
         ->with( compact( 'enable_discount' ) )
         ->with( compact( 'fixed_price' ) );
     }
-
     public function orderList() {
         $store_id = current_store_id();
         $vat = Setting::where( 'id', 120 )->value( 'value' ) / 100;
@@ -105,7 +104,6 @@ class SaleQuoteController extends Controller {
         ->with( compact( 'enable_discount' ) )
         ->with( compact( 'payment_type' ) );
     }
-
     public function getQuotes( Request $request ) {
         $store_id = current_store_id();
         $date_range = explode( '-', $request->date );
@@ -555,13 +553,15 @@ class SaleQuoteController extends Controller {
 
         $page = -22;
         $receipt_size = Setting::where( 'id', 119 )->value( 'value' );
-        $pharmacy[ 'name' ] = Setting::where( 'id', 100 )->value( 'value' );
-        $pharmacy[ 'logo' ] = Setting::where( 'id', 105 )->value( 'value' );
-        $pharmacy[ 'address' ] = Setting::where( 'id', 106 )->value( 'value' );
-        $pharmacy[ 'tin_number' ] = Setting::where( 'id', 102 )->value( 'value' );
-        $pharmacy[ 'phone' ] = Setting::where( 'id', 107 )->value( 'value' );
-        $pharmacy[ 'slogan' ] = Setting::where( 'id', 104 )->value( 'value' );
-        $pharmacy[ 'vrn_number' ] = Setting::where( 'id', 103 )->value( 'value' );
+        $pharmacy['name'] = Setting::where('id', 100)->value('value');
+        $pharmacy['logo'] = Setting::where('id', 105)->value('value');
+        $pharmacy['address'] = Setting::where('id', 106)->value('value');
+        $pharmacy['tin_number'] = Setting::where('id', 102)->value('value');
+        $pharmacy['phone'] = Setting::where('id', 107)->value('value');
+        $pharmacy[ 'website' ] = Setting::where( 'id', 109 )->value( 'value' );
+        $pharmacy[ 'email' ] = Setting::where( 'id', 108 )->value( 'value' );
+        $pharmacy['slogan'] = Setting::where('id', 104)->value('value');
+        $pharmacy['vrn_number'] = Setting::where('id', 103)->value('value');
 
         // Get general settings for terms & conditions
         $generalSettings = GeneralSetting::first();
@@ -634,13 +634,15 @@ class SaleQuoteController extends Controller {
         try {
             $page = -22;
             $receipt_size = Setting::where( 'id', 119 )->value( 'value' );
-            $pharmacy[ 'name' ] = Setting::where( 'id', 100 )->value( 'value' );
-            $pharmacy[ 'logo' ] = Setting::where( 'id', 105 )->value( 'value' );
-            $pharmacy[ 'address' ] = Setting::where( 'id', 106 )->value( 'value' );
-            $pharmacy[ 'tin_number' ] = Setting::where( 'id', 102 )->value( 'value' );
-            $pharmacy[ 'phone' ] = Setting::where( 'id', 107 )->value( 'value' );
-            $pharmacy[ 'slogan' ] = Setting::where( 'id', 104 )->value( 'value' );
-            $pharmacy[ 'vrn_number' ] = Setting::where( 'id', 103 )->value( 'value' );
+            $pharmacy['name'] = Setting::where('id', 100)->value('value');
+            $pharmacy['logo'] = Setting::where('id', 105)->value('value');
+            $pharmacy['address'] = Setting::where('id', 106)->value('value');
+            $pharmacy['tin_number'] = Setting::where('id', 102)->value('value');
+            $pharmacy['phone'] = Setting::where('id', 107)->value('value');
+            $pharmacy[ 'website' ] = Setting::where( 'id', 109 )->value( 'value' );
+            $pharmacy[ 'email' ] = Setting::where( 'id', 108 )->value( 'value' );
+            $pharmacy['slogan'] = Setting::where('id', 104)->value('value');
+            $pharmacy['vrn_number'] = Setting::where('id', 103)->value('value');
 
             // Get general settings for terms & conditions
             $generalSettings = GeneralSetting::first();
@@ -898,13 +900,15 @@ class SaleQuoteController extends Controller {
         try {
             $page = -22;
             $receipt_size = Setting::where( 'id', 119 )->value( 'value' );
-            $pharmacy[ 'name' ] = Setting::where( 'id', 100 )->value( 'value' );
-            $pharmacy[ 'logo' ] = Setting::where( 'id', 105 )->value( 'value' );
-            $pharmacy[ 'address' ] = Setting::where( 'id', 106 )->value( 'value' );
-            $pharmacy[ 'tin_number' ] = Setting::where( 'id', 102 )->value( 'value' );
-            $pharmacy[ 'phone' ] = Setting::where( 'id', 107 )->value( 'value' );
-            $pharmacy[ 'slogan' ] = Setting::where( 'id', 104 )->value( 'value' );
-            $pharmacy[ 'vrn_number' ] = Setting::where( 'id', 103 )->value( 'value' );
+            $pharmacy['name'] = Setting::where('id', 100)->value('value');
+            $pharmacy['logo'] = Setting::where('id', 105)->value('value');
+            $pharmacy['address'] = Setting::where('id', 106)->value('value');
+            $pharmacy['tin_number'] = Setting::where('id', 102)->value('value');
+            $pharmacy['phone'] = Setting::where('id', 107)->value('value');
+            $pharmacy[ 'website' ] = Setting::where( 'id', 109 )->value( 'value' );
+            $pharmacy[ 'email' ] = Setting::where( 'id', 108 )->value( 'value' );
+            $pharmacy['slogan'] = Setting::where('id', 104)->value('value');
+            $pharmacy['vrn_number'] = Setting::where('id', 103)->value('value');
 
             $sale_quote = SalesQuoteDetail::where( 'quote_id', $id )->get();
 

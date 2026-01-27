@@ -24,8 +24,8 @@
                             <h6><i class="fas fa-exclamation-triangle"></i> Warning</h6>
                             <p>This action will permanently delete all data from the database:</p>
                             <ul class="mb-0">
-                                <li><strong>All system settings</strong> - Will be reset to default</li>
-                                <li><strong>All System</strong> - Users will be removed</li>
+                                <li><strong>All system settings: </strong>will be reset to default</li>
+                                <li>All System users: will be removed</li>
                             </ul>
                             <p class="mt-3 mb-0"><strong>This action cannot be undone!</strong> Make sure you have a recent backup before proceeding.</p>
                         </div>
@@ -36,7 +36,7 @@
                             <ul class="mb-0">
                                 <li>Sales and sales details</li>
                                 <li>Purchase orders and invoices</li>
-                                <li>Stock and Inventory data</li>
+                                <li>Inventory data</li>
                                 <li>Customer and supplier data</li>
                                 <li>Products and reports</li>
                                 <li>All other operational data</li>
@@ -127,7 +127,6 @@
                                     <div class="alert alert-danger">
                                         <h6><i class="fas fa-exclamation-triangle"></i> Warning!</h6>
                                         <p>Are you absolutely sure you want to clear the database? This action will permanently delete all data and cannot be undone!</p>
-                                        <p class="mb-0"><strong>All transaction data, stock, customers, suppliers, and operational records will be removed.</strong></p>
                                     </div>
                                 </div>
                                 <div class="modal-footer">

@@ -78,13 +78,27 @@ class HomeController extends Controller {
         // Out of Stock (Product-level)
         // -----------------------------
         $outOfStockList = CurrentStock::select(
-                'product_id',
-                DB::raw('SUM(quantity) as total_quantity')
-            )
-            ->when(!$isAdmin, function ($q) use ($storeId) { return $q->where('store_id', $storeId); })
-            ->groupBy('product_id')
-            ->havingRaw('SUM(quantity) = 0')
-            ->get();
+            'inv_current_stock.product_id',
+            DB::raw('SUM(inv_current_stock.quantity) as total_quantity'),
+            'inv_products.name as product_name'
+        )
+        ->join('inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id')
+        ->when(!$isAdmin, function ($q) use ($storeId) {
+            return $q->where('inv_current_stock.store_id', $storeId);
+        })
+        ->groupBy('inv_current_stock.product_id', 'inv_products.name')
+        ->havingRaw('SUM(inv_current_stock.quantity) = 0')
+        ->orderBy('inv_products.name', 'ASC')
+        ->get();
+
+        // $outOfStockList = CurrentStock::select(
+        //         'product_id',
+        //         DB::raw('SUM(quantity) as total_quantity')
+        //     )
+        //     ->when(!$isAdmin, function ($q) use ($storeId) { return $q->where('store_id', $storeId); })
+        //     ->groupBy('product_id')
+        //     ->havingRaw('SUM(quantity) = 0')
+        //     ->get();
             
         $outOfStock = $outOfStockList->count(); // number of products out of stock
 
@@ -677,7 +691,8 @@ class HomeController extends Controller {
                 'p.min_quantinty'
             )
             ->havingRaw('SUM(cs.quantity) < p.min_quantinty')
-            ->havingRaw('SUM(cs.quantity) > 0');
+            ->havingRaw('SUM(cs.quantity) > 0')
+            ->orderBy('p.name', 'ASC');
 
         if (!is_all_store()) {
             $baseQuery->where('cs.store_id', $storeId);
@@ -871,7 +886,8 @@ class HomeController extends Controller {
         if ($isAjax) {
             return response()->json([
                 'status' => 'success',
-                'data' => $expiring_soon
+                'data' => $expiring_soon,
+                'recordsTotal' => $expiring_soon->count(),
             ]);
         }
 

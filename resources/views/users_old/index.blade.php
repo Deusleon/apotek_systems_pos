@@ -129,7 +129,7 @@
                                                                 User Permissions
                                                             </button>
                                                         </a> --}}
-                                                        {{-- @if(auth()->user()->checkPermission('Activate/Deactivate Users')) --}}
+                                                        @if(auth()->user()->checkPermission('Permit Users'))
                                                             @if ($user->status == 1)
                                                                 <a href="#">
                                                                     <button class="dropdown-item " type="button" data-toggle="modal"
@@ -147,7 +147,7 @@
                                                                     </button>
                                                                 </a>
                                                             @endif
-                                                        {{-- @endif --}}
+                                                        @endif
                                                     </div>
                                                 </div>
                                             @endif

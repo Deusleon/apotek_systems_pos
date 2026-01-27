@@ -84,14 +84,14 @@
                 <form id="editStockForm">
                     <div class="modal-body">
                         <input type="hidden" id="edit_stock_id" name="stock_id">
-                        <div class="form-group">
-                            <label for="edit_batch_number">Batch Number</label>
-                            <input type="text" class="form-control" id="edit_batch_number" name="batch_number">
+                        <div class="form-group row mr-2">
+                            <label class="col-md-4 col-form-label text-md-right" for="edit_batch_number">Batch Number</label>
+                            <input type="text" class="form-control col-md-8" id="edit_batch_number" name="batch_number">
                         </div>
                         @if ($expireEnabled)
-                        <div class="form-group">
-                            <label for="edit_expiry_date">Expiry Date</label>
-                            <input type="text" class="form-control" id="edit_expiry_date" name="expiry_date"
+                        <div class="form-group row mr-2">
+                            <label class="col-md-4 col-form-label text-md-right" for="edit_expiry_date">Expiry Date</label>
+                            <input type="text" class="form-control col-md-8" id="edit_expiry_date" name="expiry_date"
                                    min="{{ date('Y-m-d', strtotime('+1 day')) }}"
                                    max="{{ date('Y-m-d', strtotime('+5 years')) }}">
                         </div>

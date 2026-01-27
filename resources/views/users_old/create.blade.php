@@ -64,7 +64,7 @@
                                 <label for="new_password" class="col-md-4 col-form-label text-md-right">Password <font color="red">*</font></label>
 
                                 <div class="col-md-8">
-                                    <input  type="password" class="form-control" name="password" id="password" required>
+                                    <input  type="password" class="form-control" name="password" required>
 
                                     <span class="text-danger">
                                         <strong id="password-error"></strong>
@@ -124,7 +124,7 @@
                         
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary" id="btn-register-submit" disabled>Save</button>
+                            <button type="submit" class="btn btn-primary">Save</button>
                         </div>
                     </form>
                 </div>
@@ -135,37 +135,3 @@
           </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const password = document.getElementById('password');
-    const confirmPassword = document.getElementById('password_confirmation');
-    const submitBtn = document.getElementById('btn-register-submit');
-    const passwordError = document.getElementById('password-confirmation-error');
-
-    function validatePasswords() {
-        const pwd = password.value;
-        const confirmPwd = confirmPassword.value;
-
-        if (pwd === '' || confirmPwd === '') {
-            submitBtn.disabled = true;
-            passwordError.textContent = '';
-            confirmPassword.classList.remove('is-invalid', 'is-valid');
-            return;
-        }
-
-        if (pwd !== confirmPwd) {
-            submitBtn.disabled = true;
-            passwordError.textContent = 'Passwords do not match';
-            confirmPassword.classList.add('is-invalid');
-        } else {
-            submitBtn.disabled = false;
-            passwordError.textContent = '';
-            confirmPassword.classList.remove('is-invalid');
-        }
-    }
-
-    password.addEventListener('input', validatePasswords);
-    confirmPassword.addEventListener('input', validatePasswords);
-});
-</script>

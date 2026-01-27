@@ -44,15 +44,7 @@ class DailyStockCountExport implements FromCollection, WithHeadings, WithMapping
         $quantity_sold = $row['quantity_sold'] ?? 0;
         $quantity_on_hand = $row['quantity_on_hand'] ?? 0;
         
-        // For export, we might not have 'physical_stock' and 'difference' directly in $this->data
-        // if the export is from the original daily stock count data.
-        // If this export is for the discrepancy report, these values would be present.
-        // For now, let's assume this export is for the data presented on the daily stock count screen,
-        // where physical stock and difference are calculated client-side. 
-        // We will need to re-evaluate this if the export is specifically for recorded discrepancies.
-        
-        // For now, setting them to N/A or 0 as they might not be directly available from the initial summation data
-        // This needs clarification based on exactly what data should be exported.
+     // This needs clarification based on exactly what data should be exported.
         $physical_stock = $row['physical_stock'] ?? 'N/A'; 
         $difference = $row['difference'] ?? 'N/A';
 

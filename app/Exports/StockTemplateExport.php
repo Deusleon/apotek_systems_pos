@@ -18,9 +18,9 @@ class StockTemplateExport implements FromCollection, WithHeadings, ShouldAutoSiz
     public function headings(): array
     {
         return [
-            'code',
-            'product name',
-            'quantity'
+            'Code',
+            'Product Name',
+            'Quantity'
         ];
     }
 

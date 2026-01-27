@@ -24,7 +24,7 @@ function customRound($num) {
         body {
             font-size: 10px;
             margin: 0;
-            padding: 10px;
+            padding: 10px 20px 10px 10px;
             /* font-weight: bold; */
         }
 
@@ -40,25 +40,31 @@ function customRound($num) {
 
         th,
         td {
-            padding: 2px;
+            padding-top: 2px;
+            padding-bottom: 2px;
             word-wrap: break-word;
         }
 
         #table-detail thead th {
+            border-top: 1px solid #000;
             border-bottom: 1px solid #000;
+            padding-top: 4px;
+            padding-bottom: 4px;
         }
-
+        
         #table-detail tbody tr td {
             border-bottom: 1px dotted #000;
+            padding-top: 4px;
+            padding-bottom: 4px;
         }
 
         #table-detail tbody tr:last-child td {
             border-bottom: none;
-        }
+        }      
 
         hr {
             border: none;
-            border-bottom: 1px dashed #000;
+            border-bottom: 1px solid #000;
             margin: 3px 0;
         }
 
@@ -69,18 +75,6 @@ function customRound($num) {
             margin: 2px 0;
             font-weight: normal;
             text-align: center;
-        }
-
-        .text-right {
-            text-align: right;
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        #footer-detail td {
-            padding: 2px 0;
         }
     </style>
 </head>
@@ -117,21 +111,20 @@ function customRound($num) {
                 <thead>
                     <tr>
                         <th align="left" style="width: 30%;">Description</th>
-                        <th class="text-center">Qty</th>
-                        <th class="text-right">Price</th>
-                        <th class="text-right">Amount</th>
+                        <th align="center" class="text-center">Qty</th>
+                        <th align="right" class="text-right">Price</th>
+                        <th align="right" class="text-right">Amount</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($dat as $item)
                         <tr>
-                            <td>{{$item['name']}} {{$item['brand'] ?? ''}}
+                            <td align="left" class="text-left">{{$item['name']}} {{$item['brand'] ?? ''}}
                                 {{$item['pack_size'] ?? ''}}{{$item['sales_uom'] ?? ''}}
                             </td>
-                            <td class="text-center">{{number_format($item['quantity'], 0)}}</td>
-                            <td class="text-right">{{customRound($item['price'])}}</td>
-                            {{-- <td class="text-right">{{customRound($item['vat'])}}</td> --}}
-                            <td class="text-right">{{customRound($item['sub_total'])}}</td>
+                            <td align="center" class="text-center">{{number_format($item['quantity'], 0)}}</td>
+                            <td align="right" class="text-right">{{customRound($item['price'])}}</td>
+                            <td align="right" class="text-right">{{customRound($item['sub_total'])}}</td>
                         </tr>
                         @php
                             $subTotal += $item['sub_total'];
@@ -148,23 +141,23 @@ function customRound($num) {
                 <tbody>
                     <tr>
                         <td>Sub Total</td>
-                        <td class="text-right">
+                        <td align="right" class="text-right">
                             {{customRound($subTotal)}}
                         </td>
                     </tr>
                     <tr>
                         <td>VAT</td>
-                        <td class="text-right">{{customRound($vat)}}</td>
+                        <td align="right" class="text-right">{{customRound($vat)}}</td>
                     </tr>
                     @if($dat[0]['discount_total'] > 0)
                         <tr>
                             <td>Discount</td>
-                            <td class="text-right">{{customRound($discount)}}</td>
+                            <td align="right" class="text-right">{{customRound($discount)}}</td>
                         </tr>
                     @endif
                     <tr>
                         <td><b>Total</b></td>
-                        <td class="text-right"><b>{{customRound($grandTotal)}}</b></td>
+                        <td align="right" class="text-right"><b>{{customRound($grandTotal)}}</b></td>
                     </tr>
                 </tbody>
             </table>

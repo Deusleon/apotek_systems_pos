@@ -18,7 +18,7 @@ function customRound($num) {
     <style>
         body {
             font-family: Arial, sans-serif;
-            font-size: 10px;
+            font-size: 9px;
             margin: -15px;
             margin-top: -25px;
             padding: 0;
@@ -41,10 +41,10 @@ function customRound($num) {
         }
 
         .customer-table td {
-            padding: 2px 2px;
+            padding: 3px 2px;
             border: 1px solid #858484;
-            font-size: 11px;
-            height: 15px;
+            font-size: 9px;
+            height: 13px;
         }
 
         .items-table {
@@ -52,7 +52,6 @@ function customRound($num) {
             border: 1px solid #000;
             border-collapse: collapse;
             margin-top: 10px;
-            margin-bottom: 10px;
         }
 
         .table-header {
@@ -60,7 +59,7 @@ function customRound($num) {
             border-bottom: 2px solid #000;
             color: #000;
             font-weight: bold;
-            font-size: 10px;
+            font-size: 9px;
             text-align: center;
         }
 
@@ -74,40 +73,72 @@ function customRound($num) {
         .items-table td {
             padding: 2px 2px;
             border: 1px solid #858484;
-            font-size: 10px;
+            font-size: 9px;
             height: 15px;
         }
 
         .index-col {
-            width: 20px;
+            width: 8px;
             text-align: center;
+        }
+
+        .part-no-col {
+            width: 55px;
+            text-align: left;
+        }
+
+        .description-col {
+            width: 120px;
+            text-align: left;
+        }
+
+        .unit-col {
+            width: 30px;
+            text-align: center;
+        }
+
+        .qty-col {
+            width: 30px;
+            text-align: center;
+        }
+
+        .price-col {
+            width: 50px;
+            text-align: right;
+        }
+
+        .vat-col {
+            width: 54px;
+            text-align: right;
+        }
+
+        .amount-col {
+            width: 55px;
+            text-align: right;
         }
 
         /* Summary section */
         .summary-section {
             width: 40%;
             margin-left: auto;
-            font-size: 10px;
-        }
-
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 2px 2px;
-        }
-
-        .summary-row.total {
-            font-weight: bold;
-            border-top: 1px solid #000;
-            border-bottom: 1px solid #000;
-            background-color: #f0f0f0;
-        }
-
-        .sold-by {
-            text-align: left;
             font-size: 9px;
-            font-weight: bold;
-            margin-bottom: 3px;
+        }
+
+        .summary-table {
+            width: 100%;
+            border: 1px solid #000;
+            border-collapse: collapse;
+            margin-top: 12px;
+            margin-left: -1px;
+            margin-right: -1px;
+            margin-bottom: 8px;
+        }
+
+        .summary-table td {
+            padding: 3px 2px;
+            border: 1px solid #858484;
+            font-size: 9px;
+            height: 13px;
         }
 
         .slogan-section {
@@ -131,82 +162,83 @@ function customRound($num) {
     <!-- Header Section -->
     <div style="width: 100%; text-align: center; align-items: center;">
         @if($pharmacy['logo'])
-            <img style="max-width: 90px; max-height: 90px;" src="{{public_path('fileStore/logo/' . $pharmacy['logo'])}}" />
+            <img style="max-width: 80px; max-height: 80px;" src="{{public_path('fileStore/logo/' . $pharmacy['logo'])}}" />
         @endif
-        <div style="font-weight: bold; font-size: 16px;">{{$pharmacy['name']}}</div>
-        <div style="justify-content: center; font-size: 12px; line-height: 1.2;">
+        <div style="font-weight: bold; font-size: 14px;">{{$pharmacy['name']}}</div>
+        <div style="justify-content: center; font-size: 10px; line-height: 1.2;">
             {{$pharmacy['address']}}<br>
             {{$pharmacy['phone']}}<br>
-            <span>TIN: {{$pharmacy['tin_number'] ?? 'N/A'}}</span> |
+            <span>{{$pharmacy['email'] ? $pharmacy['email'].' |' : 'N/A'}}</span> 
+            <span>{{$pharmacy['website'] ?? 'N/A'}}</span><br>
+            <span>TIN: {{$pharmacy['tin_number'] ? $pharmacy['tin_number'].' |' : 'N/A'}}</span> 
             <span>VRN: {{$pharmacy['vrn_number'] ?? 'N/A'}}</span>
         </div>
     </div>
-    <div style="font-weight: bold; margin-top: 5px; text-align: center;">
+    <div style="font-weight: bold; margin-top: 6px; text-align: center; font-size: 12px;">
         PROFORMA INVOICE
     </div>
-
     @foreach($data as $datas => $dat)
         <table class="customer-table">
             <tbody>
-                <tr>
-                    <td style="width: 50px; padding-left: 5px;">Customer:</td>
-                    <td style="width: 180px; padding-left: 5px;">{{$dat[0]['customer'] ?? 'CASH'}}</td>
-                    <td style="width: 55px; padding-left: 5px;">TIN:</td>
-                    <td style="width: 140px; padding-left: 5px;">{{!empty($dat[0]['customer_tin']) ? $dat[0]['customer_tin'] : 'N/A'}}</td>
+                <tr style="width: 100%; position: relative;">
+                    <td style="width: 26%; position: absolute; padding-left: 8px;">Proforma # : <span style="margin-left: 3px;">{{$datas ?? 'N/A'}}</span></td>
+                    <td style="width: 46%; padding-left: 8px;">Phone : <span style="margin-left: 3px;">{{$dat[0]['customer_phone'] ?? 'N/A'}}</span></td>
+                    <td style="width: 25.5%; padding-left: 8px;">TIN : <span style="margin-left: 3px;">{{ !empty($dat[0]['customer_tin']) ? $dat[0]['customer_tin'] : 'N/A' }}</span></td>
                 </tr>
-                <tr>
-                    <td style="width: 50px; padding-left: 5px;">Phone:</td>
-                    <td style="width: 180px; padding-left: 5px;">{{$dat[0]['customer_phone'] ?? 'N/A'}}</td>
-                    <td style="width: 55px; padding-left: 5px;">Receipt No:</td>
-                    <td style="width: 140px; padding-left: 5px;">{{$datas ?? 'N/A'}}</td>
+                <tr style="width: 100%; position: relative;">
+                    <td style="width: 26%; position: absolute; padding-left: 8px;">Proforma Date : <span style="margin-left: 3px;">{{date('Y-m-d', strtotime($dat[0]['created_at']))}}</span></td>
+                    <td style="width: 46%; padding-left: 8px;">Address : <span style="margin-left: 3px;">{{$dat[0]['customer_address'] ?? 'N/A'}}</span></td>
+                    <td style="width: 25.5%; padding-left: 8px;">Customer PO : <span style="margin-left: 3px;">{{$dat[0]['ref_no'] ?? 'N/A'}}</span></td>
                 </tr>
-                <tr>
-                    <td style="width: 50px; padding-left: 5px;">Address:</td>
-                    <td style="width: 180px; padding-left: 5px;">{{$dat[0]['customer_address'] ?? 'N/A'}}</td>
-                    <td style="width: 55px; padding-left: 5px;">Date:</td>
-                    <td style="width: 140px; padding-left: 5px;">{{date('Y-m-d', strtotime($dat[0]['created_at']))}}</td>
+                <tr style="width: 100%; position: relative;">
+                    <td colspan="2" style="width: 43%; padding-left: 8px;">Bill To : <span style="margin-left: 3px;">{{$dat[0]['customer'] ?? 'CASH'}}</span></td>
+                    <td style="width: 27%; padding-left: 8px;">Currency : <span style="margin-left: 3px;">TZS</span></td>
                 </tr>
             </tbody>
         </table>
     @endforeach
+
     @php
         $subTotal = 0;
         $vat = 0;
         $discount = 0;
         $grandTotal = 0;
     @endphp
-    <!-- Customer Information -->
+
     @foreach($data as $datas => $dat)
         <!-- Items Table -->
         <table class="items-table">
             <thead>
                 <tr class="table-header">
-                    <th style="width: 22px; text-align: center;">#</th>
-                    <th style="width: 230px; text-align: left; padding-left: 7px;">Description</th>
-                    <th style="width: 64px; text-align: center;">Qty</th>
-                    <th style="width: 75.5px; text-align: right;">Price</th>
-                    <th style="width: 75.5px; text-align: right;">Amount</th>
+                    <th style="width: 15px; text-align: center;">#</th>
+                    <th style="width: 230px; text-align: left; padding-left: 5px;">Description</th>
+                    <th style="width: 31px; text-align: center;">Qty</th>
+                    <th style="width: 53px; text-align: right; padding-right: 3px;">Price</th>
+                    <th style="width: 57px; text-align: right; padding-right: 3px;">VAT</th>
+                    <th style="width: 63px; text-align: right; padding-right: 3px;">Amount</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($dat as $item)
                     <tr>
-                        <td style="width: 22px; text-align: center;">{{$loop->iteration}}.</td>
-                        <td style="width: 230.8px; text-align: left; padding-left: 7px;">{{$item['name']}} {{$item['brand'] ?? ''}}
-                            {{$item['pack_size'] ?? ''}}{{$item['sales_uom'] ?? ''}}
+                        <td style="width: 15px; text-align: center;">{{$loop->iteration}}.</td>
+                        <td style="width: 230px; text-align: left; padding-left: 7px;">{{$item['name']}} {{$item['brand'] ?? ''}}
+                            {{$item['pack_size'] ?? ''}}{{$item['sales_uom'] ?? ''}}</td>
+                        <td style="width: 31px; text-align: center;">{{number_format($item['quantity'], 0)}}</td>
+                        <td style="width: 53px; text-align: right; padding-right: 3px;">{{customRound($item['price'])}}</td>
+                        <td style="width: 57px; text-align: right; padding-right: 3px;">{{customRound($item['vat'])}}</td>
+                        <td style="width: 63px; text-align: right; padding-right: 3px;">{{customRound($item['price'] * $item['quantity'])}}
                         </td>
-                        <td style="width: 63.8px; text-align: center;">{{number_format($item['quantity'], 0)}}</td>
-                        <td style="width: 75.5px; text-align: right;">{{customRound($item['price'])}}</td>
-                        <td style="width: 75.5px; text-align: right;">{{customRound($item['price'] * $item['quantity'])}}</td>
                     </tr>
                     @php
                         $subTotal += $item['sub_total'];
                         $vat += $item['vat'];
                         $discount += $item['discount'];
-                        $grandTotal += ($item['sub_total'] - $item['discount']) + $item['vat'];
                     @endphp
                 @endforeach
-
+                    @php
+                        $grandTotal = ($subTotal - $dat[0]['discount_total']) + $dat[0]['total_vat'];
+                    @endphp
                 @if(count($dat) < 5)
                     <!-- Empty rows for spacing -->
                     @for($i = 0; $i < 7 - count($dat); $i++)
@@ -214,64 +246,56 @@ function customRound($num) {
                             <td class="index-col"></td>
                             <td class="description-col">&nbsp;</td>
                             <td class="qty-col">&nbsp;</td>
-                            <td class="unit-col">&nbsp;</td>
+                            <td class="price-col">&nbsp;</td>
+                            <td class="vat-col">&nbsp;</td>
                             <td class="amount-col">&nbsp;</td>
                         </tr>
                     @endfor
                 @endif
             </tbody>
         </table>
-        <div style="display: inline-flex;">
-            <div>
-                <div class="footer-section">
-                    @foreach($data as $datas => $dat)
-                        <div class="sold-by">Issued By: {{$dat[0]['sold_by']}}</div>
-                        @break
-                    @endforeach
-                    <span style="font-size: 10px; border-bottom: 1px solid #ccc;">Printed on: {{date('Y-m-d H:i:s')}}</span>
-                </div>
-
+        <div style="display: flex; justify-content: space-between; width: 100%;">
+            <div style="width: 70%; padding-top: 10px;">
                 @if($generalSettings && $generalSettings->proforma_invoice_terms)
-                    <div style="padding-top: 10px;">
-                        <div style="font-weight: bold; font-size: 9px;">Terms & Conditions:</div>
+                    <div style="">
+                        <div style="font-weight: bold; font-size: 9px; margin-bottom: 5px;">Terms & Conditions:</div>
                         <div style="font-size: 9px; line-height: 1.4; text-align: justify;">
                             {!! nl2br(e($generalSettings->proforma_invoice_terms)) !!}
                         </div>
                     </div>
                 @endif
             </div>
-            <!-- Summary Section -->
-            <div class="summary-section">
-                <div class="summary-row">
-                    <div>Sub Total:</div>
-                    <div style="float: right;">
-                        {{customRound(($dat[0]['grand_total'] - $dat[0]['total_vat'] + $dat[0]['discount_total']))}}
-                    </div>
-                </div>
-                <div class="summary-row">
-                    <span>VAT:</span>
-                    <span style="float: right;">{{customRound($dat[0]['total_vat'])}}</span>
-                </div>
-                @if($dat[0]['discount_total'] > 0)
-                    <div class="summary-row">
-                        <div>Discount:</div>
-                        <div style="float: right;">{{customRound($dat[0]['discount_total'])}}</div>
-                    </div>
-                @endif
-                <div class="summary-row total">
-                    <span>Total:</span>
-                    <span style="float: right;">{{customRound($dat[0]['grand_total'])}}</span>
-                </div>
-                @if($page == -1)
-                    <div class="summary-row" style="margin-top: 10px;">
-                        <span>Paid:</span>
-                        <span style="float: right;">{{customRound($dat[0]['paid'])}}</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Balance:</span>
-                        <span style="float: right;">{{customRound($dat[0]['grand_total'] - $dat[0]['paid'])}}</span>
-                    </div>
-                @endif
+            <div class="summary-section" style="width: 27.2%; margin-top: 0px; padding-top: 0; float: right;">
+                <table class="summary-table" style="margin-bottom: 50px;">
+                    <tr>
+                        <td align="right" style="width: 47.5%; font-weight: bold; padding-right: 5px;">Sub Total : </td>
+                        <td align="right" style="padding-right: 3px;">{{customRound($subTotal)}}</td>
+                    </tr>
+                    @if($dat[0]['discount_total'] > 0)
+                        <tr>
+                            <td align="right" style="width: 47.5%; font-weight: bold; padding-right: 5px;">Discount : </td>
+                            <td align="right" style="padding-right: 3px;">{{customRound($dat[0]['discount_total'])}}</td>
+                        </tr>
+                    @endif
+                    <tr>
+                        <td align="right" style="width: 47.5%; font-weight: bold; padding-right: 5px;">VAT : </td>
+                        <td align="right" style="padding-right: 3px;">{{customRound($dat[0]['total_vat'])}}</td>
+                    </tr>
+                    <tr>
+                        <td align="right" style="width: 47.5%; font-weight: bold; padding-right: 5px;">Total : </td>
+                        <td align="right" style="padding-right: 3px;">{{customRound($grandTotal)}}</td>
+                    </tr>
+                    @if($page == -1)
+                        <tr>
+                            <td align="right" style="width: 47.5%; font-weight: bold; padding-right: 5px;">Paid : </td>
+                            <td align="right" style="padding-right: 3px;">{{customRound($dat[0]['paid'])}}</td>
+                        </tr>
+                        <tr>
+                            <td align="right" style="width: 47.5%; font-weight: bold; padding-right: 5px;">Balance : </td>
+                            <td align="right" style="padding-right: 3px;">{{customRound($grandTotal - $dat[0]['paid'])}}</td>
+                        </tr>
+                    @endif
+                </table>
             </div>
         </div>
         @break
