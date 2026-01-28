@@ -80,22 +80,34 @@ class MaterialReceivedController extends Controller
     }
 
     public function getMaterialsReceived(Request $request)
-{
-    $columns = array(
-        0 => 'inv_products.name',
-        1 => 'inv_products.name',
-        2 => 'quantity',
-        3 => 'unit_cost',
-        4 => 'expire_date',
-        5 => 'total_cost',
-        6 => 'inv_incoming_stock.created_at',
-        7 => 'users.name',
-        8 => 'inv_products.name'
-    );
+    {
+        try {
+            Log::info('getMaterialsReceived called', $request->all());
 
-    $from = date('Y-m-d', strtotime($request->date[0]));
-    $to = date('Y-m-d', strtotime($request->date[1]));
-    Log::info($from);
+            $columns = array(
+                0 => 'inv_products.name',
+                1 => 'inv_products.name',
+                2 => 'quantity',
+                3 => 'unit_cost',
+                4 => 'expire_date',
+                5 => 'total_cost',
+                6 => 'inv_incoming_stock.created_at',
+                7 => 'users.name',
+                8 => 'inv_products.name'
+            );
+
+            // Set default date range to current month if not provided or invalid
+            if (!isset($request->date) || !is_array($request->date) || count($request->date) < 2) {
+                $from = date('Y-m-d', strtotime('first day of this month'));
+                $to = date('Y-m-d', strtotime('last day of this month'));
+            } else {
+                $from = date('Y-m-d', strtotime($request->date[0]));
+                $to = date('Y-m-d', strtotime($request->date[1]));
+            }
+
+            $store_id = current_store_id();
+            $useStoreFilter = !is_all_store();
+            Log::info('store_id: ' . $store_id . ', useStoreFilter: ' . ($useStoreFilter ? 'true' : 'false'));
 
     $store_id = current_store_id();
     $useStoreFilter = !is_all_store();
@@ -295,8 +307,10 @@ class MaterialReceivedController extends Controller
             $value->supplier;
             $value->user;
 
-            // Check if there's already a purchase return for this goods_receiving_id
-            $value->has_return = PurchaseReturn::where('goods_receiving_id', $value->id)->exists();
+            // Check if there's a pending purchase return for this goods_receiving_id
+            $value->has_pending_return = PurchaseReturn::where('goods_receiving_id', $value->id)
+                ->where('status', PurchaseReturn::STATUS_PENDING)
+                ->exists();
 
             // --- Calculate remaining quantity (existing logic preserved)
             $orderDetailQuery = DB::table('order_details')
@@ -371,14 +385,21 @@ class MaterialReceivedController extends Controller
         }
     }
 
-    $json_data = array(
-        "draw" => intval($request->input('draw')),
-        "recordsTotal" => intval($totalData),
-        "recordsFiltered" => intval($totalFiltered),
-        "data" => $material_received
-    );
+            $json_data = array(
+                "draw" => intval($request->input('draw')),
+                "recordsTotal" => intval($totalData),
+                "recordsFiltered" => intval($totalFiltered),
+                "data" => $material_received
+            );
 
-    echo json_encode($json_data);
-}
+            return response()->json($json_data);
+        } catch (\Exception $e) {
+            Log::error('Error in getMaterialsReceived: ' . $e->getMessage(), [
+                'request' => $request->all(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'Internal server error'], 500);
+        }
+    }
 
 }

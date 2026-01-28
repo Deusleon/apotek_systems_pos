@@ -93,6 +93,10 @@
                             @endforeach
                         </select>
                     </div>
+                    <div class="filter-control">
+                        <label for="supplier_search">Supplier:</label>
+                        <input type="text" id="supplier_search" class="form-control" placeholder="Search Supplier">
+                    </div>
                     <div class="d-flex justify-content-end align-items-center">
                         <label class="mr-2" for="receive_date">Date:</label>
                         <input type="text" name="expire_date" id="receive_date"
@@ -155,11 +159,65 @@
     @include('purchases.purchase_returns.edit')
     @include('purchases.purchase_returns.returns')
 
+    <!-- Item Details Modal -->
+    <div class="modal fade" id="item-details-modal" tabindex="-1" role="dialog" aria-labelledby="itemDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="itemDetailsModalLabel">Item Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group row">
+                                <label class="col-md-4 col-form-label text-md-right ">Description</label>
+                                <div class="col-md-8">
+                                    <input type="text" class="form-control" id="modal_description" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-4 col-form-label text-md-right">Quantity</label>
+                                <div class="col-md-8">
+                                    <input type="text" class="form-control" id="modal_quantity" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-4 col-form-label text-md-right">Price</label>
+                                <div class="col-md-8">
+                                    <input type="text" class="form-control" id="modal_price" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-4 col-form-label text-md-right">Amount</label>
+                                <div class="col-md-8">
+                                    <input type="text" class="form-control" id="modal_amount" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-4 col-form-label text-md-right">Received By</label>
+                                <div class="col-md-8">
+                                    <input type="text" class="form-control" id="modal_received_by" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 @push("page_scripts")
 @include('partials.notification')
 <script type="text/javascript">
-    var hasPurchaseReturnPermission = @json(auth()->user()->checkPermission('Purchase Return'));
+var hasPurchaseReturnPermission = @json(auth()->user()->checkPermission('Purchase Return'));
+var currentStoreId = @json(session('current_store_id', auth()->user()->store_id));
 
         $.ajaxSetup({
             headers: {
@@ -202,6 +260,11 @@
             }, cb);
 
             cb(start, end);
+
+            // Add event listeners for search inputs
+            $('#description_search, #supplier_search').on('keyup', function() {
+                getMaterialsReceived();
+            });
         });
 
 
@@ -286,7 +349,9 @@
                             "_token": '{{ csrf_token() }}',
                             "product_id": product_id,
                             "supplier_id": supplier_id,
-                            "date": date
+                            "date": date,
+                            "description_search": $("#description_search").val(),
+                            "supplier_search": $("#supplier_search").val()
                         }
                     },
                     "columns": [
@@ -339,23 +404,22 @@
                         {
                             data: 'action',
                             render: function (data, type, row) {
-                                // Only show action column if user has permission
-                                if (!hasPurchaseReturnPermission) {
-                                    return '';
+                                var buttons = '';
+
+                                // Show button
+                                buttons += `<button type='button' id='show_btn' class='btn btn-success btn-rounded btn-sm mr-1' title='Show Details'>Show</button>`;
+
+                                // Return button (only if user has permission and not in ALL branch)
+                                if (hasPurchaseReturnPermission && currentStoreId != 1) {
+                                    // Disable the return button if the item has a pending return
+                                    if (row.has_pending_return) {
+                                        buttons += `<input type='button' value='Return' id='return_btn' class='btn btn-primary btn-rounded btn-sm' disabled style='opacity: 0.6;' title='Item has pending return request. Wait for approval or rejection.'/>`;
+                                    } else {
+                                        buttons += `<input type='button' value='Return' id='return_btn' class='btn btn-primary btn-rounded btn-sm'/>`;
+                                    }
                                 }
 
-                                // Disable the return button if the item has a return process ongoing or completed
-                                // Status: 2=pending return, 3=fully returned, 4=rejected, 5=partially returned
-                                var hasReturn = false;
-                                if (row.status == '2' || row.status == '3' || row.status == '4' || row.status == '5') {
-                                    hasReturn = true;
-                                }
-
-                                if (hasReturn) {
-                                    return `<input type='button' value='Return' id='return_btn' class='btn btn-success btn-rounded btn-sm' disabled/>`;
-                                } else {
-                                    return `<input type='button' value='Return' id='return_btn' class='btn btn-primary btn-rounded btn-sm'/>`;
-                                }
+                                return buttons;
                             }
                         }
 
@@ -363,10 +427,6 @@
                         {
                             "targets": [0, 3, 5],
                             "visible": false
-                        },
-                        {
-                            "targets": [10], // Action column
-                            "visible": hasPurchaseReturnPermission
                         }
                     ],
                     "order": [[0, "desc"]]
@@ -504,6 +564,19 @@
             });
         });
 
+        $('#received_material_table tbody').on('click', '#show_btn', function () {
+            var row_data = $('#received_material_table').DataTable().row($(this).parents('tr')).data();
+
+            // Populate modal fields
+            $("#modal_description").val((row_data.product.name || '') + ' ' + (row_data.product.brand || '') + ' ' + (row_data.product.pack_size || '') + (row_data.product.sales_uom || ''));
+            $("#modal_quantity").val(numberWithCommas(row_data.quantity));
+            $("#modal_price").val(formatMoney(row_data.unit_cost));
+            $("#modal_amount").val(formatMoney(row_data.total_cost));
+            $("#modal_received_by").val(row_data.user ? row_data.user.name : 'N/A');
+
+            $("#item-details-modal").modal("show");
+        });
+
         $('#received_material_table tbody').on('click', '#return_btn', function () {
             var row_data = $('#received_material_table').DataTable().row($(this).parents('tr')).data();
             $("#purchase-return").modal("show");
@@ -516,19 +589,40 @@
             $("#purchase-return").find(".modal-body #goods_receiving_id").val(row_data.id);
             $("#purchase-return").find(".modal-body #original_qty").val(row_data.quantity);
             document.getElementById("save_btn").style.display = "block";
-            $("#purchase-return").on("change", "#rtn_qty_to_show", function () {
-                var quantity = document.getElementById("rtn_qty").value;
-                if (Number(quantity) > Number(row_data.quantity) || Number(quantity) < 0) {
-                    document.getElementById("save_btn").disabled = "true";
+            document.getElementById("save_btn").disabled = false;
+            document.getElementById("qty_error").style.display = "none";
+            $("#purchase-return").find(".modal-body #rtn_qty_to_show").val('');
+            $("#purchase-return").find(".modal-body #rtn_qty").val('');
+            $("#purchase-return").find(".modal-body #reason").val('');
+
+            $("#purchase-return").on("input", "#rtn_qty_to_show", function () {
+                var inputValue = document.getElementById("rtn_qty_to_show").value.replace(/\,/g, '');
+                var quantity = parseFloat(inputValue) || 0;
+                if (quantity > row_data.quantity || quantity <= 0) {
+                    document.getElementById("save_btn").disabled = true;
                     document.getElementById("qty_error").style.display = "block";
-                    $("#purchase-return")
-                        .find(".modal-body #qty_error")
-                        .text("Maximum quantity is " + Math.floor(row_data.quantity));
+                    if (quantity <= 0) {
+                        $("#purchase-return")
+                            .find(".modal-body #qty_error")
+                            .text("Quantity must be greater than zero");
+                    } else {
+                        $("#purchase-return")
+                            .find(".modal-body #qty_error")
+                            .text("Maximum quantity is " + row_data.quantity);
+                    }
                 } else {
                     document.getElementById("qty_error").style.display = "none";
-                    $("#save_btn").prop("disabled", false);
+                    document.getElementById("save_btn").disabled = false;
                 }
             });
+
+            // Disable the return button immediately after opening modal
+            $(this).prop('disabled', true).text('Processing...');
+        });
+
+        // Re-enable return button when modal is closed without submission
+        $('#purchase-return').on('hidden.bs.modal', function () {
+            $('#received_material_table tbody #return_btn').prop('disabled', false).text('Return');
         });
 
         $('#price_edit').on('change', function () {
