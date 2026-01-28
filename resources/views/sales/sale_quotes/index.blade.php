@@ -331,9 +331,8 @@
                         }
                     ]
                 });
-                // console.log('Cart table initialized successfully');
             } catch (error) {
-                // console.error('Error initializing cart table:', error);
+                console.error('Error initializing cart table:', error);
             }
 
             // Discount calculation function
@@ -410,138 +409,228 @@
                 return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
             }
 
-            // Edit button functionality
-            $('#cart_table tbody').on('click', '#edit_btn', function () {
-                var quantity;
-                let price;
-                if (edit_btn_set === 0) {
-                    var row_data = cart_table.row($(this).parents('tr')).data();
-                    var index = cart_table.row($(this).parents('tr')).index();
-                    quantity = row_data[1].toString().replace(',', '');
-                    price = row_data[2];
-                    row_data[1] = "<input style='width: 80%' type='text' min='1' class='form-control' id='edit_quantity' required onkeypress='return isNumberKey(event,this)'>";
 
-                    if (fixed_price === "NO") {
-                        row_data[2] = "<input style='width: 130%; margin-left: -10%' type='text' class='form-control' id='edit_price' required onkeypress='return isNumberKey(event,this)'>";
-                    }
 
-                    cart[index] = row_data;
-                    cart_table.clear();
-                    cart_table.rows.add(cart);
-                    cart_table.draw();
 
-                    // Save cart to localStorage for persistence on page reload
-                    localStorage.setItem('cart', JSON.stringify(cart));
-                    localStorage.setItem('default_cart', JSON.stringify(default_cart));
-                    localStorage.setItem('order_cart', JSON.stringify(order_cart));
 
-                    var quantity_ = quantity.split('<');
-                    document.getElementById("edit_quantity").value = quantity_[0];
 
-                    if (fixed_price === "NO") {
-                        document.getElementById("edit_price").value = price.replace(/,/g, '');
-                    }
 
-                    edit_btn_set = 1;
-                } else {
-                    $('#edit_quantity').change();
-                    if (fixed_price === "NO") {
-                        $('#edit_price').change();
-                    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            // track which row is being edited (index in cart)
+            let editingIndex = null;
+
+            // helper: escape text for putting into input value safely
+            function escapeHtml(text) {
+                if (text === null || text === undefined) return '';
+                return String(text).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#039;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            }
+
+            // Save edited values for row `index`
+            function saveEdit(index) {
+                // If no longer a valid index, ignore
+                if (index === null || typeof index === 'undefined' || !cart[index]) return;
+
+                // get row node and inputs by index
+                const rowNode = cart_table.row(index).node();
+                const $tr = $(rowNode);
+
+                const qtyInput = $tr.find(`#edit_quantity_${index}`);
+                const priceInput = $tr.find(`#edit_price_${index}`);
+
+                // if inputs not present, just return
+                if (!qtyInput.length && !priceInput.length) {
+                    editingIndex = null;
+                    return;
                 }
-            });
 
-            // Edit quantity change handler
-            $('#cart_table tbody').on('change', '#edit_quantity', function () {
-                edit_btn_set = 0;
-                var row_data = cart_table.row($(this).parents('tr')).data();
-                var index = cart_table.row($(this).parents('tr')).index();
-
-                if (document.getElementById("edit_quantity").value === '' || document.getElementById("edit_quantity").value === '0') {
-                    edit_btn_set = 1;
+                // Read values
+                const qtyRaw = qtyInput.length ? qtyInput.val().trim() : String(cart[index][1]).split('<')[0].replace(/,/g, '');
+                if (!qtyRaw || qtyRaw === '0') {
                     if (typeof notify === 'function') {
                         notify('Quantity is required', 'top', 'right', 'warning');
                     } else {
                         alert('Quantity is required');
                     }
-                    setTimeout(function () { $('#quote_barcode_input').focus(); }, 150);
-                    return false;
+                    qtyInput.focus();
+                    return;
                 }
 
-                // Calculate VAT and total
-                var vat;
-                var unit_total;
-                let vat_money;
-                if (fixed_price === "NO") {
-                    var editPrice = parseFloat(document.getElementById("edit_price").value.replace(/\,/g, ''), 10);
-                    vat = Number((editPrice * tax).toFixed(2));
-                    unit_total = formatMoney(editPrice + vat);
-                    vat_money = formatMoney(vat);
-                } else {
-                    var originalPrice = parseFloat(row_data[2].replace(/\,/g, ''), 10);
-                    vat = Number((originalPrice * tax).toFixed(2));
-                    unit_total = formatMoney(originalPrice + vat);
-                    vat_money = formatMoney(vat);
-                }
-
-                row_data[1] = numberWithCommas(document.getElementById("edit_quantity").value);
-
-                if (fixed_price === "NO") {
-                    row_data[2] = formatMoney(parseFloat(document.getElementById("edit_price").value.replace(/\,/g, ''), 10));
-                }
-
-                // For quotes page, no maximum quantity restriction
-                if ($('#quotes_page').length) {
-                    row_data[2] = formatMoney(parseFloat(row_data[2].replace(/\,/g, ''), 10));
-                    row_data[3] = formatMoney(parseFloat(vat_money.replace(/\,/g, ''), 10) * row_data[1].toString().replace(',', ''));
-                    row_data[4] = formatMoney(parseFloat(unit_total.replace(/\,/g, ''), 10) * row_data[1].toString().replace(',', ''));
-                } else {
-                    // Check stock quantity
-                    var dif = row_data[5] - row_data[1].toString().replace(/,/g, '');
-                    if (dif < 0) {
-                        row_data[1] = row_data[5];
-                        row_data[2] = formatMoney(parseFloat(row_data[2].replace(/\,/g, ''), 10));
-                        row_data[3] = formatMoney(parseFloat(vat_money.replace(/\,/g, ''), 10) * row_data[5]);
-                        row_data[4] = formatMoney(parseFloat(unit_total.replace(/\,/g, ''), 10) * row_data[5]);
-                        row_data[1] = numberWithCommas(row_data[5]) + " " + "<span class='text text-danger'>Max</span>";
-                    } else {
-                        row_data[2] = formatMoney(parseFloat(row_data[2].replace(/\,/g, ''), 10));
-                        row_data[3] = formatMoney(parseFloat(vat_money.replace(/\,/g, ''), 10) * row_data[1].toString().replace(',', ''));
-                        row_data[4] = formatMoney(parseFloat(unit_total.replace(/\,/g, ''), 10) * row_data[1].toString().replace(',', ''));
-                    }
-                }
-
-                cart[index] = row_data;
-                discount();
-                setTimeout(function () { $('#quote_barcode_input').focus(); }, 150);
-            });
-
-            // Edit price change handler (if fixed price is NO)
-            if (fixed_price === "NO") {
-                $('#cart_table tbody').on('change', '#edit_price', function () {
-                    edit_btn_set = 0;
-                    var row_data = cart_table.row($(this).parents('tr')).data();
-                    var index = cart_table.row($(this).parents('tr')).index();
-
-                    if (document.getElementById("edit_price").value === '') {
-                        edit_btn_set = 1;
+                let priceNum;
+                if (fixed_price === "NO" && priceInput.length) {
+                    if (priceInput.val().trim() === '') {
                         if (typeof notify === 'function') {
                             notify('Price is required', 'top', 'right', 'warning');
                         } else {
                             alert('Price is required');
                         }
-                        return false;
+                        priceInput.focus();
+                        return;
+                    }
+                    priceNum = parseFloat(priceInput.val().replace(/,/g, '')) || 0;
+                } else {
+                    priceNum = parseFloat(String(cart[index][2]).replace(/,/g, '')) || 0;
+                }
+
+                // compute VAT & totals
+                const vatUnit = Number((priceNum * tax).toFixed(2));
+                const unitTotal = Number(priceNum + vatUnit);
+                const qtyNum = Number(String(qtyRaw).replace(/,/g, '')) || 0;
+
+                cart[index][1] = numberWithCommas(qtyNum); // quantity displayed
+                cart[index][2] = formatMoney(priceNum); // price formatted
+                cart[index][3] = formatMoney(vatUnit * qtyNum);
+                cart[index][4] = formatMoney(unitTotal * qtyNum);
+
+                // push updated data into table row and redraw just that row 
+                try {
+                    cart_table.row(index).data(cart[index]).draw(false);
+                } catch (e) {
+                    // fallback: full redraw
+                    cart_table.clear().rows.add(cart).draw(false);
+                }
+
+                // recalc totals
+                discount();
+
+                // clear editing state
+                editingIndex = null;
+
+                // refocus barcode input as previous behaviour
+                setTimeout(function () { $('#quote_barcode_input').focus(); }, 150);
+            }
+
+            // Click on Edit button -> convert cells in that row to inputs (unique ids)
+            $('#cart_table tbody').on('click', '#edit_btn', function () {
+                const $tr = $(this).closest('tr');
+                const index = cart_table.row($tr).index();
+
+                if (editingIndex !== index) {
+                    // enter edit mode for this row
+                    editingIndex = index;
+                    const rowData = cart[index];
+
+                    // Read existing values safely
+                    const currentName = rowData[0] || '';
+                    let currentQty = String(rowData[1] || '1').split('<')[0].replace(/,/g, '');
+                    if (!currentQty) currentQty = '1';
+                    const currentPrice = (rowData[2]) ? String(rowData[2]).replace(/,/g, '') : '0';
+
+                    // Replace cell's inner HTML with inputs (only visually, cart[] not changed yet)
+                    // Use unique IDs with index suffix to avoid collisions
+                    $tr.find('td').eq(0).html(escapeHtml(currentName)); // Name read-only
+                    $tr.find('td').eq(1).html(`<input style="width:100px" type="text" min="1" class="form-control edit_quantity" id="edit_quantity_${index}" value="${escapeHtml(currentQty)}" required onkeypress="return isNumberKey(event,this)">`);
+                    if (fixed_price === "NO") {
+                        $tr.find('td').eq(2).html(`<input style="width:100px; margin-left:-10%" type="text" class="form-control edit_price" id="edit_price_${index}" value="${escapeHtml(currentPrice)}" required onkeypress="return isNumberKey(event,this)">`);
                     }
 
-                    // Update the default cart with new price
-                    default_cart[index][0] = formatMoney(parseFloat(document.getElementById("edit_price").value.replace(/\,/g, ''), 10));
-                    default_cart[index][1] = formatMoney(parseFloat(document.getElementById("edit_price").value.replace(/\,/g, ''), 10) * tax);
-                    default_cart[index][2] = formatMoney(parseFloat(document.getElementById("edit_price").value.replace(/\,/g, ''), 10) * (1 + tax));
+                    // focus qty field
+                    // $tr.find(`#edit_quantity_${index}`).focus();
+                    const qtyEl = document.getElementById(`edit_quantity_${index}`);
+                    if (qtyEl) {
+                        moveCursorToEnd(qtyEl);
+                    }
 
-                    // Trigger quantity change to recalculate
-                    $('#edit_quantity').change();
-                });
-            }
+                    // Change button text to Save
+                    var $editBtn = $("#cart_table tbody tr").eq(index).find("#edit_btn");
+                    $editBtn.val('Save');
+                } else {
+                    // If already editing same row, interpret click as save
+                    saveEdit(index);
+                }
+            });
+
+            // Replace the old blur handler with this improved focusout handler
+            $(document).on('focusout', '.edit_quantity, .edit_price', function (e) {
+                const id = $(this).attr('id') || '';
+                const parts = id.split('_');
+                const idx = Number(parts[parts.length - 1]);
+
+                // small timeout to allow focus to move to another input/button
+                setTimeout(function () {
+                    const active = document.activeElement;
+                    if (active) {
+                        const $active = $(active);
+
+                        // if the newly focused element is another edit input in the same table row, don't save yet
+                        if ($active.hasClass('edit_quantity') || $active.hasClass('edit_price')) {
+                            // find row index of active element
+                            const $closestRow = $active.closest('tr');
+                            if ($closestRow.length) {
+                                const activeRowIndex = cart_table.row($closestRow).index();
+                                if (activeRowIndex === idx) {
+                                    // focus moved to another input in same row -> bail out (no save)
+                                    return;
+                                }
+                            }
+                        }
+
+                    }
+
+                    // commit save if focus moved outside or to a non-edit input
+                    saveEdit(idx);
+                }, 80); // 80ms is enough to let focus settle; tweak if needed
+            });
+
+            // Also support Enter key to commit edits
+            $(document).on('keydown', '.edit_quantity, .edit_price', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const id = $(this).attr('id') || '';
+                    const parts = id.split('_');
+                    const idx = parts[parts.length - 1];
+                    saveEdit(Number(idx));
+                }
+            });
+
+            // --- END REPLACEMENT ---
+
+function moveCursorToEnd(input) {
+    const val = input.value;
+    input.focus();
+    input.setSelectionRange(val.length, val.length);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             // Delete button functionality
             $('#cart_table tbody').on('click', '#delete_btn', function () {
