@@ -201,7 +201,7 @@ $("#customer_id").on("change", function () {
             "You can't sell in ALL branches. Please switch to a specific branch to proceed",
             "top",
             "right",
-            "warning"
+            "warning",
         );
 
         $("#products").val("").trigger("change.select2");
@@ -233,21 +233,64 @@ $("#sale_discount").on("blur", function () {
     $("#barcode_input").focus();
 });
 
-$("#cart_table tbody").on("click", "#edit_btn", function () {
-    var quantity;
-    let price;
-    if (edit_btn_set === 0) {
-        var row_data = cart_table.row($(this).parents("tr")).data();
 
-        var index = cart_table.row($(this).parents("tr")).index();
-        quantity = row_data[1].toString().replace(",", "");
-        price = row_data[2];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$("#cart_table tbody").on("click", "#edit_btn", function () {
+    var $btn = $(this);
+    var $tr = $btn.parents("tr");
+    var row_data = cart_table.row($tr).data();
+    var index = cart_table.row($tr).index();
+
+    if (edit_btn_set === 0) {
+        // Enter edit mode
+        var quantity = row_data[1].toString().replace(",", "");
+        var price = row_data[2];
+        var name = row_data[0];
+
+        // Keep name as read-only text, make description editable
+        row_data[0] = name; // Keep name unchanged
         row_data[1] =
-            "<input style='width: 80%' type='text' min='1' class='form-control' id='edit_quantity' required  onkeypress='return isNumberKey(event,this)'>";
+            "<input style='width: 100px' type='text' min='1' class='form-control edit-input' id='edit_quantity' required onkeypress='return isNumberKey(event,this)'>";
 
         if (fixed_price === "NO") {
             row_data[2] =
-                "<input style='width: 130%; margin-left: -10%' type='text' class='form-control' id='edit_price' required  onkeypress='return isNumberKey(event,this)'>";
+                "<input style='width: 100px; margin-left: -10%' type='text' class='form-control edit-input' id='edit_price' required onkeypress='return isNumberKey(event,this)'>";
         }
 
         cart[index] = row_data;
@@ -257,104 +300,137 @@ $("#cart_table tbody").on("click", "#edit_btn", function () {
 
         var quantity_ = quantity.split("<");
 
-        document.getElementById("edit_quantity").value = quantity_[0];
+        // Set values after table redraw
+        setTimeout(() => {
+            document.getElementById("edit_quantity").value = quantity_[0];
 
-        if (fixed_price === "NO") {
-            document.getElementById("edit_price").value = price;
-        }
+            if (fixed_price === "NO") {
+                document.getElementById("edit_price").value = price;
+            }
+
+            // Change button text to Save
+            var $editBtn = $("#cart_table tbody tr")
+                .eq(index)
+                .find("#edit_btn");
+            $editBtn.val("Save");
+
+            // Focus on qty input
+            $("#edit_quantity").focus();
+        }, 50);
 
         edit_btn_set = 1;
     } else {
-        // document.getElementById("edit_quantity").value
-        $("#edit_quantity").change();
-        if (fixed_price === "NO") {
-            $("#edit_price").change();
+        // Save edit mode - trigger actual save
+        applyCartEdit();
+    }
+});
+
+// Handle Enter key to save
+$("#cart_table tbody").on("keydown", ".edit-input", function (e) {
+    if (e.key === "Enter") {
+        e.preventDefault();
+        applyCartEdit();
+    }
+});
+
+// Handle click outside to save
+$(document).on("click", function (e) {
+    if (edit_btn_set === 1) {
+        var $target = $(e.target);
+        // If click is outside the editing row (check if not clicking on edit inputs or save button)
+        if (
+            !$target.closest(".edit-input").length &&
+            !$target.is("#edit_btn")
+        ) {
+            applyCartEdit();
         }
     }
 });
 
-$("#cart_table tbody").on("change", "#edit_quantity", function () {
-    edit_btn_set = 0;
-    var row_data = cart_table.row($(this).parents("tr")).data();
-    var index = cart_table.row($(this).parents("tr")).index();
-    if (
-        document.getElementById("edit_quantity").value === "" ||
-        document.getElementById("edit_quantity").value === "0"
-    ) {
-        edit_btn_set = 1;
+function applyCartEdit() {
+    if (edit_btn_set === 0) return;
+
+    // Get current values
+    var editQty = document.getElementById("edit_quantity");
+    var editPrice =
+        fixed_price === "NO" ? document.getElementById("edit_price") : null;
+
+    if (!editQty) return;
+
+    if (editQty.value === "" || editQty.value === "0") {
         notify("Quantity is required", "top", "right", "warning");
         return false;
     }
 
-    /*for vat*/
+    if (editPrice && (editPrice.value === "" || editPrice.value === "0")) {
+        notify("Price is required", "top", "right", "warning");
+        return false;
+    }
+
+    // Find the row being edited
+    var $tr = $("#edit_quantity").closest("tr");
+    var row_data = cart_table.row($tr).data();
+    var index = cart_table.row($tr).index();
+
+    // Calculate VAT and totals
     var vat;
     var unit_total;
-    let vat_money;
+    var vat_money;
+
     if (fixed_price === "NO") {
         vat = Number(
-            (
-                parseFloat(
-                    document
-                        .getElementById("edit_price")
-                        .value.replace(/\,/g, ""),
-                    10
-                ) * tax
-            ).toFixed(2)
+            (parseFloat(editPrice.value.replace(/\,/g, ""), 10) * tax).toFixed(
+                2
+            )
         );
         unit_total = formatMoney(
-            parseFloat(
-                document.getElementById("edit_price").value.replace(/\,/g, ""),
-                10
-            ) + vat
+            parseFloat(editPrice.value.replace(/\,/g, ""), 10) + vat
         );
         vat_money = formatMoney(vat);
     } else {
         vat = Number(
-            (parseFloat(row_data[2].replace(/\,/g, ""), 10) * tax).toFixed(2)
+            (parseFloat(row_data[3].replace(/\,/g, ""), 10) * tax).toFixed(2)
         );
         unit_total = formatMoney(
-            parseFloat(row_data[2].replace(/\,/g, ""), 10) + vat
+            parseFloat(row_data[3].replace(/\,/g, ""), 10) + vat
         );
         vat_money = formatMoney(vat);
     }
-    /*end for vat*/
 
-    row_data[1] = numberWithCommas(
-        document.getElementById("edit_quantity").value
-    );
+    // Update row data
+    row_data[1] = numberWithCommas(editQty.value);
 
     if (fixed_price === "NO") {
         row_data[2] = formatMoney(
-            parseFloat(
-                document.getElementById("edit_price").value.replace(/\,/g, ""),
-                10
-            )
+            parseFloat(editPrice.value.replace(/\,/g, ""), 10)
         );
     }
 
-    // row_data[1] = Number((document.getElementById("edit_quantity").value));
     if (Number(parseFloat(row_data[1].replace(/\,/g, ""), 10)) < 0) {
         row_data[1] = 1;
     }
 
+    var dif;
     if (row_data[7] == "consumable") {
         dif = 1;
     } else {
         dif = row_data[5] - row_data[1].toString().replace(/,/g, "");
     }
 
+    console.log('Fdata ',row_data);
+
     if ($("#quotes_page").length) {
-        //Qoutes has no maximum quantity
+        // Quotes has no maximum quantity
         row_data[2] = formatMoney(
             parseFloat(row_data[2].replace(/\,/g, ""), 10)
         );
         row_data[3] = formatMoney(
             parseFloat(vat_money.replace(/\,/g, ""), 10) *
-                row_data[1].toString().replace(",", "")
+                row_data[2].toString().replace(",", "")
         );
         row_data[4] = formatMoney(
             parseFloat(unit_total.replace(/\,/g, ""), 10) *
-                row_data[1].toString().replace(",", "")
+                row_data[2].toString().replace(",", "")
         );
     } else if (dif < 0) {
         row_data[1] = row_data[5];
@@ -383,112 +459,52 @@ $("#cart_table tbody").on("change", "#edit_quantity", function () {
             parseFloat(unit_total.replace(/\,/g, ""), 10) *
                 row_data[1].toString().replace(",", "")
         );
-    } //replace the quantity with max stock qty available
+    }
 
     cart[index] = row_data;
     discount();
+    edit_btn_set = 0;
     $("#barcode_input").focus();
-});
-
-if (fixed_price === "NO") {
-    $("#cart_table tbody").on("change", "#edit_price", function () {
-        edit_btn_set = 0;
-        var row_data = cart_table.row($(this).parents("tr")).data();
-        var index = cart_table.row($(this).parents("tr")).index();
-
-        if (document.getElementById("edit_price").value === "") {
-            edit_btn_set = 1;
-            notify("Price is required", "top", "right", "warning");
-            return false;
-        }
-
-        /*for vat*/
-        var vat = Number(
-            (
-                parseFloat(
-                    document
-                        .getElementById("edit_price")
-                        .value.replace(/\,/g, ""),
-                    10
-                ) * tax
-            ).toFixed(2)
-        );
-        var unit_total = formatMoney(
-            parseFloat(
-                document.getElementById("edit_price").value.replace(/\,/g, ""),
-                10
-            ) + vat
-        );
-        let vat_money = formatMoney(vat);
-        /*end for vat*/
-
-        row_data[1] = numberWithCommas(
-            document.getElementById("edit_quantity").value
-        );
-        row_data[2] = formatMoney(
-            parseFloat(
-                document.getElementById("edit_price").value.replace(/\,/g, ""),
-                10
-            )
-        );
-
-        // row_data[1] = Number((document.getElementById("edit_quantity").value));
-        if (Number(parseFloat(row_data[1].replace(/\,/g, ""), 10)) < 1) {
-            row_data[1] = 1;
-        }
-        if (row_data[7] == "consumable") {
-            dif = 1;
-        } else {
-            dif = row_data[5] - row_data[1].toString().replace(/,/g, "");
-        }
-
-        if ($("#quotes_page").length) {
-            //Qoutes has no maximum quantity
-            row_data[2] = formatMoney(
-                parseFloat(row_data[2].replace(/\,/g, ""), 10)
-            );
-            row_data[3] = formatMoney(
-                parseFloat(vat_money.replace(/\,/g, ""), 10) *
-                    row_data[1].toString().replace(",", "")
-            );
-            row_data[4] = formatMoney(
-                parseFloat(unit_total.replace(/\,/g, ""), 10) *
-                    row_data[1].toString().replace(",", "")
-            );
-        } else if (dif < 0) {
-            row_data[1] = row_data[5];
-            row_data[2] = formatMoney(
-                parseFloat(row_data[2].replace(/\,/g, ""), 10)
-            );
-            row_data[3] = formatMoney(
-                parseFloat(vat_money.replace(/\,/g, ""), 10) * row_data[5]
-            );
-            row_data[4] = formatMoney(
-                parseFloat(unit_total.replace(/\,/g, ""), 10) * row_data[5]
-            );
-            row_data[1] =
-                numberWithCommas(row_data[5]) +
-                " " +
-                "<span class='text text-danger'>Max</span>";
-        } else {
-            row_data[2] = formatMoney(
-                parseFloat(row_data[2].replace(/\,/g, ""), 10)
-            );
-            row_data[3] = formatMoney(
-                parseFloat(vat_money.replace(/\,/g, ""), 10) *
-                    row_data[1].toString().replace(",", "")
-            );
-            row_data[4] = formatMoney(
-                parseFloat(unit_total.replace(/\,/g, ""), 10) *
-                    row_data[1].toString().replace(",", "")
-            );
-        } //replace the quantity with max stock qty available
-
-        cart[index] = row_data;
-        discount();
-        $("#barcode_input").focus();
-    });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 $("#cart_table tbody").on("click", "#delete_btn", function () {
     edit_btn_set = 0;
@@ -558,7 +574,7 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
         decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
         const negativeSign = amount < 0 ? "-" : "";
         let i = parseInt(
-            (amount = Math.abs(Number(amount) || 0).toFixed(decimalCount))
+            (amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)),
         ).toString();
         let j = i.length > 3 ? i.length % 3 : 0;
         return (
@@ -599,7 +615,7 @@ function discount() {
 
                 // --- Normalize existing qty to a number (remove commas and any "<Max" html)
                 let existingQtyRaw = String(
-                    reducedCart[value[6]][1] || "0"
+                    reducedCart[value[6]][1] || "0",
                 ).split("<")[0];
                 let existingQty =
                     Number(existingQtyRaw.replace(/\,/g, "")) || 0;
@@ -626,7 +642,7 @@ function discount() {
                     reducedCart[value[6]][2] = formatMoney(p);
                     reducedCart[value[6]][3] = formatMoney(p * newQty * tax);
                     reducedCart[value[6]][4] = formatMoney(
-                        p * newQty * (1 + tax)
+                        p * newQty * (1 + tax),
                     );
                     reducedCart[value[6]][1] = numberWithCommas(newQty);
                 } else if (newQty > reducedCart[value[6]][5]) {
@@ -636,17 +652,17 @@ function discount() {
                         " <span class='text text-danger'>Max</span>";
                     reducedCart[value[6]][2] = formatMoney(p);
                     reducedCart[value[6]][3] = formatMoney(
-                        p * reducedCart[value[6]][5] * tax
+                        p * reducedCart[value[6]][5] * tax,
                     );
                     reducedCart[value[6]][4] = formatMoney(
-                        p * reducedCart[value[6]][5] * (1 + tax)
+                        p * reducedCart[value[6]][5] * (1 + tax),
                     );
                 } else {
                     reducedCart[value[6]][1] = numberWithCommas(newQty);
                     reducedCart[value[6]][2] = formatMoney(p);
                     reducedCart[value[6]][3] = formatMoney(p * newQty * tax);
                     reducedCart[value[6]][4] = formatMoney(
-                        p * newQty * (1 + tax)
+                        p * newQty * (1 + tax),
                     );
                 }
 
@@ -655,22 +671,22 @@ function discount() {
                     //Qoutes has no maximum quantity
                     reducedCart[value[6]][2] = formatMoney(p);
                     reducedCart[value[6]][3] = formatMoney(
-                        p * reducedCart[value[6]][1] * tax
+                        p * reducedCart[value[6]][1] * tax,
                     );
                     reducedCart[value[6]][4] = formatMoney(
-                        p * reducedCart[value[6]][1] * (1 + tax)
+                        p * reducedCart[value[6]][1] * (1 + tax),
                     );
                     reducedCart[value[6]][1] = numberWithCommas(
-                        reducedCart[value[6]][1]
+                        reducedCart[value[6]][1],
                     );
                 } else if (dif < 0) {
                     reducedCart[value[6]][1] = reducedCart[value[6]][5];
                     reducedCart[value[6]][2] = formatMoney(p);
                     reducedCart[value[6]][3] = formatMoney(
-                        p * reducedCart[value[6]][5] * tax
+                        p * reducedCart[value[6]][5] * tax,
                     );
                     reducedCart[value[6]][4] = formatMoney(
-                        p * reducedCart[value[6]][5] * (1 + tax)
+                        p * reducedCart[value[6]][5] * (1 + tax),
                     );
                     reducedCart[value[6]][1] =
                         numberWithCommas(reducedCart[value[6]][1]) +
@@ -679,13 +695,13 @@ function discount() {
                 } else {
                     reducedCart[value[6]][2] = formatMoney(p);
                     reducedCart[value[6]][3] = formatMoney(
-                        p * reducedCart[value[6]][1] * tax
+                        p * reducedCart[value[6]][1] * tax,
                     );
                     reducedCart[value[6]][4] = formatMoney(
-                        p * reducedCart[value[6]][1] * (1 + tax)
+                        p * reducedCart[value[6]][1] * (1 + tax),
                     );
                     reducedCart[value[6]][1] = numberWithCommas(
-                        reducedCart[value[6]][1]
+                        reducedCart[value[6]][1],
                     );
                 } //replace the quantity with max qty on stock
             }
@@ -704,7 +720,7 @@ function discount() {
                     bought_product.quantity = item[5]; //avoid Max string
                 } else {
                     bought_product.quantity = numberWithCommas(
-                        item[1].toString().replace(",", "")
+                        item[1].toString().replace(",", ""),
                     ); //avoid Max string
                 }
             } else {
@@ -811,7 +827,7 @@ function discount() {
 
     document.getElementById("total_vat").value = formatMoney(
         parseFloat(t.replace(/\,/g, ""), 10) -
-            parseFloat(st.replace(/\,/g, ""), 10)
+            parseFloat(st.replace(/\,/g, ""), 10),
     );
     // console.log("Total items (number of cart entries):", total_items);
     $("#barcode_input").focus();
@@ -829,10 +845,6 @@ function deselect() {
     if (discount_enable === "YES") {
         document.getElementById("sale_discount").value = "0.00";
     }
-    // var backDate = document.getElementById("cash_sale_date");
-    // if (backDate) {
-    //     backDate.value = "";
-    // }
     document.getElementById("sub_total").value = 0.0;
     document.getElementById("total_vat").value = 0.0;
     document.getElementById("total").value = 0.0;
@@ -903,43 +915,51 @@ function saleReturn(items, sale_id) {
     items.forEach(function (item) {
         var item_data = [];
         // Skip fully returned items (status 3)
-        if (item.status === 3 || item.status === '3') {
+        if (item.status === 3 || item.status === "3") {
             return; // Skip this item entirely
         }
-        
+
         item_data.push(item.id);
         item_data.push(
             item.name +
                 " " +
                 (item.brand ? item.brand + " " : "") +
                 (item.pack_size ?? "") +
-                (item.sales_uom ?? "")
+                (item.sales_uom ?? ""),
         );
         item_data.push(item.quantity);
         item_data.push(item.price);
         item_data.push(item.vat);
         item_data.push(item.discount);
         item_data.push(item.amount);
-        
+
         // Determine button based on status
         // Status 2: Pending approval
         // Status 3: Fully returned (skipped above)
         // Status 4: Rejected
         // Status 5: Partially returned
-        if (item.status === 5 || item.status === '5' || item.has_return) {
+        if (item.status === 5 || item.status === "5" || item.has_return) {
             // Already returned (partial or has any return) - no more returns allowed
-            item_data.push(" <button class='btn btn-sm btn-rounded btn-success' disabled>Returned</button>");
-        } else if (item.status === 2 || item.status === '2') {
+            item_data.push(
+                " <button class='btn btn-sm btn-rounded btn-success' disabled>Returned</button>",
+            );
+        } else if (item.status === 2 || item.status === "2") {
             // Waiting for approval
-            item_data.push(" <button class='btn btn-sm btn-rounded btn-warning' disabled>Pending</button>");
-        } else if (item.status === 4 || item.status === '4') {
+            item_data.push(
+                " <button class='btn btn-sm btn-rounded btn-warning' disabled>Pending</button>",
+            );
+        } else if (item.status === 4 || item.status === "4") {
             // Return was rejected/cancelled
-            item_data.push(" <button class='btn btn-sm btn-rounded btn-danger' disabled>Cancelled</button>");
+            item_data.push(
+                " <button class='btn btn-sm btn-rounded btn-danger' disabled>Cancelled</button>",
+            );
         } else {
             // Normal item - can be returned
-            item_data.push(" <button type='button' id='rtn_btn' class='btn btn-sm btn-rounded btn-primary'>Return</button>");
+            item_data.push(
+                " <button type='button' id='rtn_btn' class='btn btn-sm btn-rounded btn-primary'>Return</button>",
+            );
         }
-        
+
         sale_items.push(item_data);
     });
 
@@ -973,7 +993,7 @@ function quoteDetails(remark, items, data) {
                 " " +
                 (item.brand ? item.brand + " " : "") +
                 (item.pack_size ? item.pack_size : "") +
-                (item.sales_uom ? item.sales_uom : "")
+                (item.sales_uom ? item.sales_uom : ""),
         );
         item_data.push(item.quantity);
         item_data.push(item.price);
@@ -1022,13 +1042,13 @@ if (discount_enable === "YES") {
         if (evt.which != 110) {
             //not a fullstop
             var n = Math.abs(
-                parseFloat($(this).val().replace(/\,/g, ""), 10) || 0
+                parseFloat($(this).val().replace(/\,/g, ""), 10) || 0,
             );
             $(this).val(
                 n.toLocaleString("en", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
-                })
+                }),
             );
         }
     });
@@ -1042,7 +1062,7 @@ $("#paying").on("change", function (evt) {
             n.toLocaleString("en", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
-            })
+            }),
         );
     }
     var paid = document.getElementById("paying").value;
@@ -1058,7 +1078,7 @@ $("#sale_paid").on("change", function (evt) {
             n.toLocaleString("en", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
-            })
+            }),
         );
     }
 });
@@ -1231,7 +1251,7 @@ $("#price_category").change(function () {
             "You can't sell in ALL branches. Please switch to a specific branch to proceed",
             "top",
             "right",
-            "warning"
+            "warning",
         );
 
         $("#price_category").val("").trigger("change.select2");
@@ -1268,7 +1288,7 @@ $(document).ready(function () {
             "You can't sell in ALL branches. Please switch to a specific branch to proceed",
             "top",
             "right",
-            "warning"
+            "warning",
         );
 
         $("#products").val("").trigger("change.select2");
@@ -1287,7 +1307,7 @@ function valueCollection() {
     var selectedOption = sel.options[sel.selectedIndex];
     var name = selectedOption.getAttribute("data-name") || selectedOption.text;
     var available_quantity = Number(
-        selectedOption.getAttribute("data-quantity") || 0
+        selectedOption.getAttribute("data-quantity") || 0,
     );
     var productID = productValue;
 
@@ -1402,7 +1422,7 @@ function populateProducts(optionsList) {
                     "data-name": p.name,
                     "data-price": p.price,
                     "data-quantity": p.quantity,
-                })
+                }),
             );
         });
     }
@@ -1556,7 +1576,7 @@ $("#sales_form").on("submit", function (e) {
     e.preventDefault();
     var cart = document.getElementById("order_cart").value;
     var is_backdate_enabled = document.getElementById(
-        "is_backdate_enabled"
+        "is_backdate_enabled",
     ).value;
 
     if (cart === "" || cart === "undefined") {
@@ -1653,7 +1673,7 @@ function saveCreditSale() {
                 "Credit Sales recorded successfully",
                 "top",
                 "right",
-                "success"
+                "success",
             );
             deselect1();
             window.open(data.redirect_to);
