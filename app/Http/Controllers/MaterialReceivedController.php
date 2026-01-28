@@ -309,12 +309,8 @@ class MaterialReceivedController extends Controller
 
             // Check if there's a pending purchase return for this goods_receiving_id
             $value->has_pending_return = PurchaseReturn::where('goods_receiving_id', $value->id)
-                ->where(function($q) {
-                    $q->where('status', PurchaseReturn::STATUS_PENDING)
-                      ->orWhereHas('goodsReceiving', function($q2) {
-                          $q2->where('status', 2);
-                      });
-                })->exists();
+                ->where('status', PurchaseReturn::STATUS_PENDING)
+                ->exists();
 
             // --- Calculate remaining quantity (existing logic preserved)
             $orderDetailQuery = DB::table('order_details')
