@@ -29,6 +29,10 @@ class PurchaseReturn extends Model
                 ->with(['product', 'supplier']);
     }
 
+    public function creator(){
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
     // Helper method to get status label
     public function getStatusLabelAttribute()
     {

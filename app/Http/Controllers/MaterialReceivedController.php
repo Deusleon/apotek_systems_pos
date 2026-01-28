@@ -163,6 +163,7 @@ class MaterialReceivedController extends Controller
                     'supplier_id', 'created_by'
                 )
                 ->join('inv_products', 'inv_products.id', '=', 'inv_incoming_stock.product_id')
+                ->leftJoin('inv_suppliers', 'inv_suppliers.id', '=', 'inv_incoming_stock.supplier_id')
                 ->join('users', 'users.id', '=', 'inv_incoming_stock.created_by')
                 ->whereBetween(DB::raw('date(inv_incoming_stock.created_at)'), [$from, $to])
                 ->where('supplier_id', $request->supplier_id);
@@ -184,9 +185,14 @@ class MaterialReceivedController extends Controller
                     'supplier_id', 'created_by'
                 )
                 ->join('inv_products', 'inv_products.id', '=', 'inv_incoming_stock.product_id')
+                ->leftJoin('inv_suppliers', 'inv_suppliers.id', '=', 'inv_incoming_stock.supplier_id')
                 ->join('users', 'users.id', '=', 'inv_incoming_stock.created_by')
                 ->whereBetween(DB::raw('date(inv_incoming_stock.created_at)'), [$from, $to]);
-
+    
+            if ($request->supplier_search) {
+                $query->where('inv_suppliers.name', 'LIKE', '%' . $request->supplier_search . '%');
+            }
+    
             if ($useStoreFilter) {
                 $query->where('inv_incoming_stock.store_id', $store_id);
             }
@@ -207,10 +213,15 @@ class MaterialReceivedController extends Controller
                     'supplier_id', 'created_by'
                 )
                 ->join('inv_products', 'inv_products.id', '=', 'inv_incoming_stock.product_id')
+                ->leftJoin('inv_suppliers', 'inv_suppliers.id', '=', 'inv_incoming_stock.supplier_id')
                 ->join('users', 'users.id', '=', 'inv_incoming_stock.created_by')
                 ->whereBetween(DB::raw('date(inv_incoming_stock.created_at)'), [$from, $to])
                 ->where('supplier_id', $request->supplier_id);
-
+    
+            if ($request->supplier_search) {
+                $query->where('inv_suppliers.name', 'LIKE', '%' . $request->supplier_search . '%');
+            }
+    
             if ($useStoreFilter) {
                 $query->where('inv_incoming_stock.store_id', $store_id);
             }
@@ -222,7 +233,8 @@ class MaterialReceivedController extends Controller
                       ->orwhere('expire_date', 'LIKE', "%{$search}%")
                       ->orwhere('total_cost', 'LIKE', "%{$search}%")
                       ->orwhere(DB::raw('date(inv_incoming_stock.created_at)'), 'LIKE', "%{$search}%")
-                      ->orwhere('users.name', 'LIKE', "%{$search}%");
+                      ->orwhere('users.name', 'LIKE', "%{$search}%")
+                      ->orwhere('inv_suppliers.name', 'LIKE', "%{$search}%");
                 })
                 ->offset($start)
                 ->limit($limit)
@@ -231,9 +243,14 @@ class MaterialReceivedController extends Controller
 
             $totalFilteredQuery = GoodsReceiving::select('inv_incoming_stock.id')
                 ->join('inv_products', 'inv_products.id', '=', 'inv_incoming_stock.product_id')
+                ->leftJoin('inv_suppliers', 'inv_suppliers.id', '=', 'inv_incoming_stock.supplier_id')
                 ->join('users', 'users.id', '=', 'inv_incoming_stock.created_by')
                 ->whereBetween(DB::raw('date(inv_incoming_stock.created_at)'), [$from, $to])
                 ->where('supplier_id', $request->supplier_id);
+
+            if ($request->supplier_search) {
+                $totalFilteredQuery->where('inv_suppliers.name', 'LIKE', '%' . $request->supplier_search . '%');
+            }
 
             if ($useStoreFilter) {
                 $totalFilteredQuery->where('inv_incoming_stock.store_id', $store_id);
@@ -246,7 +263,8 @@ class MaterialReceivedController extends Controller
                       ->orwhere('expire_date', 'LIKE', "%{$search}%")
                       ->orwhere('total_cost', 'LIKE', "%{$search}%")
                       ->orwhere(DB::raw('date(inv_incoming_stock.created_at)'), 'LIKE', "%{$search}%")
-                      ->orwhere('users.name', 'LIKE', "%{$search}%");
+                      ->orwhere('users.name', 'LIKE', "%{$search}%")
+                      ->orwhere('inv_suppliers.name', 'LIKE', "%{$search}%");
                 })
                 ->count();
         } else {
@@ -257,8 +275,13 @@ class MaterialReceivedController extends Controller
                     'supplier_id', 'created_by'
                 )
                 ->join('inv_products', 'inv_products.id', '=', 'inv_incoming_stock.product_id')
+                ->leftJoin('inv_suppliers', 'inv_suppliers.id', '=', 'inv_incoming_stock.supplier_id')
                 ->join('users', 'users.id', '=', 'inv_incoming_stock.created_by')
                 ->whereBetween(DB::raw('date(inv_incoming_stock.created_at)'), [$from, $to]);
+
+            if ($request->supplier_search) {
+                $query->where('inv_suppliers.name', 'LIKE', '%' . $request->supplier_search . '%');
+            }
 
             if ($useStoreFilter) {
                 $query->where('inv_incoming_stock.store_id', $store_id);
@@ -271,7 +294,8 @@ class MaterialReceivedController extends Controller
                       ->orwhere('expire_date', 'LIKE', "%{$search}%")
                       ->orwhere('total_cost', 'LIKE', "%{$search}%")
                       ->orwhere(DB::raw('date(inv_incoming_stock.created_at)'), 'LIKE', "%{$search}%")
-                      ->orwhere('users.name', 'LIKE', "%{$search}%");
+                      ->orwhere('users.name', 'LIKE', "%{$search}%")
+                      ->orwhere('inv_suppliers.name', 'LIKE', "%{$search}%");
                 })
                 ->offset($start)
                 ->limit($limit)
@@ -281,8 +305,13 @@ class MaterialReceivedController extends Controller
 
             $totalFilteredQuery = GoodsReceiving::select('inv_incoming_stock.id')
                 ->join('inv_products', 'inv_products.id', '=', 'inv_incoming_stock.product_id')
+                ->leftJoin('inv_suppliers', 'inv_suppliers.id', '=', 'inv_incoming_stock.supplier_id')
                 ->join('users', 'users.id', '=', 'inv_incoming_stock.created_by')
                 ->whereBetween(DB::raw('date(inv_incoming_stock.created_at)'), [$from, $to]);
+
+            if ($request->supplier_search) {
+                $totalFilteredQuery->where('inv_suppliers.name', 'LIKE', '%' . $request->supplier_search . '%');
+            }
 
             if ($useStoreFilter) {
                 $totalFilteredQuery->where('inv_incoming_stock.store_id', $store_id);
@@ -295,7 +324,8 @@ class MaterialReceivedController extends Controller
                       ->orwhere('expire_date', 'LIKE', "%{$search}%")
                       ->orwhere('total_cost', 'LIKE', "%{$search}%")
                       ->orwhere(DB::raw('date(inv_incoming_stock.created_at)'), 'LIKE', "%{$search}%")
-                      ->orwhere('users.name', 'LIKE', "%{$search}%");
+                      ->orwhere('users.name', 'LIKE', "%{$search}%")
+                      ->orwhere('inv_suppliers.name', 'LIKE', "%{$search}%");
                 })
                 ->count();
         }

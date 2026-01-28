@@ -173,7 +173,7 @@
                     <div class="row">
                         <div class="col-md-12">
                             <div class="form-group row">
-                                <label class="col-md-4 col-form-label text-md-right ">Description</label>
+                                <label class="col-md-4 col-form-label text-md-right ">Product Name</label>
                                 <div class="col-md-8">
                                     <input type="text" class="form-control" id="modal_description" readonly>
                                 </div>

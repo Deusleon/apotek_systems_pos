@@ -93,7 +93,7 @@ class PurchaseReturnController extends Controller
             if ($useStoreFilter) {
                 $q->where('store_id', $store_id);
             }
-        }])
+        }, 'creator'])
             ->where(DB::Raw("DATE(purchase_returns.date)"), '>=', $from)
             ->where(DB::Raw("DATE(purchase_returns.date)"), '<=', $to);
 
@@ -129,6 +129,10 @@ class PurchaseReturnController extends Controller
                     'reason' => $return->reason,
                     'date' => $return->date,
                     'created_at' => $return->created_at,
+                    'creator' => $return->creator ? [
+                        'id' => $return->creator->id,
+                        'name' => $return->creator->name
+                    ] : null,
                     'goods_receiving' => [
                         'id' => $goodsReceiving->id,
                         'product_id' => $goodsReceiving->product_id,
