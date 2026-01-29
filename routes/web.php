@@ -309,7 +309,8 @@ Route::middleware(["auth","main_branch"])->group(function () {
     Route::post('sales/sales-order/delete-item','SaleQuoteController@deleteQuoteItem')->name('delete-qoute-item');
     Route::post('sales/sales-orders/save-editings', 'SaleQuoteController@saveFinalQuote')->name('save-final-qoute');
     Route::get('sales/sales-orders/receipt-reprint/{quote_id}', 'SaleQuoteController@receiptReprint')->name('receiptReprint');
-    Route::get('sales/sales-orders/edit-sale/{quote_id}', 'SaleQuoteController@update')->name('updateSale');
+    Route::get('sales/sales-orders/edit/{quote_id}', 'SaleQuoteController@editProforma')->name('updateSale');
+    Route::post('sales/sales-orders/update-order', 'SaleQuoteController@updateProforma')->name('updateProforma');
     Route::post('sales/sales-orders/convert-to-sales', 'SaleQuoteController@convertToSales')->name('convert-to-sales');
     Route::get('sales/sales-orders/generate-tax-invoice/{id}', 'SaleQuoteController@generateTaxInvoice')->name('generate-tax-invoice');
     Route::get('sales/sales-orders/generate-delivery-note/{id}', 'SaleQuoteController@generateDeliveryNote')->name('generate-delivery-note');
@@ -320,12 +321,6 @@ Route::middleware(["auth","main_branch"])->group(function () {
     Route::get('/returns', 'SaleReturnController@getRetunedProducts')->name('getRetunedProducts');
     Route::post('sales/sales-returns', 'SaleReturnController@store')->name('sale-returns.store');
     Route::get('sales/returns-approval', 'SaleReturnController@getSalesReturn')->name('sale-returns-approval.getSalesReturn');
-
-
-    //No longer used
-    // Route::post('sales/returns-approval', 'SaleReturnController@approve')->name('sale-returns-approval.approve');
-    // Route::post('sales/returns-rejection', 'SaleReturnController@reject')->name('sale-returns-rejection.reject');
-
 
     /*Current Stock routes*/
     Route::get('inventory/current-stocks/edit/{productId}', 'CurrentStockController@edit')->name('current-stock.edit');

@@ -74,16 +74,16 @@
                 <ul class="nav nav-pills mb-3" id="myTab" role="tablist">
                     @if(auth()->user()->checkPermission('View Credit Sales'))
                         <li class="nav-item">
-                            <a class="nav-link text-uppercase" id="credit-sale-receiving-tablist" data-toggle="pill"
-                                href="#credit-sale-receiving" role="tab" aria-controls="credit_sales" aria-selected="true">New
+                            <a class="nav-link text-uppercase active" id="credit-sale-receiving-tablist"
+                                href="{{ route('credit-sales.creditSale') }}" role="tab" aria-controls="credit_sales" aria-selected="true">New
                                 sale</a>
                         </li>
                     @endif
 
                     @if(auth()->user()->checkPermission('View Credit Tracking'))
                         <li class="nav-item">
-                            <a class="nav-link text-uppercase" id="credit-tracking-tablist" data-toggle="pill"
-                                href="#credit-tracking" role="tab" aria-controls="credit_tracking"
+                            <a class="nav-link text-uppercase" id="credit-tracking-tablist"
+                                href="{{ route('credits-tracking.creditsTracking') }}" role="tab" aria-controls="credit_tracking"
                                 aria-selected="false">Tracking
                             </a>
                         </li>
@@ -91,16 +91,16 @@
 
                     @if(auth()->user()->checkPermission('View Credit Payments'))
                         <li class="nav-item">
-                            <a class="nav-link text-uppercase" id="credit-payment-tablist" data-toggle="pill"
-                                href="#credit-payment" role="tab" aria-controls="credit_payment" aria-selected="false">Payments
+                            <a class="nav-link text-uppercase" id="credit-payment-tablist"
+                                href="{{ route('credit-payments.getCreditsCustomers') }}" role="tab" aria-controls="credit_payment" aria-selected="false">Payments
                             </a>
                         </li>
                     @endif
-                </ul>
+                </ul>     
                 <div class="tab-content" id="myTabContent">
                     {{-- Credit Sales--}}
                     @if(auth()->user()->checkPermission('View Credit Sales'))
-                        <div class="tab-pane fade" id="credit-sale-receiving" role="tabpanel"
+                        <div class="tab-pane fade show active" id="credit-sale-receiving" role="tabpanel"
                             aria-labelledby="credit_sales-tab">
                             <form id="credit_sales_form">
                                 @csrf()
@@ -119,7 +119,7 @@
                                 <input type="hidden" name="" id="is_all_store" value="{{ current_store()->name }}">
                                 <div id="sale-panel">
                                     <div class="row">
-                                        <div class="col-md-3">
+                                        <div class="col-md-2">
                                             <div class="form-group">
                                                 <label id="cat_label">Sales Type<font color="red">*</font></label>
                                                 <select id="price_category" class="js-example-basic-single form-control"
@@ -143,6 +143,13 @@
                                                 </select>
                                             </div>
                                         </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label for="code">PO #</label>
+                                                <input type="text" id="ref_no" name="ref_no" class="form-control"
+                                                    placeholder="PO #" />
+                                            </div>
+                                        </div>
                                         <div class="col-md-2" hidden>
                                             <div class="form-group">
                                                 <label for="code">Payment Type</label>
@@ -156,7 +163,7 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="code">Customer Name<font color="red">*</font></label>
                                                 <select name="customer_id" id="customer_id"
@@ -430,177 +437,8 @@
                     <div id="loading">
                         <img id="loading-image" src="{{asset('assets/images/spinner.gif')}}" />
                     </div>
-
-                    @if(!auth()->user()->checkPermission('View Credit Sales') && !auth()->user()->checkPermission('View Credit Payments') && !auth()->user()->checkPermission('View Credit Tracking'))
-                        <div class="tab-pane fade show" id="credit-sale-receiving" role="tabpanel"
-                            aria-labelledby="credit_sales-tab">
-                            <div class="row">
-
-                                {{-- <p>You do not have permission to View New Credit Sales</p> --}}
-
-                            </div>
-                        </div>
-                    @endif
                     {{-- End Credit Sales--}}
 
-                    {{-- Credit Tracking--}}
-                    @if(auth()->user()->checkPermission('View Credit Tracking'))
-                        <div class="tab-pane fade" id="credit-tracking" role="tabpanel" aria-labelledby="credit_tracking-tab">
-                            <div class="row ">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label id="cat_label">Customer<font color="red">*</font></label>
-                                        <select name="customer_id" id="cust_id" class="js-example-basic-single form-control">
-                                            <option value="" selected="true" disabled>Select Customer</option>
-                                            @foreach($customers as $customer)
-                                                <option value="{{ $customer->name }}">{{$customer->name}}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label id="cat_label">Status:<font color="red">*</font></label>
-                                        <select name="status" id="payment-status" class="js-example-basic-single form-control">
-                                            <option value="" selected="true" disabled>Select Status</option>
-                                            <option value="all">All</option>
-                                            <option value="not_paid">Not Paid</option>
-                                            <option value="partial_paid">Partial Paid</option>
-                                            <option value="full_paid">Full Paid</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label id="cat_label">Date <font color="red">*</font></label>
-                                        <input type="text" name="date_of_sale" class="form-control" id="sales_date" value="" />
-                                    </div>
-                                </div>
-                            </div>
-                            <input type="hidden" id="track" value="1">
-                            <input type="hidden" id="vat" value="">
-                            <input type="hidden" value="" id="category">
-                            <input type="hidden" value="" id="customers">
-                            <input type="hidden" value="" id="print">
-                            <input type="hidden" value="" id="fixed_price">
-
-                            <div class="row" id="detail">
-                                <hr>
-                                @if(auth()->user()->checkPermission('View Credit Paymentss'))
-                                    <div id="can_pay"></div>
-                                @endif
-                                <div class="table teble responsive p-3" style="width: 100%;">
-                                    <table id="credit_payment_table" class="display table nowrap table-striped table-hover"
-                                        style="width:100%">
-
-                                        <thead>
-                                            <tr>
-                                                <th>Receipt #</th>
-                                                <th>Customer</th>
-                                                <th>Sales Date</th>
-                                                <th>Total</th>
-                                                <th>Paid</th>
-                                                <th>Balance</th>
-                                                @if(auth()->user()->checkPermission('Add Credit Payment'))
-                                                    <th>Action</th>
-                                                @endif
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                        </tbody>
-
-                                    </table>
-                                </div>
-
-                            </div>
-                            @include('sales.credit_sales.create_payment')
-                        </div>
-                    @endif
-
-                    @if(!auth()->user()->checkPermission('View Credit Tracking'))
-                        <div class="tab-pane fade" id="credit-sale-receiving" role="tabpanel"
-                            aria-labelledby="credit_sales-tab">
-                            <div class="row">
-
-                                {{-- <p>You do not have permission to View Credit Tracking</p> --}}
-
-                            </div>
-                        </div>
-                    @endif
-                    {{-- End Credit Tracking--}}
-
-                    {{-- Start Credit Payment--}}
-                    @if(auth()->user()->checkPermission('View Credit Payments'))
-                        <div class="tab-pane fade" id="credit-payment" role="tabpanel" aria-labelledby="credit_payment-tab">
-                            <div class="row d-flex justify-content-end mr-0">
-                                <div class="d-flex justify-content-end mb-3">
-                                    <div class="d-flex align-items-center mr-4" style="width: 278px;">
-                                        <label for="price_category" class="form-label mb-0"
-                                            style="white-space: nowrap; margin-right: 8px;">Customer:</label>
-                                        <select name="customer_id" id="customer_payment"
-                                            class="js-example-basic-single form-control" onchange="filterPaymentHistory()">
-                                            <option value="" selected="true" disabled>Select Customer</option>
-                                            @foreach($customers as $customer)
-                                                <option value="{{$customer->id}}">{{$customer->name}}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-end mb-3 align-items-center">
-                                    <label class="mr-2" for="">Date:</label>
-                                    <input type="text" id="sales_date_payment" name="date_of_sale" autocomplete="off"
-                                        class="form-control w-auto">
-                                </div>
-                            </div>
-                            <div class="table-responsive" id="main_table">
-                                <table id="fixed-header-main" class="display table nowrap table-striped table-hover"
-                                    style="width:100%">
-                                    <thead>
-                                        <tr>
-                                            <th>Receipt #</th>
-                                            <th>Customer Name</th>
-                                            <th>Payment Date</th>
-                                            <th>Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div class="table-responsive" id="filter_history" style="display: none">
-                                <table id="fixed-header-filter" class="display table nowrap table-striped table-hover"
-                                    style="width:100%">
-                                    <thead>
-                                        <tr>
-                                            <th>Receipt #</th>
-                                            <th>Customer Name</th>
-                                            <th>Payment Date</th>
-                                            <th>Amount</th>
-                                        </tr>
-                                    </thead>
-
-                                </table>
-                            </div>
-
-                            <input type="hidden" value="" id="category">
-                            <input type="hidden" value="" id="customers">
-                            <input type="hidden" value="" id="print">
-                        </div>
-                    @endif
-
-                    @if(!auth()->user()->checkPermission('View Credit Payments'))
-                        <div class="tab-pane fade" id="credit-payment" role="tabpanel" aria-labelledby="credit_payment-tab">
-                            <div class="row">
-
-                                {{-- <p>You do not have permission to View Credit Payments</p> --}}
-
-                            </div>
-                        </div>
-                    @endif
-                    {{-- End Credit Payment--}}
                 </div>
             </div>
         </div>
@@ -627,26 +465,7 @@
                 btn.innerHTML = 'Saving...';
             });
         });
-
-        document.addEventListener("DOMContentLoaded", function () {
-            let activeTabView = localStorage.getItem("creditActiveTab");
-
-            if (activeTabView) {
-                // Ondoa active kwa zote
-                document.querySelectorAll(".nav-link").forEach(el => el.classList.remove("active"));
-                document.querySelectorAll(".tab-pane").forEach(el => el.classList.remove("active", "show"));
-
-                // Ongeza active kwenye tab iliyohifadhiwa
-                let tabBtn = document.getElementById(activeTabView + "-tablist");
-                let tabPane = document.getElementById(activeTabView);
-
-                tabBtn?.classList.add("active");
-                tabPane?.classList.add("active", "show");
-            }
-        });
-
     </script>
-
 
     @include('sales.customers.create')
 
@@ -659,8 +478,6 @@
 
 
     <script type="text/javascript">
-
-
 
         var page_no = 1;//sales page
         var normal_search = 0;//search by word
@@ -681,11 +498,6 @@
             }
         };
         var canAddCreditPayment = {{ auth()->user()->checkPermission('Add Credit Payment') ? 'true' : 'false' }};
-
-        // Load cart from localStorage on page load
-        var cart = JSON.parse(localStorage.getItem('cart')) || [];
-        var default_cart = JSON.parse(localStorage.getItem('default_cart')) || [];
-        var order_cart = JSON.parse(localStorage.getItem('order_cart')) || [];
 
     </script>
     <script src="{{asset("assets/plugins/moment/js/moment.js")}}"></script>
@@ -731,26 +543,6 @@
         });
 
     </script>
-    <script type="text/javascript">
-
-        // Listen for the click event on the tab
-        $('#credit-sale-receiving-tablist').on('click', function () {
-            // console.log('New credit tab clicked');
-            localStorage.setItem('creditActiveTab', 'credit-sale-receiving');
-            setTimeout(function () { $('#credit_barcode_input').focus(); }, 150);
-
-        });
-
-        // Listen for the click event on the tab
-        $('#credit-tracking-tablist').on('click', function () {
-            // console.log('Credit Tracking tab clicked');
-            localStorage.setItem('creditActiveTab', 'credit-tracking');
-            getCredits();
-
-        });
-
-    </script>
-
     {{-- For credit payment --}}
     <script>
         $('#fixed-header-main').DataTable({
@@ -787,47 +579,6 @@
             ordering: false,
             // aaSorting: [[1, "desc"]]
         });
-
-        function filterPaymentHistory() {
-            let customer_id = document.getElementById('customer_payment').value;
-            let date = document.getElementById('sales_date_payment').value;
-
-            if (customer_id === '') {
-                customer_id = null;
-            }
-
-            if (date === '') {
-                date = null;
-            }
-
-            /*make ajax call for more*/
-            $.ajax({
-                url: '{{route('payment-history-filter')}}',
-                type: "get",
-                dataType: "json",
-                data: {
-                    customer_id: customer_id,
-                    date: date
-                },
-                success: function (data) {
-                    console.log('This is data', data)
-                    document.getElementById('main_table').style.display = 'none';
-                    document.getElementById('filter_history').style.display = 'block';
-
-                    data = data.filter(function (el) {
-                        return Number(el.paid_amount) !== Number(0);
-                    });
-
-                    payment_history_filter_table.clear();
-                    payment_history_filter_table.rows.add(data);
-                    payment_history_filter_table.draw();
-
-
-                }
-            });
-
-
-        }
 
         $(function () {
 
@@ -879,15 +630,6 @@
             } catch (e) {
             }
         }
-
-        //Payment Clicked
-        $('#credit-payment-tablist').on('click', function () {
-            // console.log('Credit Payment tab clicked');
-            localStorage.setItem('creditActiveTab', 'credit-payment');
-
-            filterPaymentHistory();
-
-        });
 
     </script>
 

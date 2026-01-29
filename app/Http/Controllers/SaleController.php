@@ -461,6 +461,7 @@ class SaleController extends Controller
                 //Saving Sale Summary and Get its ID
                 $sale = DB::table('sales')->insertGetId(array(
                     'receipt_number' => $receipt_number,
+                    'ref_no' => $request->ref_no,
                     'customer_id' => $request->customer_id,
                     'price_category_id' => $request->price_category_id,
                     'payment_type_id' => $request->payment_type,
@@ -660,6 +661,7 @@ class SaleController extends Controller
                 $sn++;
                 array_push($sales, array(
                     'receipt_number' => $item->sale['receipt_number'],
+                    'ref_no' => $item->sale['ref_no'],
                     'name' => $item->currentStock['product']['name'],
                     'brand' => $item->currentStock['product']['brand'],
                     'pack_size' => $item->currentStock['product']['pack_size'],
@@ -925,7 +927,7 @@ class SaleController extends Controller
             abort(403, 'Access Denied');
         }
         $customers = Customer::where('total_credit', '>', 0)->get();
-        return View::make('sales.credit_tracking.index')
+        return View::make('sales.credit_sales.tracking')
             ->with(compact('customers'));
     }
     public function getCashReceipt($page)
@@ -985,6 +987,7 @@ class SaleController extends Controller
             // dd($item->sale['customer']);
             array_push($sales, array(
                 'receipt_number' => $item->sale['receipt_number'],
+                'ref_no' => $item->sale['ref_no'],
                 'name' => $item->currentStock['product']['name'],
                 'brand' => $item->currentStock['product']['brand'],
                 'pack_size' => $item->currentStock['product']['pack_size'],
@@ -1110,6 +1113,7 @@ class SaleController extends Controller
             $sn++;
             array_push($sales, array(
                 'receipt_number' => $item->sale['receipt_number'],
+                'ref_no' => $item->sale['ref_no'],
                 'name' => $item->currentStock['product']['name'],
                 'paid' => $item->paid_amount,
                 'balance' => $item->balance,

@@ -88,7 +88,7 @@
                         @csrf()
                         <input type="hidden" name="" id="is_all_store" value="{{ current_store()->name }}">
                         <div class="row">
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="form-group">
                                     <label id="cat_label">Sales Type<font color="red">*</font></label>
                                     <select id="price_category" class="js-example-basic-single form-control">
@@ -111,7 +111,13 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="code">Ref #</label>
+                                    <input type="text" id="ref_no" name="ref_no" class="form-control" placeholder="Ref #" />
+                                </div>
+                            </div>
+                            <div class="col-md-2">
                                 <div class="form-group">
                                     <label for="code">Customer Name <font color="red">*</font></label>
                                     <select id="customer_id" name="customer_id" class="js-example-basic-single form-control"
@@ -409,31 +415,6 @@
                 return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
             }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             // track which row is being edited (index in cart)
             let editingIndex = null;
 
@@ -602,35 +583,11 @@
 
             // --- END REPLACEMENT ---
 
-function moveCursorToEnd(input) {
-    const val = input.value;
-    input.focus();
-    input.setSelectionRange(val.length, val.length);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            function moveCursorToEnd(input) {
+                const val = input.value;
+                input.focus();
+                input.setSelectionRange(val.length, val.length);
+            }
 
             // Delete button functionality
             $('#cart_table tbody').on('click', '#delete_btn', function () {
