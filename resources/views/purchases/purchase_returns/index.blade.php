@@ -367,7 +367,8 @@ var currentStoreId = @json(session('current_store_id', auth()->user()->store_id)
                                 // Show current remaining quantity after approved returns
                                 var currentQty = parseFloat(data || 0);
                                 return numberWithCommas(currentQty);
-                            }
+                            },
+                            className: "text-center"
                         },
                         {
                             data: 'ordered_qty', render: function (data) {

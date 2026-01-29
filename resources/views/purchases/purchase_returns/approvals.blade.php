@@ -274,7 +274,8 @@
                     render: function (item) {
                         // Show the current remaining quantity after any approved returns
                         return numberWithCommas(Math.floor(item.quantity || 0));
-                    }
+                    },
+                    className: "text-center"
                 },
                 {
                     data: 'date',
@@ -285,7 +286,8 @@
                     render: function (data, type, row) {
                         // Show the exact quantity entered in the return modal
                         return numberWithCommas(Math.floor(data));
-                    }
+                    },
+                    className: "text-center"
                 },
                 {
                     data: 'goods_receiving',
@@ -294,7 +296,8 @@
                         const rtn_qty = parseFloat(row.quantity) || 0;
                         const total = unit_cost * rtn_qty;
                         return formatMoney(total);
-                    }
+                    },
+                    className: "text-center"
                 },
                 @if(Auth::user()->checkPermission('Approve Purchase Returns'))
                             {
