@@ -232,7 +232,7 @@
                         </div>
                         <div class="col-md-6">
                             <div class="btn-group" style="float: right;">
-                                <button type="button" class="btn btn-danger" id="cancel-all" onclick="resetForms()">
+                                <button type="button" class="btn btn-danger" id="cancel-all" onclick="if(confirm('Clear Invoice Receiving?')) resetForms()">
                                     Clear
                                 </button>
                                 <button id="invoicesave_id" class="btn btn-primary">Save
