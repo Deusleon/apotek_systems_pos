@@ -129,9 +129,9 @@
                             <tr>
                                 <th>id</th>
                                 <th>Product Name</th>
-                                <th>Supplier</th>
-                                <th class="d-none">Ordered</th>
                                 <th>Quantity</th>
+                                <th class="d-none">Ordered</th>
+                                <th>Supplier</th>
                                 <th class="d-none">Remaining</th>
                                 <th>Price</th>
                                 <th>Amount</th>
@@ -363,10 +363,12 @@ var currentStoreId = @json(session('current_store_id', auth()->user()->store_id)
                             }
                         },
                         {
-                            data: 'supplier',
-                            render: function (data) {
-                                return data ? data.name : 'N/A';
-                            }
+                            data: 'quantity', render: function (data, type, row) {
+                                // Show current remaining quantity after approved returns
+                                var currentQty = parseFloat(data || 0);
+                                return numberWithCommas(currentQty);
+                            },
+                            className: "text-center"
                         },
                         {
                             data: 'ordered_qty', render: function (data) {
@@ -374,10 +376,9 @@ var currentStoreId = @json(session('current_store_id', auth()->user()->store_id)
                             }
                         },
                         {
-                            data: 'quantity', render: function (data, type, row) {
-                                // Show current remaining quantity after approved returns
-                                var currentQty = parseFloat(data || 0);
-                                return numberWithCommas(currentQty);
+                            data: 'supplier',
+                            render: function (data) {
+                                return data ? data.name : 'N/A';
                             }
                         },
                         {
