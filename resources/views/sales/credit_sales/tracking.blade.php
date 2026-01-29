@@ -1,6 +1,6 @@
 @extends("layouts.master")
 @section('content-title')
-    Tax Invoice
+    Credit Sales
 @endsection
 
 @php
@@ -11,7 +11,7 @@
 
 @section('content-sub-title')
     <li class="breadcrumb-item"><a href="{{route('home')}}"><i class="feather icon-home"></i></a></li>
-    <li class="breadcrumb-item"><a href="#">Sales / Tax Invoice / Tracking</a></li>
+    <li class="breadcrumb-item"><a href="#">Sales / Credit Sales / Tracking</a></li>
 @endsection
 
 @section("content")
@@ -72,34 +72,34 @@
 
             <div class="col-sm-12">
                 <ul class="nav nav-pills mb-3" id="myTab" role="tablist">
-                    @if(auth()->user()->checkPermission('View Tax Invoice'))
+                    @if(auth()->user()->checkPermission('View Credit Sales'))
                         <li class="nav-item">
                             <a class="nav-link text-uppercase" id="credit-sale-receiving-tablist"
-                                href="{{ route('tax-invoice.creditSale') }}" role="tab" aria-controls="credit_sales" aria-selected="false">New
-                                Invoice</a>
+                                href="{{ route('credit-sales.creditSale') }}" role="tab" aria-controls="credit_sales" aria-selected="true">New
+                                sale</a>
                         </li>
                     @endif
 
-                    @if(auth()->user()->checkPermission('View Tax Invoice Tracking'))
+                    @if(auth()->user()->checkPermission('View Credit Tracking'))
                         <li class="nav-item">
                             <a class="nav-link text-uppercase active" id="credit-tracking-tablist"
-                                href="{{ route('tax-invoice-tracking') }}" role="tab" aria-controls="credit_tracking"
-                                aria-selected="true">Tracking
+                                href="{{ route('credits-tracking.creditsTracking') }}" role="tab" aria-controls="credit_tracking"
+                                aria-selected="false">Tracking
                             </a>
                         </li>
                     @endif
 
-                    @if(auth()->user()->checkPermission('View Tax Invoice Payments'))
+                    @if(auth()->user()->checkPermission('View Credit Payments'))
                         <li class="nav-item">
-                            <a class="nav-link text-uppercase" id="credit-payment-tablist" 
-                                href="{{ route('tax-invoice-payments') }}" role="tab" aria-controls="credit_payment" aria-selected="false">Payments
+                            <a class="nav-link text-uppercase" id="credit-payment-tablist"
+                                href="{{ route('credit-payments.getCreditsCustomers') }}" role="tab" aria-controls="credit_payment" aria-selected="false">Payments
                             </a>
                         </li>
                     @endif
-                </ul>
+                </ul>     
                 <div class="tab-content" id="myTabContent">
-                    {{-- Tax Invoice Tracking--}}
-                    @if(auth()->user()->checkPermission('View Tax Invoice Tracking'))
+                    {{-- Credit Tracking--}}
+                    @if(auth()->user()->checkPermission('View Credit Tracking'))
                         <div class="tab-pane fade show active" id="credit-tracking" role="tabpanel" aria-labelledby="credit_tracking-tab">
                             <div class="row ">
                                 <div class="col-md-6">
@@ -143,7 +143,7 @@
 
                             <div class="row" id="detail">
                                 <hr>
-                                @if(auth()->user()->checkPermission('View Tax Invoice Paymentss'))
+                                @if(auth()->user()->checkPermission('View Credit Payments'))
                                     <div id="can_pay"></div>
                                 @endif
                                 <div class="table teble responsive p-3" style="width: 100%;">
@@ -158,7 +158,7 @@
                                                 <th>Total</th>
                                                 <th>Paid</th>
                                                 <th>Balance</th>
-                                                @if(auth()->user()->checkPermission('Add Tax Invoice Payment'))
+                                                @if(auth()->user()->checkPermission('Add Credit Payment'))
                                                     <th>Action</th>
                                                 @endif
                                             </tr>
@@ -174,17 +174,17 @@
                         </div>
                     @endif
 
-                    @if(!auth()->user()->checkPermission('View Tax Invoice Tracking'))
+                    @if(!auth()->user()->checkPermission('View Credit Tracking'))
                         <div class="tab-pane fade" id="credit-sale-receiving" role="tabpanel"
                             aria-labelledby="credit_sales-tab">
                             <div class="row">
 
-                                {{-- <p>You do not have permission to View Tax Invoice Tracking</p> --}}
+                                {{-- <p>You do not have permission to View Credit Tracking</p> --}}
 
                             </div>
                         </div>
                     @endif
-                    {{-- End Tax Invoice Tracking--}}
+                    {{-- End Credit Tracking--}}
 
                 </div>
             </div>
@@ -222,7 +222,7 @@
 
 @push("page_scripts")
 
-    {{-- For tax invoice --}}
+    {{-- For credit sales --}}
     @include('partials.notification')
 
 
@@ -246,7 +246,7 @@
                 getCreditSale: '{{route('getCreditSale')}}'
             }
         };
-        var canAddCreditPayment = {{ auth()->user()->checkPermission('Add Tax Invoice Payment') ? 'true' : 'false' }};
+        var canAddCreditPayment = {{ auth()->user()->checkPermission('Add Credit Payment') ? 'true' : 'false' }};
 
     </script>
     <script src="{{asset("assets/plugins/moment/js/moment.js")}}"></script>
