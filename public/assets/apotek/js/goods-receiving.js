@@ -126,7 +126,7 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
         const negativeSign = amount < 0 ? "-" : "";
 
         let i = parseInt(
-            (amount = Math.abs(Number(amount) || 0).toFixed(decimalCount))
+            (amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)),
         ).toString();
         let j = i.length > 3 ? i.length % 3 : 0;
 
@@ -262,13 +262,13 @@ function retrieveInvoiceBySupplier(supplier_id) {
                     text: "Select Invoice...",
                     disabled: true,
                     selected: true,
-                })
+                }),
             );
             $.each(data, function (id, detail) {
                 var datas = [detail.id];
 
                 $("#invoice_ids").append(
-                    $("<option>", { value: datas, text: detail.invoice_no })
+                    $("<option>", { value: datas, text: detail.invoice_no }),
                 );
             });
         },
@@ -397,10 +397,10 @@ function orderamountCheck() {
     sell_price_parse = parseFloat(sell_price.replace(/\,/g, ""), 10);
 
     document.getElementById("sell_price_i").value = formatMoney(
-        parseFloat(sell_price.replace(/\,/g, ""), 10)
+        parseFloat(sell_price.replace(/\,/g, ""), 10),
     );
     document.getElementById("pr_id").value = formatMoney(
-        parseFloat(unit_price.replace(/\,/g, ""), 10)
+        parseFloat(unit_price.replace(/\,/g, ""), 10),
     );
 
     if (Number(sell_price_parse) < Number(unit_price_parse)) {
@@ -447,13 +447,13 @@ function filterInvoiceBySupplier() {
                     text: "Select Invoice...",
                     disabled: true,
                     selected: true,
-                })
+                }),
             );
             $.each(data, function (id, detail) {
                 var datas = [detail.id];
 
                 $("#invoice_id").append(
-                    $("<option>", { value: datas, text: detail.invoice_no })
+                    $("<option>", { value: datas, text: detail.invoice_no }),
                 );
             });
         },
@@ -469,14 +469,14 @@ $("#myFormId").on("submit", function (e) {
     var cart_data = document.getElementById("received_cart").value;
 
     if (cart_data === "") {
-        notify("Item receive list is empty", "top", "right", "warning");
+        notify("Please choose an item to receive", "top", "right", "warning");
         return false;
     }
 
     var item_cart = JSON.parse(cart_data);
 
     if (item_cart.length === 0) {
-        notify("Item receive list is empty", "top", "right", "warning");
+        notify("Please choose an item to receive", "top", "right", "warning");
         return false;
     }
 
@@ -532,7 +532,7 @@ function saveOrderReceiveForm() {
                     "Order received successfully",
                     "top",
                     "right",
-                    "success"
+                    "success",
                 );
                 items_table.row(remove_row_index).remove().draw();
                 $("#receive").modal("hide");
@@ -609,13 +609,13 @@ function goodReceivingFilterInvoiceBySupplier() {
                     text: "Select Invoice...",
                     disabled: true,
                     selected: true,
-                })
+                }),
             );
             $.each(data, function (id, detail) {
                 var datas = [detail.id];
 
                 $("#goodreceving_invoice_id").append(
-                    $("<option>", { value: datas, text: detail.invoice_no })
+                    $("<option>", { value: datas, text: detail.invoice_no }),
                 );
             });
         },
@@ -736,7 +736,9 @@ $("#invoicecart_table tbody").on("change", "input.inventedAction", function () {
     var row_data = invoicecart_table.row($(this).parents("tr")).data();
     var index = invoicecart_table.row($(this).parents("tr")).index();
     console.log(row_data);
-    row_data.quantity = numberWithCommas(document.getElementById("invoice_edit_quantity").value);
+    row_data.quantity = numberWithCommas(
+        document.getElementById("invoice_edit_quantity").value,
+    );
     row_data.buying_price = document.getElementById("edit_buying_price").value;
     row_data.selling_price =
         document.getElementById("edit_selling_price").value;
@@ -789,13 +791,13 @@ $("#invoicecart_table tbody").on(
         }
         // console.log(document.getElementById("invoice_edit_quantity").value);
         row_data.quantity = numberWithCommas(
-            document.getElementById("invoice_edit_quantity").value
+            document.getElementById("invoice_edit_quantity").value,
         );
         row_data.buying_price = formatMoney(
-            document.getElementById("edit_buying_price").value
+            document.getElementById("edit_buying_price").value,
         );
         row_data.selling_price = formatMoney(
-            document.getElementById("edit_selling_price").value
+            document.getElementById("edit_selling_price").value,
         );
 
         if (expire_date_enabler === "YES") {
@@ -822,7 +824,7 @@ $("#invoicecart_table tbody").on(
         // console.log(invoice_cart_receiveds);
 
         totalCostCalculated();
-    }
+    },
 );
 
 if (expire_date_enabler === "YES") {
@@ -862,7 +864,7 @@ if (expire_date_enabler === "YES") {
                         "Invalid expiry date, must be blank or within 5 years from tomorrow",
                         "top",
                         "right",
-                        "warning"
+                        "warning",
                     );
                     return; // don't update row
                 }
@@ -870,17 +872,17 @@ if (expire_date_enabler === "YES") {
 
             function updateRowData() {
                 console.log(
-                    document.getElementById("invoice_edit_quantity").value
+                    document.getElementById("invoice_edit_quantity").value,
                 );
                 row_data.quantity = numberWithCommas(
-                    document.getElementById("invoice_edit_quantity").value
+                    document.getElementById("invoice_edit_quantity").value,
                 );
                 console.log(row_data.quantity);
                 row_data.buying_price = formatMoney(
-                    document.getElementById("edit_buying_price").value
+                    document.getElementById("edit_buying_price").value,
                 );
                 row_data.selling_price = formatMoney(
-                    document.getElementById("edit_selling_price").value
+                    document.getElementById("edit_selling_price").value,
                 );
 
                 invoice_cart[index] = row_data;
@@ -895,7 +897,7 @@ if (expire_date_enabler === "YES") {
 
                 totalCostCalculated();
             }
-        }
+        },
     );
 }
 
@@ -927,7 +929,7 @@ $("#invoiceselected-product").on("change", function () {
     let invoice_setting = document.getElementById("invoice_setting").value;
 
     if (supplier_id === "") {
-        notify("Please Select Supplier", "top", "right", "danger");
+        notify("Please select a supplier first", "top", "right", "warning");
         $("#invoiceselected-product option").prop("selected", function () {
             return this.defaultSelected;
         });
@@ -995,7 +997,7 @@ function invoicevaluesCollection() {
     function updatePrice(data) {
         // Format Buying And Sell Prices if there is no data returned
         buying_price = formatMoney(
-            data.length !== 0 ? data[0]["unit_cost"] : 0
+            data.length !== 0 ? data[0]["unit_cost"] : 0,
         );
         selling_price = formatMoney(data.length !== 0 ? data[0]["price"] : 0);
         item.name = item_name;
@@ -1017,15 +1019,17 @@ function invoicevaluesCollection() {
                 console.log("Element", element);
                 if (element.id == item.id) {
                     let currentQty = parseFloat(
-                        element.quantity.toString().replace(/,/g, "")
+                        element.quantity.toString().replace(/,/g, ""),
                     );
                     element.quantity = numberWithCommas(
-                        currentQty + item.quantity
+                        currentQty + item.quantity,
                     );
-                    invoice_item_received.quantity = numberWithCommas(currentQty + item.quantity);
+                    invoice_item_received.quantity = numberWithCommas(
+                        currentQty + item.quantity,
+                    );
                     console.log(
                         "Updated Element",
-                        invoice_item_received.quantity
+                        invoice_item_received.quantity,
                     );
                 }
                 return element;
@@ -1057,7 +1061,7 @@ function getInvoiceItemPrice(
     product_id,
     price_category,
     supplier_id,
-    call_back
+    call_back,
 ) {
     $.ajax({
         url: config.routes.invoiceItemPrice,
@@ -1146,13 +1150,13 @@ function filterReceivingInvoiceBySupplier() {
                     text: "Select Invoice...",
                     disabled: true,
                     selected: true,
-                })
+                }),
             );
             $.each(data, function (id, detail) {
                 var datas = [detail.id];
 
                 $("#invoice_id").append(
-                    $("<option>", { value: datas, text: detail.invoice_no })
+                    $("<option>", { value: datas, text: detail.invoice_no }),
                 );
             });
         },
@@ -1196,14 +1200,14 @@ $("#invoiceFormId").on("submit", function (e) {
 
     console.log(cart_data);
     if (cart_data === "") {
-        notify("Item receive list is empty", "top", "right", "warning");
+        notify("Please choose an item to receive", "top", "right", "warning");
         return false;
     }
 
     var item_cart = JSON.parse(cart_data);
 
     if (item_cart.length === 0) {
-        notify("Item receive list is empty", "top", "right", "warning");
+        notify("Please choose an item to receive", "top", "right", "warning");
         return false;
     }
 

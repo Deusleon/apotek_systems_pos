@@ -450,7 +450,8 @@ class GoodsReceivingController extends Controller
                 'quantity'   => $received_qty,
                 'store_id'   => $default_store_id,
                 'updated_by' => Auth::id(),
-                'out_mode'   => 'Purchase Order Receiving',
+                'out_mode'   => 'Goods Receiving (Order)',
+                'updated_at' => date('Y-m-d'),
                 'movement'   => 'IN',
             ]);
         }
@@ -803,7 +804,7 @@ class GoodsReceivingController extends Controller
                 $stock_tracking->quantity = $quantity;
                 $stock_tracking->store_id = $default_store_id;
                 $stock_tracking->updated_by = Auth::user()->id;
-                $stock_tracking->out_mode = 'Goods Receiving';
+                $stock_tracking->out_mode = 'Goods Receiving (Invoice)';
                 $stock_tracking->updated_at = date('Y-m-d');
                 $stock_tracking->movement = 'IN';
                 $stock_tracking->save();
