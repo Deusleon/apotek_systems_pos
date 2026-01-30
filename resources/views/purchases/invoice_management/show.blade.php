@@ -70,7 +70,7 @@
                 <div class="row mt-3">
                     <div class="col-md-12">
                         <div class="form-group">
-                            <label for="remarks">Remarks / Description</label>
+                            <label for="remarks">Remarks</label>
                             <textarea readonly id="remarks" class="form-control-plaintext" rows="3"></textarea>
                         </div>
                     </div>

@@ -51,7 +51,7 @@
                                         <label for="Amount">Invoice Amount</label><font color="red">*</font>
                                         <input type="text" class="form-control" id="amount_edit" name="invoice_amount"
                                                aria-describedby="emailHelp" onchange="editSubtract()"
-                                               required="true" onkeypress="return isNumberKey(event,this)">
+                                               required="true" onkeypress="return isNumberKey(event,this)" readonly>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -106,8 +106,9 @@
                                         <select name="received_status" class="form-control" required="true"
                                                 id="received_status_edit">
                                             <option value=""></option>
-                                            <option>All Received</option>
-                                            <option>Partial Received</option>
+                                            <option>Fully Received</option>
+                                            <option>Partially Received</option>
+                                            <option>Not Received</option>
                                         </select>
                                     </div>
                                 </div>

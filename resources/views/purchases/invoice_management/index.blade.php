@@ -74,7 +74,7 @@ Invoices
             @endif
             @if (auth()->user()->checkPermission('View Payment History'))
                 <li class="nav-item">
-                    <a class="nav-link text-uppercase" href="{{ url('accounting/invoices/payments-history') }}">Payment History
+                    <a class="nav-link text-uppercase" href="{{ url('accounting/invoices/payment-history') }}">Payment History
                     </a>
                 </li>
             @endif

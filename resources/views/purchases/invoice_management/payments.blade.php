@@ -26,7 +26,7 @@ Invoices
             @endif
             @if (auth()->user()->checkPermission('View payment history'))
                 <li class="nav-item">
-                    <a class="nav-link text-uppercase" href="{{ url('accounting/invoices/payments-history') }}">Payment History
+                    <a class="nav-link text-uppercase" href="{{ url('accounting/invoices/payment-history') }}">Payment History
                     </a>
                 </li>
             @endif
@@ -248,11 +248,6 @@ Invoices
         var supplierId = $(this).val();
         $('#supplier_warning').hide();
 
-        // Clear previous selections and balances
-        $('#invoice').val('').trigger('change');
-        $('#balance_badge').hide();
-        $('#supplier_balance_badge').hide();
-
         if (supplierId) {
             $.ajax({
                 url: '{{ route("get-supplier-invoices") }}',
@@ -278,6 +273,8 @@ Invoices
                         $('#invoice').append('<option value="" disabled>No unpaid invoices found</option>');
                         $('#invoice').prop('disabled', true);
                     }
+                    // Clear remaining balance when supplier changes
+                    $('#balance_badge').hide();
                 },
                 error: function() {
                     notify('Error loading supplier data', 'top', 'right', 'danger');
