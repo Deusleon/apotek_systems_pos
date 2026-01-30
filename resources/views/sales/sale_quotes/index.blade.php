@@ -326,7 +326,7 @@
                         { title: "Product Name" },
                         { title: "Quantity" },
                         { title: "Price" },
-                        { title: "VAT" },
+                        { title: "VAT", visible: false },
                         { title: "Amount" },
                         { title: "Stock Qty", visible: false },
                         { title: "productID", visible: false },
@@ -368,15 +368,16 @@
 
                 // Apply discount if enabled
                 if (discount_enable) {
-                    var discount_amount = parseFloat(document.getElementById('sale_discount').value) || 0;
-                    sale_discount = discount_amount;
-                    total = total - discount_amount;
+                    var dis = document.getElementById("sale_discount").value;
+                    sale_discount = parseFloat(dis.replace(/\,/g, ""), 10) || 0;
+                    total_vat = (sub_total - sale_discount) * tax;
+                    total = (sub_total - sale_discount) + total_vat;
                 }
 
                 // Update display
                 document.getElementById('sub_total').value = formatMoney(sub_total);
                 document.getElementById('total_vat').value = formatMoney(total_vat);
-                document.getElementById('sale_discount').value = formatMoney(discount_amount);
+                document.getElementById('sale_discount').value = formatMoney(sale_discount);
                 document.getElementById('total').value = formatMoney(total);
                 document.getElementById('total_items').innerHTML = cart.length;
 
@@ -1108,6 +1109,7 @@
                         $('#customer_id').val(null).trigger('change.select2');
                         $('#price_category').prop('disabled', false);
                         $('#remark').val('');
+                        $('#total_vat').val('0.00');
 
                         // Re-enable save button
                         $('#save_btn').prop('disabled', false).text('Save');

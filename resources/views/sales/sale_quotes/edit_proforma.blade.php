@@ -246,9 +246,7 @@
             var discount_enabled = document.getElementById('enable_discount').value === 'YES';
             var quote_id = document.getElementById('quote_id').value;
 
-            // Get customer VAT status
-            var isVATCustomer = $("#customer_id option:selected").data("vat") === 'YES';
-            var tax = isVATCustomer ? vat_rate : 0;
+            var tax = vat_rate || 0;
 
             // Initialize cart from existing quote data
             @foreach($sales_details as $item)
@@ -289,7 +287,7 @@
                     { title: "Name" },
                     { title: "Quantity" },
                     { title: "Price" },
-                    { title: "VAT" },
+                    { title: "VAT", visible: false },
                     { title: "Amount" },
                     { title: "Stock Qty", visible: false },
                     { title: "productID", visible: false },

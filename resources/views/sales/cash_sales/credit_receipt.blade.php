@@ -215,7 +215,7 @@ function customRound($num) {
                         <td style="width: 31px; text-align: center;">{{number_format($item['quantity'], 0)}}</td>
                         <td style="width: 53px; text-align: right; padding-right: 3px;">{{customRound($item['price'])}}</td>
                         <td style="width: 57px; text-align: right; padding-right: 3px;">{{customRound($item['vat'])}}</td>
-                        <td style="width: 63px; text-align: right; padding-right: 3px;">{{customRound($item['price'] * $item['quantity'])}}
+                        <td style="width: 63px; text-align: right; padding-right: 3px;">{{customRound(($item['price'] * $item['quantity']) + $item['vat'])}}
                         </td>
                     </tr>
                     @php

@@ -500,13 +500,11 @@
 
         });
 
-
         function showQuoteDetails(event) {
             let data = quotes_table.row($(event.target).parents('tr')).data();
             // console.log('Data', data);
             quoteDetails(data.remark, data.details, data);
         }
-
 
         //Maintain the current Pill on reload
         $(function () {
@@ -841,7 +839,6 @@
                 notify('An error occurred: ' + error, "top", "right", "danger")
             },
             complete: function () {
-                $('#convertConfirmModal').prop('disabled', false).html('Yes, Convert');
                 pendingConvertQuoteId = null;
             }
         });
