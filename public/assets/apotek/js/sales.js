@@ -28,6 +28,7 @@ try {
 var items_table = $("#items_table").DataTable({
     searching: false,
     bPaginate: false,
+    ordering: false,
     bInfo: false,
     data: sale_items,
     columns: [
@@ -38,6 +39,7 @@ var items_table = $("#items_table").DataTable({
             render: function (data) {
                 return numberWithCommas(data);
             },
+            style: "text-align:center;",
         },
         {
             title: "Price",
@@ -82,7 +84,7 @@ var cart_table = $("#cart_table").DataTable({
         { data: 0, title: "Product Name" },
         { data: 1, title: "Quantity" },
         { data: 2, title: "Price" },
-        { data: 3, title: "VAT" },
+        { data: 3, title: "VAT", visible: false },
         { data: 4, title: "Amount" },
         { data: 5, title: "Stock Qty", visible: false },
         { data: 6, title: "productID", visible: false },
@@ -232,44 +234,6 @@ $("#cash_sale_date").on("blur", function () {
 $("#sale_discount").on("blur", function () {
     $("#barcode_input").focus();
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 $("#cart_table tbody").on("click", "#edit_btn", function () {
     var $btn = $(this);
@@ -467,45 +431,6 @@ function applyCartEdit() {
     $("#barcode_input").focus();
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 $("#cart_table tbody").on("click", "#delete_btn", function () {
     edit_btn_set = 0;
     var index = cart_table.row($(this).parents("tr")).index();
@@ -591,6 +516,38 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
     } catch (e) {}
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function discount() {
     if (discount_enable === "YES") {
         var dis = document.getElementById("sale_discount").value;
@@ -599,9 +556,9 @@ function discount() {
         sale_discount = 0;
     }
 
-    var sub_total,
-        total_vat,
-        total = 0;
+    let sub_total = 0;
+    let total_vat = 0;
+    let total = 0;
     var total_items = cart.length;
     if (cart[0]) {
         var result = [];
@@ -615,7 +572,7 @@ function discount() {
 
                 // --- Normalize existing qty to a number (remove commas and any "<Max" html)
                 let existingQtyRaw = String(
-                    reducedCart[value[6]][1] || "0",
+                    reducedCart[value[6]][1] || "0"
                 ).split("<")[0];
                 let existingQty =
                     Number(existingQtyRaw.replace(/\,/g, "")) || 0;
@@ -642,27 +599,28 @@ function discount() {
                     reducedCart[value[6]][2] = formatMoney(p);
                     reducedCart[value[6]][3] = formatMoney(p * newQty * tax);
                     reducedCart[value[6]][4] = formatMoney(
-                        p * newQty * (1 + tax),
+                        p * newQty * (1 + tax)
                     );
                     reducedCart[value[6]][1] = numberWithCommas(newQty);
-                } else if (newQty > reducedCart[value[6]][5]) {
+                } else if (newQty > reducedCart[value[5]][4]) {
                     // exceed available stock
                     reducedCart[value[6]][1] =
                         numberWithCommas(reducedCart[value[6]][5]) +
                         " <span class='text text-danger'>Max</span>";
+                    // use stockQty for calculations
                     reducedCart[value[6]][2] = formatMoney(p);
                     reducedCart[value[6]][3] = formatMoney(
-                        p * reducedCart[value[6]][5] * tax,
+                        p * reducedCart[value[6]][5] * tax
                     );
                     reducedCart[value[6]][4] = formatMoney(
-                        p * reducedCart[value[6]][5] * (1 + tax),
+                        p * reducedCart[value[6]][5] * (1 + tax)
                     );
                 } else {
                     reducedCart[value[6]][1] = numberWithCommas(newQty);
                     reducedCart[value[6]][2] = formatMoney(p);
                     reducedCart[value[6]][3] = formatMoney(p * newQty * tax);
                     reducedCart[value[6]][4] = formatMoney(
-                        p * newQty * (1 + tax),
+                        p * newQty * (1 + tax)
                     );
                 }
 
@@ -671,22 +629,22 @@ function discount() {
                     //Qoutes has no maximum quantity
                     reducedCart[value[6]][2] = formatMoney(p);
                     reducedCart[value[6]][3] = formatMoney(
-                        p * reducedCart[value[6]][1] * tax,
+                        p * reducedCart[value[6]][1] * tax
                     );
                     reducedCart[value[6]][4] = formatMoney(
-                        p * reducedCart[value[6]][1] * (1 + tax),
+                        p * reducedCart[value[6]][1] * (1 + tax)
                     );
                     reducedCart[value[6]][1] = numberWithCommas(
-                        reducedCart[value[6]][1],
+                        reducedCart[value[6]][1]
                     );
                 } else if (dif < 0) {
                     reducedCart[value[6]][1] = reducedCart[value[6]][5];
                     reducedCart[value[6]][2] = formatMoney(p);
                     reducedCart[value[6]][3] = formatMoney(
-                        p * reducedCart[value[6]][5] * tax,
+                        p * reducedCart[value[6]][5] * tax
                     );
                     reducedCart[value[6]][4] = formatMoney(
-                        p * reducedCart[value[6]][5] * (1 + tax),
+                        p * reducedCart[value[6]][5] * (1 + tax)
                     );
                     reducedCart[value[6]][1] =
                         numberWithCommas(reducedCart[value[6]][1]) +
@@ -695,13 +653,13 @@ function discount() {
                 } else {
                     reducedCart[value[6]][2] = formatMoney(p);
                     reducedCart[value[6]][3] = formatMoney(
-                        p * reducedCart[value[6]][1] * tax,
+                        p * reducedCart[value[6]][1] * tax
                     );
                     reducedCart[value[6]][4] = formatMoney(
-                        p * reducedCart[value[6]][1] * (1 + tax),
+                        p * reducedCart[value[6]][1] * (1 + tax)
                     );
                     reducedCart[value[6]][1] = numberWithCommas(
-                        reducedCart[value[6]][1],
+                        reducedCart[value[6]][1]
                     );
                 } //replace the quantity with max qty on stock
             }
@@ -710,35 +668,28 @@ function discount() {
         cart = result;
         var price_category = document.getElementById("price_category").value;
         $("#price_category").prop("disabled", true);
-        // document.getElementById("cat_label").style.color = "red";
-        cart.forEach(function (item, index, arr) {
-            var bought_product = {};
-            bought_product.price = parseFloat(item[2].replace(/\,/g, ""), 10);
+        cart.forEach(function (item) {
+            const bought_product = {};
 
-            if (typeof item[1] != "number") {
-                if (isNaN(Number(item[1].toString().replace(",", "")))) {
-                    bought_product.quantity = item[5]; //avoid Max string
-                } else {
-                    bought_product.quantity = numberWithCommas(
-                        item[1].toString().replace(",", ""),
-                    ); //avoid Max string
-                }
-            } else {
-                bought_product.quantity = item[1];
-            }
-            bought_product.amount = parseFloat(item[4].replace(/\,/g, ""), 10);
+            bought_product.price = Number(item[2].toString().replace(/,/g, ""));
+            bought_product.amount = Number(
+                item[4].toString().replace(/,/g, "")
+            );
             bought_product.product_id = item[6];
-            sub_total += bought_product.price;
-            total_vat += parseFloat(item[3].replace(/\,/g, ""), 10);
-            total += bought_product.amount;
-            order_cart.push(bought_product);
+            bought_product.custom_product_name = item[0];
 
-            // No need to sum quantities, total_items is already set to cart.length
+            const qty = Number(item[1].toString().replace(/,/g, ""));
+            bought_product.quantity = isNaN(qty) ? item[5] : qty;
+
+            sub_total += bought_product.price * bought_product.quantity;
+            total_vat += Number(item[3].toString().replace(/,/g, ""));
+            total += bought_product.amount;
+
+            order_cart.push(bought_product);
         });
-        //SUBTOTAL WITH DISCOUNT
-        total -= sale_discount;
-        sub_total = total / (1 + tax);
-        total_vat = total - sub_total;
+        // APPLY DISCOUNT
+        total_vat = (sub_total - sale_discount) * tax;
+        total = sub_total - sale_discount + total_vat;
     } else {
         $("#price_category").prop("disabled", false);
         // document.getElementById("cat_label").style.color = "black";
@@ -764,7 +715,7 @@ function discount() {
         change = sale_paid_amount - total;
     } catch (e) {}
 
-    //Credit Sales
+    //Tax Invoice
     var customer;
     var max_credit;
     var balance;
@@ -777,6 +728,8 @@ function discount() {
         }
 
         max_credit = customer.credit_limit - customer.total_credit || 0;
+        tax = Number(customer.vat) || 0;
+        console.log("Customer VAT rate:", tax);
         balance = total - sale_paid_amount;
         if (balance > max_credit) {
             document.getElementById("save_btn").disabled = "true";
@@ -825,21 +778,61 @@ function discount() {
     var t = document.getElementById("total").value;
     var st = document.getElementById("sub_total").value;
 
-    document.getElementById("total_vat").value = formatMoney(
-        parseFloat(t.replace(/\,/g, ""), 10) -
-            parseFloat(st.replace(/\,/g, ""), 10),
-    );
+    document.getElementById("total_vat").value = formatMoney(total_vat);
     // console.log("Total items (number of cart entries):", total_items);
     $("#barcode_input").focus();
     cart_table.clear();
     cart_table.rows.add(cart);
     cart_table.draw();
-
-    // Save cart to localStorage for persistence on page reload
-    localStorage.setItem("cart", JSON.stringify(cart));
-    localStorage.setItem("default_cart", JSON.stringify(default_cart));
-    localStorage.setItem("order_cart", JSON.stringify(order_cart));
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function deselect() {
     if (discount_enable === "YES") {
@@ -861,10 +854,6 @@ function deselect() {
     default_cart = [];
     discount();
     $("#barcode_input").focus();
-    // Clear localStorage when cancelling
-    localStorage.removeItem("cart");
-    localStorage.removeItem("default_cart");
-    localStorage.removeItem("order_cart");
 }
 
 function deselect1() {
@@ -884,10 +873,6 @@ function deselect1() {
     default_cart = [];
     discount();
     $("#barcode_input").focus();
-    // Clear localStorage when cancelling
-    localStorage.removeItem("cart");
-    localStorage.removeItem("default_cart");
-    localStorage.removeItem("order_cart");
 }
 
 function deselectQuote() {

@@ -78,9 +78,9 @@ var cart_table = $("#cart_table").DataTable({
     data: cart,
     columns: [
         { data: 0, title: "Product Name" },
-        { data: 1, title: "Quantity" },
+        { data: 1, title: "Quantity", style: "text-align:center;" },
         { data: 2, title: "Price" },
-        { data: 3, title: "VAT" },
+        { data: 3, title: "VAT", visible: false },
         { data: 4, title: "Amount" },
         { data: 5, title: "Stock Qty", visible: false },
         { data: 6, title: "productID", visible: false },
@@ -401,298 +401,6 @@ $("#remark").on("blur", function () {
     $("#credit_barcode_input").focus();
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// $("#cart_table tbody").on("click", "#edit_btn", function () {
-//     var quantity;
-//     let price;
-//     if (edit_btn_set === 0) {
-//         var row_data = cart_table.row($(this).parents("tr")).data();
-
-//         var index = cart_table.row($(this).parents("tr")).index();
-//         quantity = row_data[1].toString().replace(",", "");
-//         price = row_data[2];
-//         row_data[1] =
-//             "<input style='width: 80%' type='text' min='1' class='form-control' id='edit_quantity' required  onkeypress='return isNumberKey(event,this)'>";
-
-//         if (fixed_price === "NO") {
-//             row_data[2] =
-//                 "<input style='width: 130%; margin-left: -10%' type='text' class='form-control' id='edit_price' required  onkeypress='return isNumberKey(event,this)'>";
-//         }
-
-//         cart[index] = row_data;
-//         cart_table.clear();
-//         cart_table.rows.add(cart);
-//         cart_table.draw();
-
-//         var quantity_ = quantity.split("<");
-
-//         document.getElementById("edit_quantity").value = quantity_[0];
-
-//         if (fixed_price === "NO") {
-//             document.getElementById("edit_price").value = price;
-//         }
-
-//         edit_btn_set = 1;
-//     } else {
-//         // document.getElementById("edit_quantity").value
-//         $("#edit_quantity").change();
-//         if (fixed_price === "NO") {
-//             $("#edit_price").change();
-//         }
-//     }
-// });
-
-// $("#cart_table tbody").on("change", "#edit_quantity", function () {
-//     edit_btn_set = 0;
-//     var row_data = cart_table.row($(this).parents("tr")).data();
-//     var index = cart_table.row($(this).parents("tr")).index();
-
-//     if (document.getElementById("edit_quantity").value === "") {
-//         edit_btn_set = 1;
-//         notify("Quantity is required", "top", "right", "warning");
-//         return false;
-//     }
-
-//     /*for vat*/
-//     var vat;
-//     var unit_total;
-//     let vat_money;
-//     if (fixed_price === "NO") {
-//         vat = Number(
-//             (
-//                 parseFloat(
-//                     document
-//                         .getElementById("edit_price")
-//                         .value.replace(/\,/g, ""),
-//                     10
-//                 ) * tax
-//             ).toFixed(2)
-//         );
-//         unit_total = formatMoney(
-//             parseFloat(
-//                 document.getElementById("edit_price").value.replace(/\,/g, ""),
-//                 10
-//             ) + vat
-//         );
-//         vat_money = formatMoney(vat);
-//     } else {
-//         vat = Number(
-//             (parseFloat(row_data[2].replace(/\,/g, ""), 10) * tax).toFixed(2)
-//         );
-//         unit_total = formatMoney(
-//             parseFloat(row_data[2].replace(/\,/g, ""), 10) + vat
-//         );
-//         vat_money = formatMoney(vat);
-//     }
-//     /*end for vat*/
-
-//     row_data[1] = numberWithCommas(
-//         document.getElementById("edit_quantity").value
-//     );
-
-//     if (fixed_price === "NO") {
-//         row_data[2] = formatMoney(
-//             parseFloat(
-//                 document.getElementById("edit_price").value.replace(/\,/g, ""),
-//                 10
-//             )
-//         );
-//     }
-
-//     // row_data[1] = Number((document.getElementById("edit_quantity").value));
-//     if (Number(parseFloat(row_data[1].replace(/\,/g, ""), 10)) < 0) {
-//         row_data[1] = 1;
-//     }
-
-//     if (row_data[7] == "consumable") {
-//         dif = 1;
-//     } else {
-//         dif = row_data[5] - row_data[1].toString().replace(/,/g, "");
-//     }
-
-//     if ($("#quotes_page").length) {
-//         //Qoutes has no maximum quantity
-//         row_data[2] = formatMoney(
-//             parseFloat(row_data[2].replace(/\,/g, ""), 10)
-//         );
-//         row_data[3] = formatMoney(
-//             parseFloat(vat_money.replace(/\,/g, ""), 10) *
-//                 row_data[1].toString().replace(",", "")
-//         );
-//         row_data[4] = formatMoney(
-//             parseFloat(unit_total.replace(/\,/g, ""), 10) *
-//                 row_data[1].toString().replace(",", "")
-//         );
-//     } else if (dif < 0) {
-//         row_data[1] = row_data[5];
-//         row_data[2] = formatMoney(
-//             parseFloat(row_data[2].replace(/\,/g, ""), 10)
-//         );
-//         row_data[3] = formatMoney(
-//             parseFloat(vat_money.replace(/\,/g, ""), 10) * row_data[5]
-//         );
-//         row_data[4] = formatMoney(
-//             parseFloat(unit_total.replace(/\,/g, ""), 10) * row_data[5]
-//         );
-//         row_data[1] =
-//             numberWithCommas(row_data[5]) +
-//             " " +
-//             "<span class='text text-danger'>Max</span>";
-//     } else {
-//         row_data[2] = formatMoney(
-//             parseFloat(row_data[2].replace(/\,/g, ""), 10)
-//         );
-//         row_data[3] = formatMoney(
-//             parseFloat(vat_money.replace(/\,/g, ""), 10) *
-//                 row_data[1].toString().replace(",", "")
-//         );
-//         row_data[4] = formatMoney(
-//             parseFloat(unit_total.replace(/\,/g, ""), 10) *
-//                 row_data[1].toString().replace(",", "")
-//         );
-//     } //replace the quantity with max stock qty available
-
-//     cart[index] = row_data;
-//     discount();
-//     setTimeout(function () {
-//         $("#credit_barcode_input").focus();
-//     }, 30);
-// });
-
-// if (fixed_price === "NO") {
-//     $("#cart_table tbody").on("change", "#edit_price", function () {
-//         edit_btn_set = 0;
-//         var row_data = cart_table.row($(this).parents("tr")).data();
-//         var index = cart_table.row($(this).parents("tr")).index();
-
-//         if (document.getElementById("edit_price").value === "") {
-//             edit_btn_set = 1;
-//             notify("Price is required", "top", "right", "warning");
-//             return false;
-//         }
-
-//         /*for vat*/
-//         var vat = Number(
-//             (
-//                 parseFloat(
-//                     document
-//                         .getElementById("edit_price")
-//                         .value.replace(/\,/g, ""),
-//                     10
-//                 ) * tax
-//             ).toFixed(2)
-//         );
-//         var unit_total = formatMoney(
-//             parseFloat(
-//                 document.getElementById("edit_price").value.replace(/\,/g, ""),
-//                 10
-//             ) + vat
-//         );
-//         let vat_money = formatMoney(vat);
-//         /*end for vat*/
-
-//         row_data[1] = numberWithCommas(
-//             document.getElementById("edit_quantity").value
-//         );
-//         row_data[2] = formatMoney(
-//             parseFloat(
-//                 document.getElementById("edit_price").value.replace(/\,/g, ""),
-//                 10
-//             )
-//         );
-
-//         // row_data[1] = Number((document.getElementById("edit_quantity").value));
-//         if (Number(parseFloat(row_data[1].replace(/\,/g, ""), 10)) < 1) {
-//             row_data[1] = 1;
-//         }
-//         if (row_data[7] == "consumable") {
-//             dif = 1;
-//         } else {
-//             dif = row_data[5] - row_data[1].toString().replace(/,/g, "");
-//         }
-
-//         if ($("#quotes_page").length) {
-//             //Qoutes has no maximum quantity
-//             row_data[2] = formatMoney(
-//                 parseFloat(row_data[2].replace(/\,/g, ""), 10)
-//             );
-//             row_data[3] = formatMoney(
-//                 parseFloat(vat_money.replace(/\,/g, ""), 10) *
-//                     row_data[1].toString().replace(",", "")
-//             );
-//             row_data[4] = formatMoney(
-//                 parseFloat(unit_total.replace(/\,/g, ""), 10) *
-//                     row_data[1].toString().replace(",", "")
-//             );
-//         } else if (dif < 0) {
-//             row_data[1] = row_data[5];
-//             row_data[2] = formatMoney(
-//                 parseFloat(row_data[2].replace(/\,/g, ""), 10)
-//             );
-//             row_data[3] = formatMoney(
-//                 parseFloat(vat_money.replace(/\,/g, ""), 10) * row_data[5]
-//             );
-//             row_data[4] = formatMoney(
-//                 parseFloat(unit_total.replace(/\,/g, ""), 10) * row_data[5]
-//             );
-//             row_data[1] =
-//                 numberWithCommas(row_data[5]) +
-//                 " " +
-//                 "<span class='text text-danger'>Max</span>";
-//         } else {
-//             row_data[2] = formatMoney(
-//                 parseFloat(row_data[2].replace(/\,/g, ""), 10)
-//             );
-//             row_data[3] = formatMoney(
-//                 parseFloat(vat_money.replace(/\,/g, ""), 10) *
-//                     row_data[1].toString().replace(",", "")
-//             );
-//             row_data[4] = formatMoney(
-//                 parseFloat(unit_total.replace(/\,/g, ""), 10) *
-//                     row_data[1].toString().replace(",", "")
-//             );
-//         } //replace the quantity with max stock qty available
-
-//         cart[index] = row_data;
-//         discount();
-//         setTimeout(function () {
-//             $("#credit_barcode_input").focus();
-//         }, 150);
-//     });
-// }
-
 $("#cart_table tbody").on("click", "#edit_btn", function () {
     var $btn = $(this);
     var $tr = $btn.parents("tr");
@@ -883,39 +591,6 @@ function applyCartEdit() {
     }, 30);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 $("#cart_table tbody").on("click", "#delete_btn", function () {
     edit_btn_set = 0;
     var index = cart_table.row($(this).parents("tr")).index();
@@ -1009,6 +684,41 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
     } catch (e) {}
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function discount() {
     if (discount_enable === "YES") {
         var dis = document.getElementById("sale_discount").value;
@@ -1017,9 +727,9 @@ function discount() {
         sale_discount = 0;
     }
 
-    var sub_total,
-        total_vat,
-        total = 0;
+    let sub_total = 0;
+    let total_vat = 0;
+    let total = 0;
     if (cart[0]) {
         var result = [];
         var order_cart = []; //for data sent into database.
@@ -1086,33 +796,28 @@ function discount() {
         cart = result;
         var price_category = document.getElementById("price_category").value;
         $("#price_category").prop("disabled", true);
-        // document.getElementById("cat_label").style.color = "red";
-        cart.forEach(function (item, index, arr) {
-            var bought_product = {};
-            bought_product.price = parseFloat(item[2].replace(/\,/g, ""), 10);
+        cart.forEach(function (item) {
+            const bought_product = {};
 
-            if (typeof item[1] != "number") {
-                if (isNaN(Number(item[1].toString().replace(",", "")))) {
-                    bought_product.quantity = item[5]; //avoid Max string
-                } else {
-                    bought_product.quantity = numberWithCommas(
-                        item[1].toString().replace(",", "")
-                    ); //avoid Max string
-                }
-            } else {
-                bought_product.quantity = item[1];
-            }
-            bought_product.amount = parseFloat(item[4].replace(/\,/g, ""), 10);
+            bought_product.price = Number(item[2].toString().replace(/,/g, ""));
+            bought_product.amount = Number(
+                item[5].toString().replace(/,/g, "")
+            );
             bought_product.product_id = item[6];
-            sub_total += bought_product.price;
-            total_vat += parseFloat(item[3].replace(/\,/g, ""), 10);
+            bought_product.custom_product_name = item[0];
+
+            const qty = Number(item[1].toString().replace(/,/g, ""));
+            bought_product.quantity = isNaN(qty) ? item[5] : qty;
+
+            sub_total += bought_product.price * bought_product.quantity;
+            total_vat += Number(item[3].toString().replace(/,/g, ""));
             total += bought_product.amount;
+
             order_cart.push(bought_product);
         });
-        //SUBTOTAL WITH DISCOUNT
-        total -= sale_discount;
-        sub_total = total / (1 + tax);
-        total_vat = total - sub_total;
+        // APPLY DISCOUNT
+        total_vat = (sub_total - sale_discount) * tax;
+        total = (sub_total - sale_discount) + total_vat;
     } else {
         $("#price_category").prop("disabled", false);
         document.getElementById("cat_label").style.color = "black";
@@ -1138,7 +843,7 @@ function discount() {
         change = sale_paid_amount - total;
     } catch (e) {}
 
-    //Credit Sales
+    //Tax Invoice
     // var customer;
     var customer = {};
     var max_credit;
@@ -1159,7 +864,7 @@ function discount() {
             customer = {};
         }
 
-        console.log("selected customer object:", customer);
+        // console.log("selected customer object:", customer);
 
         var credit_limit = customer.credit_limit || 0;
         var total_credit = customer.total_credit || 0;
@@ -1208,7 +913,9 @@ function discount() {
 
     document.getElementById("total").value = formatMoney(total);
     document.getElementById("sub_total").value = formatMoney(sub_total);
-    document.getElementById("total_items").innerHTML = numberWithCommas(cart.length);
+    document.getElementById("total_items").innerHTML = numberWithCommas(
+        cart.length
+    );
     var t = document.getElementById("total").value;
     var st = document.getElementById("sub_total").value;
 
@@ -1220,12 +927,49 @@ function discount() {
     cart_table.clear();
     cart_table.rows.add(cart);
     cart_table.draw();
-
-    // Save cart to localStorage for persistence on page reload
-    localStorage.setItem('cart', JSON.stringify(cart));
-    localStorage.setItem('default_cart', JSON.stringify(default_cart));
-    localStorage.setItem('order_cart', JSON.stringify(order_cart));
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function deselect() {
     // document.getElementById("sales_form").reset();

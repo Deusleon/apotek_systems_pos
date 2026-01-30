@@ -261,7 +261,7 @@ class SaleController extends Controller
                 $discount = SalesDetail::where('sale_id', $sale->sale_id)->sum('discount');
                 $amount = SalesDetail::where('sale_id', $sale->sale_id)->sum('amount');
                 $sale->paid_amount = SalesCredit::where('sale_id', $sale->sale_id)->sum('paid_amount');
-                $sale->balance = $outstanding->balance;
+                $sale->balance = $outstanding->balance-$discount;
                 $sale->total_amount = $amount - $discount;
             }
 
@@ -514,7 +514,7 @@ class SaleController extends Controller
                                     $details->stock_id = $stock->id;
                                     $details->quantity = $qty;
                                     $details->price = $price;
-                                    $details->vat = ($details->price * $vat) * $details->quantity;
+                                    $details->vat = (($details->price*$details->quantity) - $sale_discount) * $vat;
                                     $details->amount = ($details->price*$details->quantity) + $details->vat;
                                     $details->discount = $sale_discount;
                                     $details->save();
@@ -548,6 +548,8 @@ class SaleController extends Controller
                         }
                     }
                 }
+                $totalAmount = SalesDetail::where('sale_id', $sale)->sum('amount');
+
                 //credit Sale
                 if ($request->credit == 'Yes') {
                     try {
@@ -558,11 +560,11 @@ class SaleController extends Controller
                             DB::rollBack();
                             return back();
                         }
-
+                        
                         $credit = new SalesCredit;
                         $credit->sale_id = $sale;
                         $credit->paid_amount = $request->paid_amount ?? 0;
-                        $credit->balance = ($total - $discount) - $credit->paid_amount;
+                        $credit->balance = $totalAmount - $credit->paid_amount;
                         $credit->grace_period = $request->grace_period;
                         $credit->remark = $request->remark;
                         $credit->created_by = Auth::User()->id;
@@ -656,8 +658,8 @@ class SaleController extends Controller
                 } else {
                     $vat_percent = $item->vat / $item->price;
                 }
-                $sub_total = ($amount / (1 + $vat_percent));
-                $vat = $amount - $sub_total;
+                $sub_total = ($amount + $item->discount - ($item->vat));
+                $vat = $item->vat;
                 $sn++;
                 array_push($sales, array(
                     'receipt_number' => $item->sale['receipt_number'],
@@ -981,8 +983,8 @@ class SaleController extends Controller
             } else {
                 $vat_percent = $item->vat / $item->price;
             }
-            $sub_total = ($amount / (1 + $vat_percent));
-            $vat = $item->vat * $item->quantity;
+            $sub_total = ($amount + $item->discount - ($item->vat));
+            $vat = $item->vat;
             $sn++;
             // dd($item->sale['customer']);
             array_push($sales, array(
