@@ -73,7 +73,7 @@ $("#cart_table tbody").on("change", "#edit_quantity", function () {
     }
 
     row_data[1] = numberWithCommas(
-        document.getElementById("edit_quantity").value
+        document.getElementById("edit_quantity").value,
     );
     row_data[2] = document.getElementById("edit_price").value;
     quantity = Number(row_data[1]);
@@ -92,11 +92,11 @@ $("#cart_table tbody").on("change", "#edit_price", function () {
 
     var newPrice = parseFloat(
         document.getElementById("edit_price").value.replace(/\,/g, ""),
-        10
+        10,
     );
 
     row_data[1] = numberWithCommas(
-        document.getElementById("edit_quantity").value
+        document.getElementById("edit_quantity").value,
     );
     row_data[2] = formatMoney(newPrice);
 
@@ -106,10 +106,10 @@ $("#cart_table tbody").on("change", "#edit_price", function () {
     default_cart[index].productId = row_data[6]; // Store product ID from row data
 
     row_data[3] = formatMoney(
-        parseFloat(row_data[1].replace(/\,/g, ""), 10) * newPrice * tax
+        parseFloat(row_data[1].replace(/\,/g, ""), 10) * newPrice * tax,
     );
     row_data[4] = formatMoney(
-        parseFloat(row_data[1].replace(/\,/g, ""), 10) * newPrice * (1 + tax)
+        parseFloat(row_data[1].replace(/\,/g, ""), 10) * newPrice * (1 + tax),
     );
 
     cart[index] = row_data;
@@ -135,7 +135,7 @@ $("#deselect-all").on("click", function () {
     /*confirmation window*/
     var cart_data = document.getElementById("order_cart").value;
     if (!(cart_data === "" || cart_data === "undefined")) {
-        var r = confirm("Cancel the order?");
+        var r = confirm("Cancel Purchase Order?");
         if (r === true) {
             /*continue*/
             deselect();
@@ -154,7 +154,7 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
         const negativeSign = amount < 0 ? "-" : "";
 
         let i = parseInt(
-            (amount = Math.abs(Number(amount) || 0).toFixed(decimalCount))
+            (amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)),
         ).toString();
         let j = i.length > 3 ? i.length % 3 : 0;
 
@@ -196,26 +196,26 @@ function discount() {
             if (undefined === reduced__obj_cart[c[0]]) {
                 reduced__obj_cart[c[0]] = c;
                 reduced__obj_cart[c[0]][4] = formatMoney(
-                    quantity * price * (1 + tax)
+                    quantity * price * (1 + tax),
                 );
                 reduced__obj_cart[c[0]][3] = formatMoney(
-                    quantity * price * tax
+                    quantity * price * tax,
                 );
             } else {
                 // Existing product - add quantity
                 var existingQuantity = parseFloat(
                     reduced__obj_cart[c[0]][1].toString().replace(/,/g, ""),
-                    10
+                    10,
                 );
                 reduced__obj_cart[c[0]][1] = existingQuantity + quantity;
                 reduced__obj_cart[c[0]][4] = formatMoney(
-                    (existingQuantity + quantity) * price * (1 + tax)
+                    (existingQuantity + quantity) * price * (1 + tax),
                 );
                 reduced__obj_cart[c[0]][3] = formatMoney(
-                    (existingQuantity + quantity) * price * tax
+                    (existingQuantity + quantity) * price * tax,
                 );
                 reduced__obj_cart[c[0]][1] = numberWithCommas(
-                    reduced__obj_cart[c[0]][1]
+                    reduced__obj_cart[c[0]][1],
                 );
             }
         }
@@ -230,7 +230,7 @@ function discount() {
             var purchase_product = {};
             var itemQuantity = parseFloat(
                 item[1].toString().replace(/,/g, ""),
-                10
+                10,
             );
             var itemPrice = default_cart.find((dc) => dc.productId === item[6])
                 ? default_cart.find((dc) => dc.productId === item[6]).price
@@ -406,14 +406,14 @@ $("#order_form").on("submit", function () {
             //present
             if (
                 parseFloat(
-                    check_cart_to_array[key][price].replace(/,/g, "")
+                    check_cart_to_array[key][price].replace(/,/g, ""),
                 ) === 0
             ) {
                 notify(
                     check_cart_to_array[key].item_name + " price cannot be 0 ",
                     "top",
                     "right",
-                    "warning"
+                    "warning",
                 );
                 // $('#from_id').prop('disabled', true);
                 return false;
@@ -424,7 +424,7 @@ $("#order_form").on("submit", function () {
             //present
             if (
                 parseFloat(
-                    check_cart_to_array[key][quantity].replace(/,/g, "")
+                    check_cart_to_array[key][quantity].replace(/,/g, ""),
                 ) === 0
             ) {
                 notify(
@@ -432,7 +432,7 @@ $("#order_form").on("submit", function () {
                         " quantity cannot be 0 ",
                     "top",
                     "right",
-                    "warning"
+                    "warning",
                 );
                 // $('#from_id').prop('disabled', true);
                 return false;
@@ -467,7 +467,7 @@ function filterSupplierProduct() {
                     text: "Select Product...",
                     disabled: true,
                     selected: true,
-                })
+                }),
             );
             $.each(data, function (id, detail) {
                 var datas = [
@@ -478,7 +478,7 @@ function filterSupplierProduct() {
                 ];
 
                 $("#select_id").append(
-                    $("<option>", { value: datas, text: detail.name })
+                    $("<option>", { value: datas, text: detail.name }),
                 );
             });
         },
@@ -519,7 +519,7 @@ $("#select_id").select2({
                             text: "Select Product...",
                             disabled: true,
                             selected: true,
-                        })
+                        }),
                     );
                     $.each(data, function (id, detail) {
                         var datas = [
@@ -530,7 +530,7 @@ $("#select_id").select2({
                         ];
 
                         $("#select_id").append(
-                            $("<option>", { value: datas, text: detail.name })
+                            $("<option>", { value: datas, text: detail.name }),
                         );
                     });
                 },
