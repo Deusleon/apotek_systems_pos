@@ -111,8 +111,9 @@
                                         <select name="received_status" id="received_status" class="form-control">
                                             <option selected="true" value="" disabled="disabled">Select Status...
                                             </option>
-                                            <option>All Received</option>
-                                            <option>Partial Received</option>
+                                            <option>Fully Received</option>
+                                            <option>Partially Received</option>
+                                            <option>Not Received</option>
                                         </select>
                                         <span id="status_warning" style="display: none; color: red; font-size: 0.9em">Status required</span>
                                     </div>

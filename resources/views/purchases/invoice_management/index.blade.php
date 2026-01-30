@@ -437,10 +437,10 @@ Invoices
             {
                 data: 'received_status',
                 render: function(received_status) {
-                    if (received_status === 'All Received') {
-                        return '<span class="badge badge-success badge-fixed-width">All Received</span>';
-                    } else if (received_status === 'Partial Received') {
-                        return '<span class="badge badge-warning badge-fixed-width">Partial Received</span>';
+                    if (received_status === 'Fully Received') {
+                        return '<span class="badge badge-success badge-fixed-width">Fully Received</span>';
+                    } else if (received_status === 'Partially Received') {
+                        return '<span class="badge badge-warning badge-fixed-width">Partially Received</span>';
                     } else {
                         return '<span class="badge badge-secondary badge-fixed-width">Not Received</span>';
                     }

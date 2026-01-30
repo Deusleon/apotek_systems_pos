@@ -199,7 +199,7 @@ class InvoiceController extends Controller
             // Check if payment amount exceeds remaining balance
             $remainingBalance = floatval($invoice->invoice_amount - $invoice->paid_amount);
             if ($amountPaid > $remainingBalance) {
-                return response()->json(['success' => false, 'error' => 'Payment amount cannot exceed remaining balance'], 200);
+                return response()->json(['success' => false, 'error' => 'Amount Paid cannot exceed remaining balance'], 200);
             }
 
             // Update invoice paid amount
