@@ -248,6 +248,11 @@ Invoices
         var supplierId = $(this).val();
         $('#supplier_warning').hide();
 
+        // Clear previous selections and balances
+        $('#invoice').val('').trigger('change');
+        $('#balance_badge').hide();
+        $('#supplier_balance_badge').hide();
+
         if (supplierId) {
             $.ajax({
                 url: '{{ route("get-supplier-invoices") }}',
