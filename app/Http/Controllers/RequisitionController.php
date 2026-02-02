@@ -188,32 +188,30 @@ class RequisitionController extends Controller
 
         $number_gen = new CommonFunctions();
         $orders = json_decode($request->orders);
-        
-        // Handle file upload - FIXED VARIABLE NAME
-        $evidencePath = null;
-        if($request->hasFile('evidence')) {
-            $picture = $request->file('evidence');
-            $pictureExtension = $picture->getClientOriginalExtension();
-            $pictureName = $picture->getFilename() . '.' . $pictureExtension;
-            $picture->move(public_path('fileStore'), $pictureName);
-            $evidencePath = 'fileStore/' . $pictureName;
-        }
-
-        $number_gen = new \App\CommonFunctions();
-        $req_no = $number_gen->generateNumber();
-
         $from_store = $request->from_store;
 
         if (!empty($orders)) {
             $requisition = new Requisition();
-            $requisition->req_no = $req_no;
+            $requisition->req_no = $number_gen->generateNumber();
             $requisition->notes = $request->notes;
             $requisition->remarks = $request->remark;
-            $requisition->evidence_document = $evidencePath; // FIXED COLUMN NAME
             $requisition->from_store = $from_store;
             $requisition->to_store = current_store_id();
             $requisition->status = 0;
             $requisition->created_by = Auth::user()->id;
+            
+            // Handle file upload - FIXED to use original filename
+            $evidencePath = null;
+            if($request->hasFile('evidence')) {
+                $picture = $request->file('evidence');
+                $pictureExtension = $picture->getClientOriginalExtension();
+                $originalName = pathinfo($picture->getClientOriginalName(), PATHINFO_FILENAME);
+                $pictureName = uniqid() . '_' . $originalName . '.' . $pictureExtension;
+                $picture->move(public_path('fileStore'), $pictureName);
+                $evidencePath = 'fileStore/' . $pictureName;
+            }
+            
+            $requisition->evidence_document = $evidencePath;
 
             $success = false;
             DB::beginTransaction();
@@ -385,22 +383,22 @@ class RequisitionController extends Controller
         $from_store = $request->from_store;
         $to_store = current_store_id();
 
-        // Handle file upload - NEW CODE ADDED
-            $pictureName = null;
+        // Handle file upload - FIXED to use original filename
+        $pictureName = null;
         if($request->hasFile('evidence')) {
-            if ($request->hasFile('evidence')) {
-                $picture = $request->file('evidence');
-                $pictureExtension = $picture->getClientOriginalExtension();
-                $pictureName = $picture->getFilename() . '.' . $pictureExtension;
-                $picture->move(public_path('fileStore'), $pictureName);
-            }else{
-                $pictureName = $request->input('old_evidence');
-            }
+            $picture = $request->file('evidence');
+            $pictureExtension = $picture->getClientOriginalExtension();
+            $originalName = pathinfo($picture->getClientOriginalName(), PATHINFO_FILENAME);
+            $pictureName = uniqid() . '_' . $originalName . '.' . $pictureExtension;
+            $picture->move(public_path('fileStore'), $pictureName);
+        } elseif($request->has('old_evidence')) {
+            $pictureName = $request->input('old_evidence');
+        }
         
-            // Optional: Delete old evidence file if it exists
-            $oldRequisition = Requisition::find($req_id);
-            if ($oldRequisition->evidence_document && Storage::disk('public')->exists($oldRequisition->evidence_document)) {
-                Storage::disk('public')->delete($oldRequisition->evidence_document);
+        // Delete old evidence file if new file uploaded
+        if ($pictureName && $oldRequisition = Requisition::find($req_id)) {
+            if ($oldRequisition->evidence_document && file_exists(public_path($oldRequisition->evidence_document))) {
+                @unlink(public_path($oldRequisition->evidence_document));
             }
         }
 
@@ -414,7 +412,7 @@ class RequisitionController extends Controller
             $requisition->remarks = $remarks;
             $requisition->updated_by = Auth::user()->id;
 
-            // Update evidence document if a new file was uploaded - NEW CODE
+            // Update evidence document if a new file was uploaded - FIXED CODE
             if ($pictureName) {
                 $requisition->evidence_document = 'fileStore/' . $pictureName;
             }

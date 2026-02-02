@@ -54,13 +54,15 @@
                                 </div>
                                 <div class="form-group col-md-4">
                                     <label for="evidence_document">View Evidence:</label>
-                                        @if($requisition->evidence_document)
+                                        @if($requisition->evidence_document && file_exists(public_path($requisition->evidence_document)))
                                             <div class="d-flex align-items-center gap-3">
                                                 <a href="{{ asset($requisition->evidence_document) }}" target="_blank" 
                                                 class="btn btn-warning text-body">
                                                  View
                                                 </a>
                                             </div>
+                                        @elseif($requisition->evidence_document)
+                                            <h6 class="text-danger">Document file not found.</h6>
                                         @else
                                             <h6 class="text-muted">No document attached.</h6>
                                         @endif
