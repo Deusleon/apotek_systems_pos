@@ -162,6 +162,54 @@
             window.location.href = this.getAttribute('href');
         });
 
+        // Function to format number with commas
+        function formatNumberWithCommas(number) {
+            return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
+        // Function to parse formatted number (remove commas)
+        function parseFormattedNumber(formattedNumber) {
+            return parseFloat(formattedNumber.toString().replace(/,/g, '')) || 0;
+        }
+
+        // Add input event listener to format numbers as user types
+        document.querySelectorAll('.qty-input').forEach(function(input) {
+            input.addEventListener('input', function(e) {
+                // Get cursor position
+                const cursorPosition = this.selectionStart;
+                const originalValue = this.value;
+                
+                // Remove commas and parse the number
+                const rawValue = this.value.replace(/,/g, '');
+                
+                // Only allow numeric input
+                if (rawValue === '' || /^\d+$/.test(rawValue)) {
+                    // Format with commas
+                    const formattedValue = formatNumberWithCommas(rawValue);
+                    
+                    // Update value
+                    this.value = formattedValue;
+                    
+                    // Adjust cursor position after formatting
+                    const newCursorPosition = cursorPosition + (formattedValue.length - originalValue.length);
+                    this.setSelectionRange(newCursorPosition, newCursorPosition);
+                }
+            });
+
+            // When input loses focus, ensure it's formatted
+            input.addEventListener('blur', function() {
+                const rawValue = this.value.replace(/,/g, '');
+                if (rawValue !== '') {
+                    this.value = formatNumberWithCommas(rawValue);
+                }
+            });
+
+            // When input gets focus, keep the formatted value
+            input.addEventListener('focus', function() {
+                // Keep the formatted value, don't remove commas
+            });
+        });
+
         // Function to check QOH vs Qty Issued and show alert
         function checkQOHValidation() {
             let hasAlert = false;
@@ -193,6 +241,9 @@
 
                 document.querySelectorAll('.qty-input').forEach(function(el) {
                     el.style.display = 'block';
+                    // Ensure input value is formatted with commas
+                    const rawValue = el.value.replace(/,/g, '');
+                    el.value = formatNumberWithCommas(rawValue);
                 });
 
                 isEditing = true;
@@ -209,6 +260,13 @@
 
                 document.querySelectorAll('.qty-input').forEach(function(el) {
                     el.style.display = 'none';
+                    // Update the corresponding text element with formatted value
+                    const rawValue = el.value.replace(/,/g, '');
+                    const formattedValue = formatNumberWithCommas(rawValue);
+                    const textSpan = el.parentElement.querySelector('.qty-text');
+                    if (textSpan) {
+                        textSpan.textContent = formattedValue;
+                    }
                 });
 
                 isEditing = false;

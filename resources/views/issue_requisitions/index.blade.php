@@ -29,7 +29,7 @@
             <table id="table" class="display table nowrap table-striped table-hover" style="width:100%">
                 <thead>
                     <tr>
-                        <th>Req #</th>
+                        <th>Requisition #</th>
                         <th>Date</th>
                         <th>From</th>
                         <th>To</th>
