@@ -10,6 +10,7 @@ use App\Setting;
 use App\StockTracking;
 use App\Store;
 use App\User;
+use App\CommonFunctions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -185,27 +186,21 @@ class RequisitionController extends Controller
             'evidence' => 'nullable|file|mimes:jpg,jpeg,png,webp,pdf|max:2048', // max 2MB
         ]);
 
+        $number_gen = new CommonFunctions();
         $orders = json_decode($request->orders);
         
-        $pictureName = null;
-        if ($request->hasFile('evidence')) {
+        // Handle file upload - FIXED VARIABLE NAME
+        $evidencePath = null;
+        if($request->hasFile('evidence')) {
             $picture = $request->file('evidence');
             $pictureExtension = $picture->getClientOriginalExtension();
             $pictureName = $picture->getFilename() . '.' . $pictureExtension;
             $picture->move(public_path('fileStore'), $pictureName);
-        }else{
-            $pictureName = $request->input('old_evidence');
+            $evidencePath = 'fileStore/' . $pictureName;
         }
 
-        $last_req_id = Requisition::orderBy('id', 'DESC')->first();
-
-        if ($last_req_id) {
-            $Id = ++$last_req_id->id;
-        } else {
-            $Id = 1;
-        }
-
-        $req_no = date('m') . date('d') . str_pad($Id, 5, '0', STR_PAD_LEFT);
+        $number_gen = new \App\CommonFunctions();
+        $req_no = $number_gen->generateNumber();
 
         $from_store = $request->from_store;
 
@@ -214,7 +209,7 @@ class RequisitionController extends Controller
             $requisition->req_no = $req_no;
             $requisition->notes = $request->notes;
             $requisition->remarks = $request->remark;
-            $requisition->evidence_document = $pictureName; // FIXED COLUMN NAME
+            $requisition->evidence_document = $evidencePath; // FIXED COLUMN NAME
             $requisition->from_store = $from_store;
             $requisition->to_store = current_store_id();
             $requisition->status = 0;
@@ -421,7 +416,7 @@ class RequisitionController extends Controller
 
             // Update evidence document if a new file was uploaded - NEW CODE
             if ($pictureName) {
-                $requisition->evidence_document = $pictureName;
+                $requisition->evidence_document = 'fileStore/' . $pictureName;
             }
 
             $requisition->save();
