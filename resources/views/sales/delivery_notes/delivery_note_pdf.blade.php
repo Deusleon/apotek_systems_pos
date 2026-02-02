@@ -65,8 +65,7 @@
             border: 1px solid #000;
             border-collapse: collapse;
             margin-top: 15px;
-            margin-left: -1px;
-            margin-right: -1px;
+            table-layout: fixed;
         }
 
         .table-header {
@@ -80,10 +79,10 @@
 
         .table-header th {
             padding: 4px 2px;
-            border-top: 2px solid #000;
-            border-bottom: 2px solid #000;
-            border-left: 1px solid #858484;
+            border: 1px solid #858484;
             font-size: 11px;
+            font-weight: bold;
+            text-align: center;
         }
 
         .items-table td {
@@ -91,6 +90,9 @@
             border: 1px solid #858484;
             font-size: 11px;
             height: 15px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .summary-table {
@@ -98,8 +100,6 @@
             border: 1px solid #000;
             border-collapse: collapse;
             margin-top: 15px;
-            margin-left: -1px;
-            margin-right: -1px;
             margin-bottom: 10px;
         }
 
@@ -203,25 +203,22 @@
         <!-- Items Table -->
         <table class="items-table">
             <thead>
-                <tr class="table-header" style="width: 100%; position: relative;">
-                    <th style="width: 5%; position: absolute; text-align: center;">#</th>
-                    <th style="width: 55%; position: absolute; text-align: left; padding-left: 7px;">Product</th>
-                    <th style="width: 10%; position: absolute; text-align: center;">UoM</th>
-                    <th style="width: 10%; position: absolute; text-align: center;">Qty</th>
-                    <th style="width: 10%; position: absolute; text-align: center;">Condition</th>
-                    <th style="width: 10%; position: absolute; text-align: center;">Checked</th>
+                <tr class="table-header">
+                    <th style="width: 5%; text-align: center;">#</th>
+                    <th style="width: 65%; text-align: left; padding-left: 7px;">Product</th>
+                    <th style="width: 10%; text-align: center;">Qty</th>
+                    <th style="width: 10%; text-align: center;">Condition</th>
+                    <th style="width: 10%; text-align: center;">Checked</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($dat as $item)
                     @php
-                        $partNumber = $item['part_no'] ?? '';
-                        $description = $item['description'] ?? '';
+                        $name = $item['name'] ?? '';
                     @endphp
                     <tr>
                         <td style="width: 5%; text-align: center;">{{$loop->iteration}}.</td>
-                        <td style="width: 55%; text-align: left; padding-left: 7px;">{{name}}</td>
-                        <td style="width: 10%; text-align: center;">{{$item['sales_uom'] ?? 'N/A'}}</td>
+                        <td style="width: 65%; text-align: left; padding-left: 7px;">{{$name}}</td>
                         <td style="width: 10%; text-align: center;">{{number_format($item['quantity'], 0)}}</td>
                         <td style="width: 10%; text-align: center;">Good</td>
                         <td style="width: 10%; text-align: center;"></td>
@@ -238,13 +235,11 @@
                     <!-- Empty rows for spacing -->
                     @for($i = 0; $i < 7 - count($dat); $i++)
                         <tr>
-                            <td class="index-col"></td>
-                            <td class="description-col">&nbsp;</td>
-                            <td class="unit-col">&nbsp;</td>
-                            <td class="qty-col">&nbsp;</td>
-                            <td class="price-col">&nbsp;</td>
-                            <td class="vat-col">&nbsp;</td>
-                            <td class="amount-col">&nbsp;</td>
+                            <td style="width: 5%;">&nbsp;</td>
+                            <td style="width: 65%;">&nbsp;</td>
+                            <td style="width: 10%;">&nbsp;</td>
+                            <td style="width: 10%;">&nbsp;</td>
+                            <td style="width: 10%;">&nbsp;</td>
                         </tr>
                     @endfor
                 @endif

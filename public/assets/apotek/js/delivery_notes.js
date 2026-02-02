@@ -54,7 +54,10 @@ if (!$.fn.DataTable.isDataTable("#sales_history_table")) {
         searching: false,
         paging: false,
         info: false,
-        columns: [{ title: "Product" }, { title: "Quantity" }],
+        columns: [
+            { title: "Product" },
+            { title: "Quantity", className: "text-center" },
+        ],
     });
 } else {
     saleHistoryDataTable = $("#sales_history_table").DataTable();
@@ -153,12 +156,21 @@ function populateHistoryTable(data) {
 
     // Add new rows
     data.forEach(function (item) {
+        // Build product name from available fields
+        var productName = item.name || "";
+        if (item.brand) {
+            productName = item.brand + " " + productName;
+        }
+        if (item.pack_size) {
+            productName += " " + item.pack_size;
+        }
+        if (item.sales_uom) {
+            productName += " " + item.sales_uom;
+        }
+
         saleHistoryDataTable.row.add([
-            item.part_no || item.name, // Use part_no if available, otherwise name
-            item.description.length > 50
-                ? item.description.substr(0, 50) + "..."
-                : item.description,
-            numberWithCommas(Number(item.quantity).toFixed(0)),
+            productName, // Product column
+            numberWithCommas(Number(item.quantity).toFixed(0)), // Quantity column
         ]);
     });
 
