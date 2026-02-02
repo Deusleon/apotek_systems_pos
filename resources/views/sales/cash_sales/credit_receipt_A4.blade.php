@@ -10,6 +10,28 @@
             return number_format($whole, 2);
         }
     }
+    function smartFormat($num)
+    {
+        $str = (string) $num;
+
+        if (strpos($str, '.') !== false) {
+
+            list($whole, $decimal) = explode('.', $str);
+
+            $decimal = rtrim($decimal, '0');
+
+            if ($decimal === '') {
+                return number_format((int) $whole);
+            }
+
+            $wholeFormatted = number_format((int) $whole);
+
+            return $wholeFormatted . '.' . $decimal;
+
+        } else {
+            return number_format((int) $str);
+        }
+    }
 @endphp
 
 <!DOCTYPE html>
@@ -226,7 +248,7 @@
                             {{$item['brand'] ?? ''}}
                             {{$item['pack_size'] ?? ''}}{{$item['sales_uom'] ?? ''}}
                         </td>
-                        <td style="width: 49px; text-align: center;">{{number_format($item['quantity'], 0)}}</td>
+                        <td style="width: 49px; text-align: center;">{{smartFormat($item['quantity'])}}</td>
                         <td style="width: 70px; text-align: right; padding-right: 3px;">{{customRound($item['price'])}}</td>
                         <td style="width: 89px; text-align: right; padding-right: 3px;">{{customRound($item['vat'])}}</td>
                         <td style="width: 89px; text-align: right; padding-right: 3px;">{{customRound(($item['price'] * $item['quantity']) + $item['vat'])}}

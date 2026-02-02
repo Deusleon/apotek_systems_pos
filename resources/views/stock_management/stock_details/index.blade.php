@@ -109,6 +109,7 @@
 @endsection
 
 @push("page_scripts")
+    @include('partials.notification')
     <script src="{{asset("assets/plugins/bootstrap-datetimepicker/js/bootstrap-datepicker.min.js")}}"></script>
     <script src="{{asset("assets/js/pages/ac-datepicker.js")}}"></script>
     <script src="{{asset("assets/apotek/js/notification.js")}}"></script>

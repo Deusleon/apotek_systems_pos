@@ -9,6 +9,28 @@ function customRound($num) {
         return number_format($whole, 2);
     }
 }
+    function smartFormat($num)
+    {
+        $str = (string) $num;
+
+        if (strpos($str, '.') !== false) {
+
+            list($whole, $decimal) = explode('.', $str);
+
+            $decimal = rtrim($decimal, '0');
+
+            if ($decimal === '') {
+                return number_format((int) $whole);
+            }
+
+            $wholeFormatted = number_format((int) $whole);
+
+            return $wholeFormatted . '.' . $decimal;
+
+        } else {
+            return number_format((int) $str);
+        }
+    }
 @endphp
 <!DOCTYPE html>
 <html>
@@ -136,7 +158,7 @@ function customRound($num) {
                             <td>{{$item['name']}} {{$item['brand'] ?? ''}}
                                 {{$item['pack_size'] ?? ''}}{{$item['sales_uom'] ?? ''}}
                             </td>
-                            <td class="text-center">{{number_format($item['quantity'], 0)}}</td>
+                            <td class="text-center">{{smartFormat($item['quantity'])}}</td>
                             <td class="text-right">{{customRound($item['price'])}}</td>
                             {{-- <td class="text-right">{{customRound($item['vat'])}}</td> --}}
                             <td class="text-right">{{customRound($item['quantity'] * $item['price'])}}</td>

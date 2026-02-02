@@ -9,6 +9,28 @@ function customRound($num) {
         return number_format($whole, 2);
     }
 }
+    function smartFormat($num)
+    {
+        $str = (string) $num;
+
+        if (strpos($str, '.') !== false) {
+
+            list($whole, $decimal) = explode('.', $str);
+
+            $decimal = rtrim($decimal, '0');
+
+            if ($decimal === '') {
+                return number_format((int) $whole);
+            }
+
+            $wholeFormatted = number_format((int) $whole);
+
+            return $wholeFormatted . '.' . $decimal;
+
+        } else {
+            return number_format((int) $str);
+        }
+    }
 @endphp
 <!DOCTYPE html>
 <html>
@@ -224,7 +246,7 @@ function customRound($num) {
                         <td style="width: 15px; text-align: center;">{{$loop->iteration}}.</td>
                         <td style="width: 230px; text-align: left; padding-left: 7px;">{{$item['name']}} {{$item['brand'] ?? ''}}
                             {{$item['pack_size'] ?? ''}}{{$item['sales_uom'] ?? ''}}</td>
-                        <td style="width: 31px; text-align: center;">{{number_format($item['quantity'], 0)}}</td>
+                        <td style="width: 31px; text-align: center;">{{smartFormat($item['quantity'])}}</td>
                         <td style="width: 53px; text-align: right; padding-right: 3px;">{{customRound($item['price'])}}</td>
                         <td style="width: 57px; text-align: right; padding-right: 3px;">{{customRound($item['vat'])}}</td>
                         <td style="width: 63px; text-align: right; padding-right: 3px;">{{customRound($item['price'] * $item['quantity'])}}

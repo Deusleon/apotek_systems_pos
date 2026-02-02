@@ -17,7 +17,6 @@
 
 @section("content")
 
-
     @if (auth()->user()->checkPermission('View Current Stock'))
         <div class="col-sm-12">
             <ul class="nav nav-pills mb-3" id="myTab" role="tablist">
@@ -322,6 +321,7 @@
 @endsection
 
 @push("page_scripts")
+    @include('partials.notification')
     <script>
         $(document).ready(function () {
 

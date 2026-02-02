@@ -10,6 +10,31 @@
             return number_format($whole, 2);
         }
     }
+
+    function smartFormat($num)
+    {
+        $str = (string) $num;
+
+        if (strpos($str, '.') !== false) {
+
+            list($whole, $decimal) = explode('.', $str);
+
+            $decimal = rtrim($decimal, '0');
+
+            if ($decimal === '') {
+                return number_format((int) $whole);
+            }
+
+            $wholeFormatted = number_format((int) $whole);
+
+            return $wholeFormatted . '.' . $decimal;
+
+        } else {
+            return number_format((int) $str);
+        }
+    }
+
+
 @endphp
 
 <!DOCTYPE html>
@@ -94,7 +119,7 @@
             height: 15px;
             /* text-align: right; */
         }
-        
+
         .summary-table {
             width: 100%;
             border: 1px solid #000;
@@ -104,7 +129,7 @@
             margin-right: -1px;
             margin-bottom: 10px;
         }
-        
+
         .summary-table td {
             padding: 4px 2px;
             border: 1px solid #858484;
@@ -167,9 +192,9 @@
         <div style="justify-content: center; font-size: 12px; line-height: 1.2;">
             {{$pharmacy['address']}}<br>
             {{$pharmacy['phone']}}<br>
-            <span>{{$pharmacy['email'] ? $pharmacy['email'].' |' : 'N/A'}}</span> 
+            <span>{{$pharmacy['email'] ? $pharmacy['email'] . ' |' : 'N/A'}}</span>
             <span>{{$pharmacy['website'] ?? 'N/A'}}</span><br>
-            <span>TIN: {{$pharmacy['tin_number'] ? $pharmacy['tin_number'].' |' : 'N/A'}}</span> 
+            <span>TIN: {{$pharmacy['tin_number'] ? $pharmacy['tin_number'] . ' |' : 'N/A'}}</span>
             <span>VRN: {{$pharmacy['vrn_number'] ?? 'N/A'}}</span>
         </div>
     </div>
@@ -181,17 +206,25 @@
         <table class="customer-table">
             <tbody>
                 <tr style="width: 100%; position: relative;">
-                    <td style="width: 18%; position: absolute; padding-left: 10px;">Invoice # : <span style="margin-left: 3px;">{{$datas ?? 'N/A'}}</span></td>
-                    <td style="width: 55.5%; padding-left: 10px;">Phone : <span style="margin-left: 3px;">{{$dat[0]['customer_phone'] ?? 'N/A'}}</span></td>
-                    <td style="width: 26.5%; padding-left: 10px;">TIN : <span style="margin-left: 3px;">{{ !empty($dat[0]['customer_tin']) ? $dat[0]['customer_tin'] : 'N/A' }}</span></td>
+                    <td style="width: 18%; position: absolute; padding-left: 10px;">Invoice # : <span
+                            style="margin-left: 3px;">{{$datas ?? 'N/A'}}</span></td>
+                    <td style="width: 55.5%; padding-left: 10px;">Phone : <span
+                            style="margin-left: 3px;">{{$dat[0]['customer_phone'] ?? 'N/A'}}</span></td>
+                    <td style="width: 26.5%; padding-left: 10px;">TIN : <span
+                            style="margin-left: 3px;">{{ !empty($dat[0]['customer_tin']) ? $dat[0]['customer_tin'] : 'N/A' }}</span>
+                    </td>
                 </tr>
                 <tr style="width: 100%; position: relative;">
-                    <td style="width: 18%; position: absolute; padding-left: 10px;">Invoice Date : <span style="margin-left: 3px;">{{date('Y-m-d', strtotime($dat[0]['created_at']))}}</span></td>
-                    <td style="width: 55.5%; padding-left: 10px;">Address : <span style="margin-left: 3px;">{{$dat[0]['customer_address'] ?? 'N/A'}}</span></td>
-                    <td style="width: 26.5%; padding-left: 10px;">Payment : <span style="margin-left: 3px;">{{$dat[0]['payment_type'] ?? 'N/A'}}</span></td>
+                    <td style="width: 18%; position: absolute; padding-left: 10px;">Invoice Date : <span
+                            style="margin-left: 3px;">{{date('Y-m-d', strtotime($dat[0]['created_at']))}}</span></td>
+                    <td style="width: 55.5%; padding-left: 10px;">Address : <span
+                            style="margin-left: 3px;">{{$dat[0]['customer_address'] ?? 'N/A'}}</span></td>
+                    <td style="width: 26.5%; padding-left: 10px;">Payment : <span
+                            style="margin-left: 3px;">{{$dat[0]['payment_type'] ?? 'N/A'}}</span></td>
                 </tr>
                 <tr style="width: 100%; position: relative;">
-                    <td colspan="2" style="width: 42%; padding-left: 10px;">Bill To : <span style="margin-left: 3px;">{{$dat[0]['customer'] ?? 'CASH'}}</span></td>
+                    <td colspan="2" style="width: 42%; padding-left: 10px;">Bill To : <span
+                            style="margin-left: 3px;">{{$dat[0]['customer'] ?? 'CASH'}}</span></td>
                     <td style="width: 28%; padding-left: 10px;">Currency : <span style="margin-left: 3px;">TZS</span></td>
                 </tr>
             </tbody>
@@ -226,10 +259,11 @@
                             {{$item['brand'] ?? ''}}
                             {{$item['pack_size'] ?? ''}}{{$item['sales_uom'] ?? ''}}
                         </td>
-                        <td style="width: 49px; text-align: center;">{{number_format($item['quantity'], 0)}}</td>
+                        <td style="width: 49px; text-align: center;">{{smartFormat($item['quantity'])}}</td>
                         <td style="width: 70px; text-align: right; padding-right: 3px;">{{customRound($item['price'])}}</td>
                         <td style="width: 89px; text-align: right; padding-right: 3px;">{{customRound($item['vat'])}}</td>
-                        <td style="width: 89px; text-align: right; padding-right: 3px;">{{customRound(($item['price'] * $item['quantity']) + $item['vat'])}}
+                        <td style="width: 89px; text-align: right; padding-right: 3px;">
+                            {{customRound(($item['price'] * $item['quantity']) + $item['vat'])}}
                         </td>
                     </tr>
                     @php
@@ -238,9 +272,9 @@
                         $discount += $item['discount'];
                     @endphp
                 @endforeach
-                    @php
-                        $grandTotal = ($subTotal - $dat[0]['discount_total']) + $dat[0]['total_vat'];
-                    @endphp
+                @php
+                    $grandTotal = ($subTotal - $dat[0]['discount_total']) + $dat[0]['total_vat'];
+                @endphp
 
                 @if(count($dat) < 5)
                     <!-- Empty rows for spacing -->
@@ -261,8 +295,8 @@
             <div style="width: 70%; padding-top: 10px;">
                 {{-- <div class="footer-section">
                     @foreach($data as $datas => $dat)
-                        <div class="sold-by">Issued By: {{$dat[0]['sold_by']}}</div>
-                        @break
+                    <div class="sold-by">Issued By: {{$dat[0]['sold_by']}}</div>
+                    @break
                     @endforeach
                     <span style="font-size: 10px; border-bottom: 1px solid #ccc;">Printed on: {{date('Y-m-d H:i:s')}}</span>
                 </div> --}}
@@ -303,12 +337,14 @@
                         </tr>
                         <tr>
                             <td align="right" style="width: 50%; font-weight: bold; padding-right: 5px;">Balance : </td>
-                            <td align="right" style="padding-right: 3px;">{{customRound($dat[0]['grand_total'] - $dat[0]['paid'])}}</td>
+                            <td align="right" style="padding-right: 3px;">
+                                {{customRound($dat[0]['grand_total'] - $dat[0]['paid'])}}
+                            </td>
                         </tr>
                     @endif
                 </table>
                 {{-- <span style="">
-                    Received By: ...................................... 
+                    Received By: ......................................
                 </span> --}}
             </div>
         </div>
