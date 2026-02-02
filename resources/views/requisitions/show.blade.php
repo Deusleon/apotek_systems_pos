@@ -117,7 +117,7 @@
                                 <!-- Existing Evidence -->
                                 <div style="flex: 1;">
                                     <label class="form-label mb-2"><b>Existing</b></label>
-                                    @if($requisition->evidence_document)
+                                    @if($requisition->evidence_document && file_exists(public_path($requisition->evidence_document)))
                                         <div>
                                             <a href="{{ asset($requisition->evidence_document) }}" 
                                             target="_blank" 
@@ -125,6 +125,10 @@
                                             title="View Document">
                                                 View
                                             </a>
+                                        </div>
+                                    @elseif($requisition->evidence_document)
+                                        <div class="alert alert-danger py-2 mb-0">
+                                            <i class="feather icon-alert-triangle"></i> File not found
                                         </div>
                                     @else
                                         <div class="alert alert-warning py-2 mb-0">
