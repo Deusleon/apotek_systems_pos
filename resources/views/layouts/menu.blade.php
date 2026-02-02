@@ -14,6 +14,9 @@
             @if(auth()->user()->checkPermission('View Credit Sales') || auth()->user()->checkPermission('View Credit Tracking') || auth()->user()->checkPermission('View Credit Payments'))
                 <li class=""><a href="{{route('credit-sales.creditSale')}}" class="">Credit Sales</a></li>
             @endif
+            @if(auth()->user()->checkPermission('View Delivery Note'))
+                <li><a href="{{route('delivery-notes.index')}}" class="">Delivery Note</a></li>
+            @endif
             @if(auth()->user()->checkPermission('View Sales Order') || auth()->user()->checkPermission('View Order List'))
                 <li class=""><a href="{{route('sale-quotes.index')}}" class="">Sales Order</a></li>
             @endif

@@ -44,6 +44,7 @@ class CreatePermissionsTable extends Migration
             ['name' => 'View Credit Tracking', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'SALES'],
             ['name' => 'View Credit Payments', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'SALES'],
             ['name' => 'Add Credit Payment', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'SALES'],
+            ['name' => 'View Delivery Note', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'SALES'],
             ['name' => 'View Sales Order', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'SALES'],
             ['name' => 'View Order List', 'guard_name' => 'web', 'created_at' => '2024-11-15 19:12:08', 'updated_at' => '2024-11-15 19:12:08', 'category' => 'SALES'],
             ['name' => 'Print Sales Orders', 'guard_name' => 'web', 'created_at' => '2024-11-15 19:12:08', 'updated_at' => '2024-11-15 19:12:08', 'category' => 'SALES'],
