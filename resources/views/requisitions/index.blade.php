@@ -17,13 +17,13 @@
                 <ul class="nav nav-pills mb-3" id="myTab" role="tablist">
                     <li class="nav-item">
                         <a class="nav-link text-uppercase" id="requisition-create"
-                           href="{{ url('Inventory/StockRequisitions/new') }}" role="tab"
+                           href="{{ url('inventory/stockrequisition/new') }}" role="tab"
                            aria-controls="current-stock" aria-selected="true">New</a>
                     </li>
                     @if(Auth::user()->checkPermission('View Stock Requisition'))
                     <li class="nav-item">
                         <a class="nav-link active text-uppercase" id="requisitions"
-                           href="{{ url('Inventory/StockRequisitions/Requisition-list') }}" role="tab"
+                           href="{{ url('inventory/stockrequisition/requisition-list') }}" role="tab"
                            aria-controls="stock_list" aria-selected="false">Requisition List
                         </a>
                     </li>
