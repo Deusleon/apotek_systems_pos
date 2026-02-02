@@ -16,7 +16,7 @@
                 <ul class="nav nav-pills mb-3" id="myTab" role="tablist">
                     <li class="nav-item">
                         <a class="nav-link text-uppercase" id="requisition-create" 
-                        href="{{ url('Inventory/StockRequisitions/new') }}" role="tab"
+                        href="{{ url('inventory/stockrequisition/new') }}" role="tab"
                         aria-controls="current-stock" aria-selected="true">New</a>
                     </li>
                     <li class="nav-item">
@@ -27,7 +27,7 @@
                     @if(Auth::user()->checkPermission('View Requisition List'))
                     <li class="nav-item">
                         <a class="nav-link text-uppercase" id="requisitions" 
-                        href="{{ url('Inventory/StockRequisitions/Requisition-list') }}" role="tab"
+                        href="{{ url('inventory/stockrequisition/requisition-list') }}" role="tab"
                         aria-controls="stock_list" aria-selected="false">Requisition List</a>
                     </li>
                     @endif
@@ -36,20 +36,6 @@
                     <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
                         <form action="{{ route('requisitions.update') }}" method="post" enctype="multipart/form-data">
                             @csrf
-                            <div class="row">
-                                <div class="form-group col-md-4">
-                                    <label for="user">Requisition #</label>
-                                    <h6>{{ $requisition->req_no }}</h6>
-                                </div>
-                                <div class="form-group col-md-4">
-                                    <label for="user">Created By</label>
-                                    <h6>{{ $requisition->creator->name }}</h6>
-                                </div>
-                                <div class="form-group col-md-4">
-                                    <label for="user">Date Created</label>
-                                    <h6>{{ date('Y-m-d', strtotime($requisition->created_at)) }}</h6>
-                                </div>
-                            </div>
                             <div class="row">
                                 <div class="form-group col-md-3">
                                      <label for="from_store">Supplying Branch<font color="red">*</font></label>
@@ -80,7 +66,7 @@
                                      @endif
                                 </div>
                                 <div class="form-group col-md-6">
-                                    <label for="products">Select Products <font color="red">*</font></label>
+                                    <label for="products">Products <font color="red">*</font></label>
                                     <select name="products" class="js-example-basic-single form-control products"
                                         id="products">
                                         <option value="">Select Products...</option>
@@ -133,7 +119,7 @@
                                     <label class="form-label mb-2"><b>Existing</b></label>
                                     @if($requisition->evidence_document)
                                         <div>
-                                            <a href="{{ asset('./fileStore/' . $requisition->evidence_document) }}" 
+                                            <a href="{{ asset($requisition->evidence_document) }}" 
                                             target="_blank" 
                                             class="btn btn-warning text-body"
                                             title="View Document">
