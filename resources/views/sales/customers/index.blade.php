@@ -43,9 +43,10 @@
                                 <thead>
                                     <tr>
                                         <th>Name</th>
+                                        <th>Phone</th>
+                                         <th>TIN</th>
                                         <th>Total Credit</th>
                                         <th>Credit Limit</th>
-                                        <th>Phone</th>
                                         <!-- <th>Email</th> -->
                                         @if(auth()->user()->checkPermission('Edit Customers') || auth()->user()->checkPermission('Delete Customers'))
                                             <th>Action</th>
@@ -57,9 +58,10 @@
                                     @foreach($customers as $customer)
                                         <tr>
                                             <td>{{$customer->name}}</td>
+                                            <td>{{$customer->phone}}</td>
+                                            <td>{{$customer->tin}}</td>
                                             <td>{{number_format($customer->total_credit, 2)}}</td>
                                             <td>{{number_format($customer->credit_limit, 2)}}</td>
-                                            <td>{{$customer->phone}}</td>
                                             {{--
 
                                             @if($customer->email)
@@ -71,8 +73,23 @@
                                             @endif
 
                                             --}}
-                                            @if(auth()->user()->checkPermission('Edit Customers') || auth()->user()->checkPermission('Delete Customers'))
+                                            @if(auth()->user()->checkPermission('Edit Customers') || auth()->user()->checkPermission('Delete Customers') || auth()->user()->checkPermission('View Customers'))
                                                 <td>
+                                                    @if(auth()->user()->checkPermission('View Customers'))
+                                                        <button class="btn btn-sm btn-rounded btn-success" data-id="{{$customer->id}}"
+                                                            data-name="{{$customer->name}}"
+                                                            data-email="{{$customer->email}}"
+                                            
+                                                            data-phone="{{$customer->phone}}"
+                                                            data-address="{{$customer->address}}"
+                                                            data-tin="{{$customer->tin}}"
+                                                            data-vat="{{$customer->vat}}"
+                                                            data-credit_limit="{{$customer->credit_limit}}"
+                                                            data-grace_period="{{$customer->grace_period}}"
+                                                            data-total_credit="{{$customer->total_credit}}"
+                                                            type="button" data-toggle="modal" data-target="#show">Show
+                                                        </button>
+                                                    @endif
                                                     @if(auth()->user()->checkPermission('Edit Customers'))
                                                         <a href="#">
                                                             <button class="btn btn-sm btn-rounded btn-primary" data-id="{{$customer->id}}"
@@ -120,6 +137,67 @@
         @include('sales.customers.create2')
         @include('sales.customers.delete')
         @include('sales.customers.edit')
+        
+         <!-- Show Customer Modal -->
+        <div class="modal fade" id="show" tabindex="-1" role="dialog" aria-labelledby="showModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="showModalCenterTitle">Customer Details</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group d-flex align-items-start">
+                                    <label class="mr-2 text-right" style="min-width: 90px;">Name:</label>
+                                    <span class="flex-grow-1" id="show_name"></span>
+                                </div>
+                                <div class="form-group d-flex align-items-start">
+                                    <label class="mr-2 text-right" style="min-width: 90px;">Email:</label>
+                                    <span class="flex-grow-1" id="show_email"></span>
+                                </div>
+                                <div class="form-group d-flex align-items-start">
+                                    <label class="mr-2 text-right" style="min-width: 90px;">Phone:</label>
+                                    <span class="flex-grow-1" id="show_phone"></span>
+                                </div>
+                                <div class="form-group d-flex align-items-start">
+                                    <label class="mr-2 text-right" style="min-width: 90px;">Address:</label>
+                                    <span class="flex-grow-1" id="show_address"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group d-flex align-items-start">
+                                    <label class="mr-2 text-right" style="min-width: 90px;">TIN:</label>
+                                    <span class="flex-grow-1" id="show_tin"></span>
+                                </div>
+                                <div class="form-group d-flex align-items-start">
+                                    <label class="mr-2 text-right" style="min-width: 90px;">VAT Reg:</label>
+                                    <span class="flex-grow-1" id="show_vat"></span>
+                                </div>
+                                <div class="form-group d-flex align-items-start">
+                                    <label class="mr-2 text-right" style="min-width: 90px;">Credit Limit:</label>
+                                    <span class="flex-grow-1" id="show_credit_limit"></span>
+                                </div>
+                                <div class="form-group d-flex align-items-start">
+                                    <label class="mr-2 text-right" style="min-width: 90px;">Grace Period:</label>
+                                    <span class="flex-grow-1" id="show_grace_period"></span>
+                                </div>
+                                <div class="form-group d-flex align-items-start">
+                                    <label class="mr-2 text-right" style="min-width: 90px;">Total Credit:</label>
+                                    <span class="flex-grow-1" id="show_total_credit"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
 @endsection
 
@@ -127,4 +205,28 @@
     @push("page_scripts")
         @include('partials.notification')
         <script src="{{asset("assets/apotek/js/customer.js")}}"></script>
+        <script>
+            $('#show').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var name = button.data('name');
+                var email = button.data('email');
+                var phone = button.data('phone');
+                var address = button.data('address');
+                var tin = button.data('tin');
+                var vat = button.data('vat');
+                var credit_limit = button.data('credit_limit');
+                var grace_period = button.data('grace_period');
+                var total_credit = button.data('total_credit');
+
+                $('#show_name').text(name || 'N/A');
+                $('#show_email').text(email || 'N/A');
+                $('#show_phone').text(phone || 'N/A');
+                $('#show_address').text(address || 'N/A');
+                $('#show_tin').text(tin || 'N/A');
+                $('#show_vat').text(vat || 'N/A');
+                $('#show_credit_limit').text(credit_limit ? parseFloat(credit_limit).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '0.00');
+                $('#show_grace_period').text(grace_period ? grace_period + ' days' : 'N/A');
+                $('#show_total_credit').text(total_credit ? parseFloat(total_credit).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '0.00');
+            });
+        </script>
     @endpush
