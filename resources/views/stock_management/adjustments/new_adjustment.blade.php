@@ -403,8 +403,6 @@
     @include('stock_management.adjustments.adjust_stock_modal')
 @endsection
 
-@include('partials.notification')
-
 @push("page_scripts")
     <script>
         $(document).ready(function () {
@@ -648,17 +646,48 @@
             });
         }
 
-        $('#new_qty_to_show').on('keyup', function () {
-            var newValue = document.getElementById('new_qty_to_show').value;
-            if (newValue !== '') {
-                document.getElementById('new_qty_to_show').value =
-                    numberWithCommas(parseFloat(newValue.replace(/\,/g, ''), 10));
-                document.getElementById('new_quantity').value = parseFloat(newValue.replace(/\,/g, ''), 10);
+        $('#new_qty_to_show').on('input', function () {
+            let value = this.value;
+            
+            // Remove any non-numeric characters except decimal point
+            value = value.replace(/[^0-9.]/g, '');
+            
+            // Ensure only one decimal point
+            const parts = value.split('.');
+            if (parts.length > 2) {
+                value = parts[0] + '.' + parts.slice(1).join('');
+            }
+            
+            // Limit to 2 decimal places
+            if (parts.length === 2 && parts[1].length > 2) {
+                value = parts[0] + '.' + parts[1].substring(0, 2);
+            }
+            
+            this.value = value;
+            
+            // Update hidden field
+            if (value !== '') {
+                document.getElementById('new_quantity').value = parseFloat(value.replace(/\,/g, ''));
             } else {
-                document.getElementById('new_qty_to_show').value = '';
                 document.getElementById('new_quantity').value = '';
             }
+        });
 
+        $('#new_qty_to_show').on('blur', function () {
+            var newValue = this.value;
+            if (newValue !== '' && !isNaN(newValue)) {
+                // Format with commas on blur
+                this.value = numberWithCommas(parseFloat(newValue));
+                document.getElementById('new_quantity').value = parseFloat(newValue);
+            }
+        });
+
+        $('#new_qty_to_show').on('focus', function () {
+            // Remove commas on focus for easier editing
+            var value = this.value.replace(/\,/g, '');
+            if (value !== '' && !isNaN(value)) {
+                this.value = value;
+            }
         });
         function numberWithCommas(digit) {
             return String(parseFloat(digit)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");

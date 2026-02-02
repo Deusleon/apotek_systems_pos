@@ -94,8 +94,8 @@
                                     <div class="form-group row">
                                         <label for="saleUoM" class="col-md-4 col-form-label text-md-right">Unit </label>
                                         <div class="col-md-8">
-                                            <input type="text" class="form-control" id="saleUoM_edit" name="sale_uom"
-                                                placeholder="e.g. pcs, kg, ml" value="{{ old('sale_uom') }}">
+                                            <input type="text" class="form-control" id="saleUoM_edit" name="sales_uom"
+                                                placeholder="e.g. pcs, kg, ml" value="{{ old('sales_uom') }}">
                                         </div>
                                     </div>
 

@@ -108,8 +108,6 @@
 
 @endsection
 
-@include('partials.notification')
-
 @push("page_scripts")
     <script src="{{asset("assets/plugins/bootstrap-datetimepicker/js/bootstrap-datepicker.min.js")}}"></script>
     <script src="{{asset("assets/js/pages/ac-datepicker.js")}}"></script>

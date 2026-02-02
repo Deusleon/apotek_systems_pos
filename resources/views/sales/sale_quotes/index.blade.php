@@ -377,7 +377,6 @@
                 // Update display
                 document.getElementById('sub_total').value = formatMoney(sub_total);
                 document.getElementById('total_vat').value = formatMoney(total_vat);
-                document.getElementById('sale_discount').value = formatMoney(sale_discount);
                 document.getElementById('total').value = formatMoney(total);
                 document.getElementById('total_items').innerHTML = cart.length;
 
@@ -938,12 +937,10 @@
                 }
                 discount(); // Update totals
                 document.getElementById('total_items').innerHTML = 0;
-                document.getElementById("sale_discount").value = "0.00";
+                if (discount_enable) {
+                    document.getElementById("sale_discount").value = "0.00";
+                }
                 document.getElementById("total").value = "0.00";
-                // Clear localStorage to prevent cart persistence on page reload
-                localStorage.removeItem('cart');
-                localStorage.removeItem('default_cart');
-                localStorage.removeItem('order_cart');
                 // console.log('Cart cleared');
             }
 

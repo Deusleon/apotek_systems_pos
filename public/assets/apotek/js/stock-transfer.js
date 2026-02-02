@@ -289,7 +289,7 @@ $("#cart_table tbody").on("click", "#edit_btn", function () {
         var index = cart_table.row($(this).parents("tr")).index();
         quantity = row_data[2].toString().replace(",", "");
         row_data[2] =
-            "<div><input style='width: 50%' type='text' min='1' class='form-control' id='edit_quantity' onkeypress='return isNumberKey(event,this)' required/><span id='span_danger' style='display: none; color: red; font-size: 0.9em;'></span></div>";
+            "<div><input style='width: 80%' type='text' min='1' class='form-control' id='edit_quantity' onkeypress='return isNumberKey(event,this)' required/><span id='span_danger' style='display: none; color: red; font-size: 0.9em;'></span></div>";
         cart[index] = row_data;
         cart_table.clear();
         cart_table.rows.add(cart);
@@ -300,6 +300,14 @@ $("#cart_table tbody").on("click", "#edit_btn", function () {
     } else {
         $("#edit_quantity").change();
     }
+    setTimeout(() => {
+        let input = document.getElementById("edit_quantity");
+        if (input) {
+            input.focus();
+            let len = input.value.length;
+            input.setSelectionRange(len, len);
+        }
+    }, 0);
 });
 
 $("#cart_table tbody").on("change", "#edit_quantity", function () {

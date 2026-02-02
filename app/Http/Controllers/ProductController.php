@@ -77,25 +77,29 @@ class ProductController extends Controller
         $max_quantinty = str_replace(',', '', $request->input('max_quantinty'));
         
         $this->validate($request, [
-            'name' => 'required|string|max:255|unique:inv_products,name,NULL,id,category_id,' . $request->category,
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('inv_products')->where(function ($query) use ($request) {
+                    return $query->where('brand', $request->brand)
+                                ->where('pack_size', $request->pack_size)
+                                ->where('sales_uom', $request->sales_uom);
+                })
+            ],
             'barcode' => 'nullable|string|max:50|unique:inv_products,barcode',
             'brand' => 'nullable|string|max:100',
             'pack_size' => 'nullable|string|max:50',
             'category' => 'required|exists:inv_categories,id',
-            'sale_uom' => 'nullable|string|max:50',
+            'sales_uom' => 'nullable|string|max:50',
             'min_quantinty' => 'nullable|min:1',
             'max_quantinty' => 'nullable|min:1',
             'product_type' => 'nullable|in:stockable,consumable',
             'status' => 'nullable|in:0,1'
+        ], [
+            'name.unique' => 'Product name already exists.',
+            'barcode.unique' => 'Product barcode exists.',
         ]);
-        $product_exists = Product::where('name', $request->name)
-                            ->where('category_id', $request->category)
-                            ->first();
-        if($product_exists){
-            session()->flash("alert-success", "Product already registered!");
-            return back();
-        }
-
         try {
             $product = new Product();
             $product->name = $request->name;
@@ -103,7 +107,7 @@ class ProductController extends Controller
             $product->brand = $request->brand;
             $product->pack_size = $request->pack_size;
             $product->category_id = $request->category;
-            $product->sales_uom = $request->sale_uom;
+            $product->sales_uom = $request->sales_uom;
             $product->min_quantinty = $min_quantinty;
             $product->max_quantinty = $max_quantinty;
             $product->type = $request->product_type;
@@ -118,33 +122,58 @@ class ProductController extends Controller
         }
     }
     public function update(Request $request)
-    {
-        // dd($request->all());   
-        $this->validate($request, [
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('inv_products', 'name')
-                    ->ignore($request->id) 
-                    ->where(function ($query) use ($request) {
-                        return $query->where('category_id', $request->category);
-                    }),
-            ],         
-            'barcode' => [
-                'nullable',
-                'string',
-                'max:50',
-                Rule::unique('inv_products', 'barcode')->ignore($request->id),
-            ],
-            'brand' => 'nullable|string|max:100',
-            'category' => 'required|exists:inv_categories,id',
-            'sale_uom' => 'nullable|string|max:50',
-            'status' => 'nullable|in:0,1'
-        ], [
-        'name.unique' => 'Product name exist',
-        'barcode.unique' => 'Product barcode exist',
-    ]);
+    { 
+        $option = Setting::where('id', 127)->value('value');
+        if($option == "Detailed"){
+            $this->validate($request, [
+                'name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('inv_products', 'name')
+                        ->ignore($request->id)
+                        ->where(function ($query) use ($request) {
+                            return $query->where('brand', $request->brand)
+                                        ->where('pack_size', $request->pack_size)
+                                        ->where('sales_uom', $request->sales_uom);
+                        }),
+                ],
+
+                'barcode' => [
+                    'nullable',
+                    'string',
+                    'max:50',
+                    Rule::unique('inv_products', 'barcode')->ignore($request->id),
+                ],
+
+                'brand' => 'nullable|string|max:100',
+                'pack_size' => 'nullable|string|max:50',
+                'category' => 'required|exists:inv_categories,id',
+                'sales_uom' => 'nullable|string|max:50',
+                'status' => 'nullable|in:0,1',
+            ], [
+                'name.unique' => 'Product name already exists.',
+                'barcode.unique' => 'Product barcode exists.',
+            ]);
+        }else{
+            $this->validate($request, [
+                'name' => 'required|string|max:255|unique:inv_products,name,'.$request->id,
+                'barcode' => [
+                    'nullable',
+                    'string',
+                    'max:50',
+                    Rule::unique('inv_products', 'barcode')->ignore($request->id),
+                ],
+                'brand' => 'nullable|string|max:100',
+                'pack_size' => 'nullable|string|max:50',
+                'category' => 'required|exists:inv_categories,id',
+                'sales_uom' => 'nullable|string|max:50',
+                'status' => 'nullable|in:0,1',
+            ], [
+                'name.unique' => 'Product name already exists.',
+                'barcode.unique' => 'Product barcode exists.',
+            ]);
+        }
         $min_quantinty = str_replace(',', '', $request->input('min_quantinty')) ?? null;
         $max_quantinty = str_replace(',', '', $request->input('max_quantinty')) ?? null;
         $pack_size = str_replace(',', '', $request->input('pack_size')) ?? null;
@@ -311,19 +340,50 @@ class ProductController extends Controller
     public function storeProduct(Request $request)
     {
         if ($request->ajax()) {
-
-        $this->validate($request, [
-            'name' => 'required|string|max:255|unique:inv_products,name,NULL,id,category_id,' . $request->category,
-            'barcode' => 'nullable|string|max:50|unique:inv_products,barcode',
-            'brand' => 'nullable|string|max:100',
-            'pack_size' => 'nullable|string|max:50',
-            'category' => 'required|exists:inv_categories,id',
-            'sale_uom' => 'nullable|string|max:50',
-            // 'min_quantinty' => 'nullable|numeric|min:0',
-            // 'max_quantinty' => 'nullable|numeric|min:0',
-            'product_type' => 'nullable|in:stockable,consumable',
-            'status' => 'nullable|in:0,1'
-        ]);
+        $option = Setting::where('id', 127)->value('value');
+        $isDetailed = $option == "Detailed" ? true : false;
+        if($isDetailed){
+            $this->validate($request, [
+                'name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('inv_products')->where(function ($query) use ($request) {
+                        return $query->where('brand', $request->brand)
+                                    ->where('pack_size', $request->pack_size)
+                                    ->where('sales_uom', $request->sales_uom);
+                    })
+                ],
+                'barcode' => 'nullable|string|max:50|unique:inv_products,barcode',
+                'brand' => 'nullable|string|max:100',
+                'pack_size' => 'nullable|string|max:50',
+                'category' => 'required|exists:inv_categories,id',
+                'sales_uom' => 'nullable|string|max:50',
+                'min_quantinty' => 'nullable|min:1',
+                'max_quantinty' => 'nullable|min:1',
+                'product_type' => 'nullable|in:stockable,consumable',
+                'status' => 'nullable|in:0,1'
+            ], [
+                'name.unique' => 'Product name already exists.',
+                'barcode.unique' => 'Product barcode exists.',
+            ]);
+        }else{
+            $this->validate($request, [
+                'name' => 'required|string|max:255|unique:inv_products,name',
+                'barcode' => 'nullable|string|max:50|unique:inv_products,barcode',
+                'brand' => 'nullable|string|max:100',
+                'pack_size' => 'nullable|string|max:50',
+                'category' => 'required|exists:inv_categories,id',
+                'sales_uom' => 'nullable|string|max:50',
+                'min_quantinty' => 'nullable|min:1',
+                'max_quantinty' => 'nullable|min:1',
+                'product_type' => 'nullable|in:stockable,consumable',
+                'status' => 'nullable|in:0,1'
+            ], [
+                'name.unique' => 'Product name already exists.',
+                'barcode.unique' => 'Product barcode exists.',
+            ]);
+        }
         
             $product = new Product;
             $product->name = $request->name;
@@ -335,7 +395,7 @@ class ProductController extends Controller
             $product->sub_category_id = $request->sub_category;
             $product->generic_name = $request->generic_name;
             $product->standard_uom = $request->standardUoM;
-            $product->sales_uom = $request->sale_uom;
+            $product->sales_uom = $request->sales_uom;
             $product->purchase_uom = $request->purchaseUoM;
             $product->indication = $request->indication;
             $product->dosage = $request->dosage;

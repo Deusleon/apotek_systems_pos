@@ -100,15 +100,11 @@
                             <image id="loading-image" src="{{asset('assets/images/spinner.gif')}}"></image>
                         </div>
 
-                        <div class="d-flex justify-content-between mb-3 align-items-center">
+                        <div class="d-flex justify-content-end mb-3 align-items-center" style="margin-right: -10px; padding-right: 0px;">
                             <div>
                                 <button type="button" class="btn btn-primary" id="snapshot-stock-btn">
                                     Save Current Stock
                                 </button>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <label class="mr-2 mb-0" for="">Date:</label>
-                                <input type="text" name="sale_date" id="d_auto_8" class="form-control w-auto">
                             </div>
                         </div>
 

@@ -23,13 +23,13 @@
         <ul class="nav nav-pills mb-3" id="myTab" role="tablist">
             <li class="nav-item">
                 <a class="nav-link text-uppercase" id="current-stock-tablist" data-toggle="pill"
-                    href="{{ url('inventory/current-stocks') }}" role="tab" aria-controls="current-stock"
+                    href="{{ route('current-stocks') }}" role="tab" aria-controls="current-stock"
                     aria-selected="true">Current Stock</a>
             </li>
             @if (auth()->user()->checkPermission('View Current Stock Value'))
                 <li class="nav-item">
                     <a class="nav-link active text-uppercase" id="all-stock-tablist" data-toggle="pill"
-                        href="{{ url('inventory/current-stock-value') }}" role="tab" aria-controls="stock_list"
+                        href="{{ route('all-stocks') }}" role="tab" aria-controls="stock_list"
                         aria-selected="false">Current Stock Value
                     </a>
                 </li>
@@ -37,7 +37,7 @@
             @if (auth()->user()->checkPermission('View OLd Stock Value'))
                 <li class="nav-item">
                     <a class="nav-link text-uppercase" id="old-stock-tablist" data-toggle="pill"
-                        href="{{ url('inventory/old-stocks') }}" role="tab" aria-controls="stock_list" aria-selected="false">Old
+                        href="{{ route('old-stocks') }}" role="tab" aria-controls="stock_list" aria-selected="false">Old
                         Stock Value
                     </a>
                 </li>

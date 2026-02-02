@@ -98,8 +98,6 @@
     @include('stock_management.adjustments.show_adjustment_modal')
 @endsection
 
-@include('partials.notification')
-
 @push("page_scripts")
     <script>
         $('#history').DataTable({

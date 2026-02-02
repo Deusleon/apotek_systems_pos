@@ -213,8 +213,8 @@
         $('#edit').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget);
             var name = button.data('name');
-            var unit_cost_edit = parseFloat(button.data('unit-cost'));
-            var sell_price_edit = parseFloat(button.data('price'));
+            var unit_cost_edit = parseFloat(button.data('unit-cost')) || 0;
+            var sell_price_edit = parseFloat(button.data('price')) || 0;
             var id = button.data('id');
             var brand = button.data('brand');
             var pack_size = button.data('pack-size');
@@ -227,11 +227,11 @@
 
             modal.find('.modal-body #name').val(name + ' ' + brand + ' ' + pack_size + sales_uom);
             modal.find('.modal-body #brand_edit').val(brand);
-            modal.find('.modal-body #unit_cost_edit').val(unit_cost_edit);
-            modal.find('.modal-body #unit_cost_edit_to_show').val(unit_cost_edit.toLocaleString('en-US'));
+            modal.find('.modal-body #unit_cost_edit').val(unit_cost_edit || 0);
+            modal.find('.modal-body #unit_cost_edit_to_show').val(numberWithCommas(unit_cost_edit));
             modal.find('.modal-body #price_category_edit').val(price_category);
             modal.find('.modal-body #sell_price_edit').val(sell_price_edit);
-            modal.find('.modal-body #sell_price_edit_to_show').val(sell_price_edit.toLocaleString('en-US'));
+            modal.find('.modal-body #sell_price_edit_to_show').val(numberWithCommas(sell_price_edit));
             modal.find('.modal-body #pack_size_edit').val(pack_size);
             modal.find('.modal-body #id').val(id);
             modal.find('.modal-body #price_category').val(price_category);
@@ -309,7 +309,7 @@
                 @if($batch_enabled === 'YES')
                     { 'data': 'batch_number' }
                 @endif
-                                            ]
+                                                ]
         });
 
         function bindData(data) {
@@ -364,12 +364,12 @@
 
         $('#unit_cost_edit_to_show').on('change', function () {
             var newValue = document.getElementById('unit_cost_edit_to_show').value;
-            if (newValue !== '') {
+            if (newValue !== '' || newValue !== null) {
                 document.getElementById('unit_cost_edit_to_show').value =
                     numberWithCommas(parseFloat(newValue.replace(/\,/g, ''), 10));
                 document.getElementById('unit_cost_edit').value = parseFloat(newValue.replace(/\,/g, ''), 10)
             } else {
-                document.getElementById('unit_cost_edit_to_show').value = '';
+                document.getElementById('unit_cost_edit_to_show').value = 0;
             }
 
         });
@@ -387,7 +387,9 @@
         });
 
         function numberWithCommas(digit) {
-            return String(parseFloat(digit)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return parseFloat(digit)
+                .toFixed(2)                  
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ","); 
         }
 
         $(document).ready(function () {
@@ -410,20 +412,20 @@
                         { data: "price", render: data => formatMoney(data) },
                         { data: "profit", render: data => (data ? `${Math.round(data)}%` : '0%') },
                         @if(auth()->user()->checkPermission('Edit Price List'))
-                                                                                                {
+                                                                                                        {
                                 data: "id", render: function (data, type, row) {
                                     return `
-                                                                                                                <button id='pricing' class='btn btn-sm btn-rounded btn-primary'
-                                                                                                                    type='button' data-toggle="modal" data-target="#edit"
-                                                                                                                    data-name='${row.product_name ?? ''}'
-                                                                                                                    data-unit-cost='${row.unit_cost ?? ''}'
-                                                                                                                    data-price='${row.price ?? ''}'
-                                                                                                                    data-id='${row.id ?? ''}'
-                                                                                                                    data-brand='${row.brand ?? ''}'
-                                                                                                                    data-pack-size='${row.pack_size ?? ''}'
-                                                                                                                    data-sales-uom='${row.sales_uom ?? ''}'
-                                                                                                                    data-price-category-id='${row.price_category_id ?? ''}'>Edit</button>
-                                                                                                            `;
+                                                                                                                        <button id='pricing' class='btn btn-sm btn-rounded btn-primary'
+                                                                                                                            type='button' data-toggle="modal" data-target="#edit"
+                                                                                                                            data-name='${row.product_name ?? ''}'
+                                                                                                                            data-unit-cost='${row.unit_cost ?? ''}'
+                                                                                                                            data-price='${row.price ?? ''}'
+                                                                                                                            data-id='${row.id ?? ''}'
+                                                                                                                            data-brand='${row.brand ?? ''}'
+                                                                                                                            data-pack-size='${row.pack_size ?? ''}'
+                                                                                                                            data-sales-uom='${row.sales_uom ?? ''}'
+                                                                                                                            data-price-category-id='${row.price_category_id ?? ''}'>Edit</button>
+                                                                                                                    `;
                                 }
                             },
                         @endif
@@ -506,7 +508,7 @@
                         $('#loading').show();
                     },
                     success: function (response) {
-                        console.log('FechResponse: ', response);
+                        // console.log('FechResponse: ', response);
 
                         if (selectedType === "pending") {
                             renderTable('#pendingPrices', response);

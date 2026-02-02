@@ -323,15 +323,13 @@ Route::middleware(["auth","main_branch"])->group(function () {
     Route::get('sales/returns-approval', 'SaleReturnController@getSalesReturn')->name('sale-returns-approval.getSalesReturn');
 
     /*Current Stock routes*/
-    Route::get('inventory/current-stocks/edit/{productId}', 'CurrentStockController@edit')->name('current-stock.edit');
+    Route::get('inventory/current-stock/edit/{productId}', 'CurrentStockController@edit')->name('current-stock.edit');
     Route::post('inventory/current-stock/update', 'CurrentStockController@update')->name('current-stock.update');
 
-
-
     /*New Routes for Current Stock*/
-    Route::get('inventory/current-stocks','CurrentStockController@currentStock')->name('current-stocks');
-    Route::post('inventory/api/current-stocks','CurrentStockController@currentStockApi')->name('current-stocks-filter');
-    Route::get('inventory/old-stocks','CurrentStockController@getOldStockValue')->name('old-stocks');
+    Route::get('inventory/current-stock','CurrentStockController@currentStock')->name('current-stocks');
+    Route::post('inventory/api/current-stock','CurrentStockController@currentStockApi')->name('current-stocks-filter');
+    Route::get('inventory/old-stock-value','CurrentStockController@getOldStockValue')->name('old-stocks');
     Route::get('inventory/current-stock-value','CurrentStockController@getStockValue')->name('all-stocks');
     Route::post('inventory/current-stock-value','CurrentStockController@getStockValue')->name('current_stock_value');
     Route::post('inventory/filtered_values','CurrentStockController@filterStockValue')->name('stock-value-filter');
@@ -341,8 +339,8 @@ Route::middleware(["auth","main_branch"])->group(function () {
 
     /*stock adjustment routes*/
     Route::group(['middleware' => ['permission:View Stock Adjustment|Stock Adjustment']], function () {
-        Route::get('inventory/stock-adjustment', [StockAdjustmentController::class, 'index'])->name('stock-adjustments-history');
-        Route::get('inventory/stock-adjustment/new_adjustment', [StockAdjustmentController::class, 'newAdjustment'])->name('new-stock-adjustment');
+        Route::get('inventory/adjustment-history', [StockAdjustmentController::class, 'index'])->name('stock-adjustments-history');
+        Route::get('inventory/stock-adjustment', [StockAdjustmentController::class, 'newAdjustment'])->name('new-stock-adjustment');
         Route::get('inventory/stock-adjustment/create', [StockAdjustmentController::class, 'create'])->name('stock-adjustments.create');
         Route::post('inventory/stock-adjustment', [StockAdjustmentController::class, 'store'])->name('stock-adjustments.store');
         Route::get('inventory/stock-adjustment/{adjustment}', [StockAdjustmentController::class, 'show'])->name('stock-adjustments.show');
