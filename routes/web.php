@@ -272,6 +272,9 @@ Route::middleware(["auth","main_branch"])->group(function () {
     //Cash Sales routes
     Route::get('sales/cash-sales', 'SaleController@cashSale')->name('cash-sales.cashSale');
 
+    //Delivery note routes
+    Route::get('sales/delivery-note', 'DeliveryNoteController@index')->name('delivery-notes.index');
+
     // AI Assistant Routes
     Route::get('ai-assistant', 'ApiAssistantController@index')->name('ai-assistant.index');
     Route::get('sales/credit-sales', 'SaleController@creditSale')->name('credit-sales.creditSale');
@@ -291,6 +294,7 @@ Route::middleware(["auth","main_branch"])->group(function () {
     Route::get('sales/sale/filter-by-word', 'SaleController@filterProductByWord')->name('filter-product-by-word');
     Route::post('sales/history/sale-reprint', 'SaleController@receiptReprint')->name('sale-reprint-receipt');
     Route::get('sales/history/sale-reprint/{receipt}', 'SaleController@receiptReprint')->name('sale-reprint-receipt-get');
+    Route::get('sales/delivery-note/delivery-note-pdf/{receipt}', 'SaleController@deliveryNotePdf')->name('delivery-note-pdf');
     Route::get('sales/credit-tracking/payment-history/filter', 'SaleController@paymentHistoryFilter')->name('payment-history-filter');
 
 
