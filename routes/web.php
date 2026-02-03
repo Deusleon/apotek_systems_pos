@@ -456,7 +456,7 @@ Route::middleware(["auth","main_branch"])->group(function () {
     Route::get('reports/sales-reports', 'SaleReportController@index')->name('sale-report-index');
 
     /*purchase report routes*/
-    Route::get('reports/purchase-report', 'PurchaseReportController@index')->name('purchase-report-index');
+    Route::get('reports/purchasing-report', 'PurchaseReportController@index')->name('purchase-report-index');
 
     Route::get('purchase-management/purchase-report/report-filter', 'PurchaseReportController@reportOption')->name('purchase-report-filter');
     

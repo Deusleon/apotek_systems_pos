@@ -44,9 +44,9 @@ Invoices
                 <table id="payment_history_table" class="display table nowrap table-striped table-hover" style="width:100%">
                     <thead>
                         <tr>
-                            <th>Payment Date</th>
                             <th>Invoice #</th>
                             <th>Supplier</th>
+                            <th>Payment Date</th>
                             <th>Amount Paid</th>
                             <th>Payment Method</th>
                             <th>Remarks</th>
@@ -106,14 +106,14 @@ Invoices
             dataSrc: 'data'
         },
         columns: [
+            { data: 'invoice.invoice_no' },
+            { data: 'supplier.name' },
             {
                 data: 'payment_date',
                 render: function(date) {
-                    return moment(date).format('YYYY-MM-DD HH:mm:ss');
+                    return moment(date).format('YYYY-MM-DD');
                 }
             },
-            { data: 'invoice.invoice_no' },
-            { data: 'supplier.name' },
             {
                 data: 'amount_paid',
                 render: function(amount) {
