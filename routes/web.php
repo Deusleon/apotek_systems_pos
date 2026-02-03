@@ -85,15 +85,15 @@ Route::middleware(["auth","main_branch"])->group(function () {
 
     Route::get('inventory/product-list','ProductController@index')->name('products.index');
     Route::get('products/export', 'ProductController@export')->name('products.export');
-    Route::get('tools/upload-price', 'ProductController@uploadPriceForm')->name('tools.upload-price-form');
-    Route::post('tools/upload-price', 'ProductController@uploadPrice')->name('tools.upload-price');
-    Route::get('tools/download-price-template', 'ProductController@downloadPriceTemplate')->name('tools.download-price-template');
-    Route::get('tools/upload-stock', 'ProductController@uploadStockForm')->name('tools.upload-stock-form');
-    Route::post('tools/upload-stock', 'ProductController@uploadStock')->name('tools.upload-stock');
-    Route::get('tools/download-stock-template', 'ProductController@downloadStockTemplate')->name('tools.download-stock-template');
-    Route::get('tools/reset-stock', 'ProductController@resetStockForm')->name('tools.reset-stock-form');
-    Route::post('tools/reset-stock', 'ProductController@resetStock')->name('tools.reset-stock');
-    Route::get('tools/export-stock', 'ProductController@exportForm')->name('tools.export-stock');
+    Route::get('settings/tools/upload-price', 'ProductController@uploadPriceForm')->name('tools.upload-price-form');
+    Route::post('settings/tools/upload-price', 'ProductController@uploadPrice')->name('tools.upload-price');
+    Route::get('settings/tools/download-price-template', 'ProductController@downloadPriceTemplate')->name('tools.download-price-template');
+    Route::get('settings/tools/upload-stock', 'ProductController@uploadStockForm')->name('tools.upload-stock-form');
+    Route::post('settings/tools/upload-stock', 'ProductController@uploadStock')->name('tools.upload-stock');
+    Route::get('settings/tools/download-stock-template', 'ProductController@downloadStockTemplate')->name('tools.download-stock-template');
+    Route::get('settings/tools/reset-stock', 'ProductController@resetStockForm')->name('tools.reset-stock-form');
+    Route::post('settings/tools/reset-stock', 'ProductController@resetStock')->name('tools.reset-stock');
+    Route::get('settings/tools/export-stock', 'ProductController@exportForm')->name('tools.export-stock');
 
     // Product Import Routes
     Route::prefix('import')->group(function () {
@@ -174,7 +174,7 @@ Route::middleware(["auth","main_branch"])->group(function () {
     Route::get('settings/general/price-categories','PriceCategoryController@index')->name('price-categories.index');
 
     //Expense Categories routes
-    Route::resource('masters/expense-categories', 'ExpenseCategoryController')->only([
+    Route::resource('settings/general/expense-categories', 'ExpenseCategoryController')->only([
         'index', 'store', 'update', 'destroy'
     ]);
     //Expense Subcategories routes
@@ -265,7 +265,7 @@ Route::middleware(["auth","main_branch"])->group(function () {
     Route::post('/update-setting', 'ConfigurationsController@update')->name('configurations.update');
 
     //General settingroutes
-    Route::get('masters/general-settings', 'GeneralSettingController@index')->name('general-settings.index');
+    Route::get('settings/general/terms-and-conditions', 'GeneralSettingController@index')->name('general-settings.index');
     Route::put('masters/update-general-informations', 'GeneralSettingController@updateInfo')->name('general-settings.updateInfo');
     Route::put('masters/update-general-settings', 'GeneralSettingController@updateSetting')->name('general-settings.updateSetting');
     Route::put('masters/update-general-recepts', 'GeneralSettingController@updateReceipt')->name('general-settings.updateReceipt');
@@ -542,12 +542,11 @@ Route::middleware(["auth","main_branch"])->group(function () {
 
     //user roles
     Route::get('settings/security/roles', 'RoleController@index')->name('roles.index');
-    Route::get('user-roles/create', 'RoleController@create')->name('roles.create');
-    Route::post('user-roles', 'RoleController@store')->name('roles.store');
-    Route::get('user-roles/{id}/edit', 'RoleController@edit')->name('roles.edit');
-    Route::post('user-roles/update', 'RoleController@update')->name('roles.update');
-    Route::delete('user-roles/delete', 'RoleController@destroy')->name("roles.destroy");
-
+    Route::get('settings/security/add-role', 'RoleController@create')->name('roles.create');
+    Route::post('settings/security/roles', 'RoleController@store')->name('roles.store');
+    Route::get('settings/security/roles/{id}/edit', 'RoleController@edit')->name('roles.edit');
+    Route::post('settings/security/roles/update', 'RoleController@update')->name('roles.update');
+    Route::delete('settings/security/roles/delete', 'RoleController@destroy')->name("roles.destroy");
     //users routes
     Route::get('settings/security/users', 'UserController@index')->name('users.index');
     Route::post('users/register', 'UserController@store')->name("users.register");
@@ -561,12 +560,6 @@ Route::middleware(["auth","main_branch"])->group(function () {
     Route::post('users/user-role-id', 'UserController@getRoleID')->name('getRoleID');
     Route::get('users/password-reset/{email}', 'UserController@passwordReset')->name("password.reset.admin");
     Route::post('users/password-reset/update', 'UserController@passwordResetUpdate')->name("password.admin.update");
-
-
-    /*file import route*/
-    // Route::resource('/masters/import', 'ImportDataController')->only([...]);
-    // Route::post('/masters/import/record-import', 'ImportDataController@recordImport')->name('masters.record-import');
-    // Route::get('/masters/import/record-import', 'ImportDataController@downloadTemplate')->name('import-template');
 
     /* Budget */
     Route::get('/budget/budgets',[BudgetController::class,'index'])->name('budget.index');
@@ -620,8 +613,8 @@ Route::middleware(["auth","main_branch"])->group(function () {
     Route::get('settings/tools/database-backup/{filename}/download', 'DatabaseBackupController@download')->name('database-backup.download');
     Route::delete('settings/tools/database-backup/{filename}', 'DatabaseBackupController@delete')->name('database-backup.delete');
 
-    Route::get('settings/tools/database-clear', 'DatabaseBackupController@clearIndex')->name('database-clear.index');
-    Route::post('settings/tools/database-clear', 'DatabaseBackupController@clearDatabase')->name('database-clear.clear');
+    Route::get('settings/tools/clear-database', 'DatabaseBackupController@clearIndex')->name('database-clear.index');
+    Route::post('settings/tools/clear-database', 'DatabaseBackupController@clearDatabase')->name('database-clear.clear');
 
     /* HELP */
 
