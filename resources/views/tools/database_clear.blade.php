@@ -1,12 +1,12 @@
 @extends("layouts.master")
 
 @section('content-title')
-    Database Clear
+    Clear Database
 @endsection
 
 @section('content-sub-title')
     <li class="breadcrumb-item"><a href="{{route('home')}}"><i class="feather icon-home"></i></a></li>
-    <li class="breadcrumb-item"><a href="#">Settings / Tools / Database Clear</a></li>
+    <li class="breadcrumb-item"><a href="#">Settings / Tools / Clear Database</a></li>
 @endsection
 
 @section("content")
@@ -117,7 +117,7 @@
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title" id="confirmClearModalLabel">
-                                        Confirm Database Clear
+                                        Confirm Clear Database
                                     </h5>
                                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                         <span aria-hidden="true">&times;</span>
