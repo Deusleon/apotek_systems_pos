@@ -1,3 +1,27 @@
+@php
+    function smartFormat($num)
+    {
+        $str = (string) $num;
+
+        if (strpos($str, '.') !== false) {
+
+            list($whole, $decimal) = explode('.', $str);
+
+            $decimal = rtrim($decimal, '0');
+
+            if ($decimal === '') {
+                return number_format((int) $whole);
+            }
+
+            $wholeFormatted = number_format((int) $whole);
+
+            return $wholeFormatted . '.' . $decimal;
+
+        } else {
+            return number_format((int) $str);
+        }
+    }
+@endphp
 <!DOCTYPE html>
 <html>
 
@@ -142,7 +166,7 @@
                             <td align="left">{{ $stock['product_name'] . ' ' . $stock['brand'] . ' ' . $stock['pack_size'] . $stock['sales_uom'] }}
                             </td>
                         @if ($showQoH)
-                            <td align="" style="text-align: center;">{{ number_format($stock['quantity_on_hand']) }}</td>
+                            <td align="" style="text-align: center;">{{ smartFormat($stock['quantity_on_hand']) }}</td>
                             <td></td>
                         @else
                             <td></td>

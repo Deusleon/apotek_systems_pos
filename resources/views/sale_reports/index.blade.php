@@ -67,7 +67,7 @@
                         <div class="col-md-8">
                             <div class="form-group">
                                 <div class="form-group">
-                                    <label for="report_option">Select Sale Report<font color="red">*</font></label>
+                                    <label for="report_option">Select Sales Report<font color="red">*</font></label>
                                     <select id="report_option" name="report_option" onchange="reportOption()"
                                         class="js-example-basic-single form-control drop" required>
                                         <option selected="true" value="" disabled="disabled">Select report</option>

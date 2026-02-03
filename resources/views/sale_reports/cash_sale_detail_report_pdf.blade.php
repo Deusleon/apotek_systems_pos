@@ -85,7 +85,7 @@
     <div class="row" style="padding-top: -2%">
         <h3 align="center">{{$pharmacy['name']}}</h3>
         <h6 align="center" style="margin-top: -2%">{{$pharmacy['address']}}</h6>
-        <h4 align="center">Cash Sales Details Report</h4>
+        <h4 align="center">Cash Sales Details Report ({{ current_store()->name }})</h4>
         <h4 align="center" style="margin-top: -2%">{{$pharmacy['date_range']}}</h4>
         @foreach($data[0][0] as $datas => $dat)
             <div class="row" style="margin-top: 13%">

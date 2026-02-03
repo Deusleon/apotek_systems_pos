@@ -101,7 +101,7 @@
                 {{$pharmacy['email'] . ' | ' . $pharmacy['website']}}
             </div><br>
             <div>
-                <h3 align="center" style="font-weight: bold; margin-top: -1%">Price List Report</h3>
+                <h3 align="center" style="font-weight: bold; margin-top: -1%">Price List Report ({{ current_store()->name }})</h3>
                 <h4 align="center" style="margin-top: -1%">For all categories</h4>
                 <h4 align="center" style="margin-top: -1.5%">Printed On: {{now()->format('Y-m-d H:i:s')}}</h4>
             </div>
