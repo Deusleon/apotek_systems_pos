@@ -102,7 +102,7 @@
                 {{$pharmacy['email'] . ' | ' . $pharmacy['website']}}
             </div><br>
             <div>
-                <h3 align="center" style="font-weight: bold; margin-top: -1%">Credit Sales Details Report</h3>
+                <h3 align="center" style="font-weight: bold; margin-top: -1%">Credit Sales Details Report ({{ current_store()->name }})</h3>
                 <h4 align="center" style="margin-top: -1%">From: <b>{{$pharmacy['from_date']}}</b> To:
                     <b>{{$pharmacy['to_date']}}</b>
                 </h4>

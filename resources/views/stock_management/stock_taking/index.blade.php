@@ -1,3 +1,27 @@
+@php
+    function smartFormat($num)
+    {
+        $str = (string) $num;
+
+        if (strpos($str, '.') !== false) {
+
+            list($whole, $decimal) = explode('.', $str);
+
+            $decimal = rtrim($decimal, '0');
+
+            if ($decimal === '') {
+                return number_format((int) $whole);
+            }
+
+            $wholeFormatted = number_format((int) $whole);
+
+            return $wholeFormatted . '.' . $decimal;
+
+        } else {
+            return number_format((int) $str);
+        }
+    }
+@endphp
 @extends("layouts.master")
 
 @section('page_css')
@@ -64,14 +88,14 @@
         <ul class="nav nav-pills mb-3" id="myTab" role="tablist">
             @if(auth()->user()->checkPermission('View Stock Count'))
                 <li class="nav-item">
-                    <a class="nav-link text-uppercase" id="daily-stock-tablist"
-                        href="{{ url('inventory/daily-stock-count') }}" role="tab" aria-selected="true">Daily Stock Count</a>
+                    <a class="nav-link text-uppercase" id="daily-stock-tablist" href="{{ url('inventory/daily-stock-count') }}"
+                        role="tab" aria-selected="true">Daily Stock Count</a>
                 </li>
             @endif
             @if(auth()->user()->checkPermission('View Outgoing Stock'))
                 <li class="nav-item">
-                    <a class="nav-link text-uppercase" id="outgoing-stock-tablist" 
-                        href="{{ url('inventory/out-going-stock') }}" role="tab" aria-selected="false">Outgoing Stock
+                    <a class="nav-link text-uppercase" id="outgoing-stock-tablist" href="{{ url('inventory/out-going-stock') }}"
+                        role="tab" aria-selected="false">Outgoing Stock
                     </a>
                 </li>
             @endif
@@ -100,7 +124,8 @@
                             <image id="loading-image" src="{{asset('assets/images/spinner.gif')}}"></image>
                         </div>
 
-                        <div class="d-flex justify-content-end mb-3 align-items-center" style="margin-right: -10px; padding-right: 0px;">
+                        <div class="d-flex justify-content-end mb-3 align-items-center"
+                            style="margin-right: -10px; padding-right: 0px;">
                             <div>
                                 <button type="button" class="btn btn-primary" id="snapshot-stock-btn">
                                     Save Current Stock
@@ -125,11 +150,10 @@
                                             <td>{{ $product->name }} {{ $product->brand }}
                                                 {{ $product->pack_size }}{{ $product->sales_uom }}
                                             </td>
-                                            <td class="qoh text-center">{{ number_format(round($product->current_stock)) }}</td>
+                                            <td class="qoh text-center">{{ smartFormat($product->current_stock) }}</td>
                                             <td class="text-center">
                                                 <input type="text" class="form-control form-control-sm physical text-right"
-                                                    name="physical[{{ $product->id }}]" value="" inputmode="numeric"
-                                                    pattern="\d*"
+                                                    name="physical[{{ $product->id }}]" value="" inputmode="decimal"
                                                     style="max-width:120px; margin-left:auto; margin-right: auto;">
                                             </td>
                                             <td class="difference text-center">0</td>
@@ -252,31 +276,50 @@
         <script>
             $(document).ready(function () {
 
-                function formatNumberNoDecimals(n) {
-                    if (n === null || n === undefined || n === '') return '';
-                    let num = Number(String(n).replace(/,/g, ''));
-                    if (!isFinite(num)) return '';
-                    let rounded = Math.round(num);
-                    return rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                function formatNumberNoDecimals(num) {
+                    let str = String(num);
+
+                    if (str.includes(".")) {
+                        let [whole, decimal] = str.split(".");
+
+                        decimal = decimal.replace(/0+$/, "");
+
+                        if (decimal === "") {
+                            return Number(whole).toLocaleString();
+                        }
+
+                        let wholeFormatted = Number(whole).toLocaleString();
+
+                        return wholeFormatted + "." + decimal;
+                    } else {
+                        return Number(str).toLocaleString();
+                    }
                 }
 
                 // sanitize raw typed value: return integer or null when empty/invalid
                 function sanitizeRawValue(str) {
-                    if (str === null || str === undefined) return null;
-                    let trimmed = String(str).trim();
-                    if (trimmed === '') return null;
-                    // remove non-digits
-                    let cleaned = trimmed.replace(/[^0-9]/g, '');
-                    if (cleaned === '') return null;
-                    let n = parseInt(cleaned, 10);
+                    if (!str) return null;
+
+                    let cleaned = str.replace(/[^0-9.]/g, '');
+
+                    // allow only one dot
+                    let parts = cleaned.split('.');
+                    if (parts.length > 2) {
+                        cleaned = parts.shift() + '.' + parts.join('');
+                    }
+
+                    if (cleaned === '' || cleaned === '.') return null;
+
+                    let n = parseFloat(cleaned);
                     if (!isFinite(n)) return null;
-                    return Math.round(n);
+
+                    return n;
                 }
 
                 // Updates difference cell for a row based on qoh and input.raw (or empty)
                 function updateDifferenceForRow($row) {
                     let qohText = $row.find('.qoh').text().trim().replace(/,/g, '');
-                    let qoh = parseInt(qohText) || 0;
+                    let qoh = parseFloat(qohText) || 0;
                     let $input = $row.find('.physical');
                     let physicalRaw = $input.data('raw'); // may be undefined/null
                     if (physicalRaw === undefined || physicalRaw === null) {
@@ -290,8 +333,8 @@
                         return;
                     }
 
-                    let physical = parseInt(physicalRaw) || 0;
-                    let diff = Math.round(physical - qoh);
+                    let physical = parseFloat(physicalRaw) || 0;
+                    let diff = parseFloat(physical - qoh);
 
                     // update displays
                     $row.find('.qoh').text(formatNumberNoDecimals(qoh));
@@ -308,30 +351,51 @@
                 // on input: sanitize typed characters, update data-raw and difference
                 $(document).on('input', '.physical', function (e) {
                     let $input = $(this);
-                    let typed = $input.val();
-                    let n = sanitizeRawValue(typed);
-                    // store numeric in data-raw (null if empty)
+                    let typed = $input.val();     
+                    let n = typed;                
+
                     $input.data('raw', n);
-                    // if user is typing, we still format after small delay to avoid caret jump
-                    // here we set formatted value immediately (acceptable UX)
+
                     if (n === null) {
-                        // keep field empty
                         $input.val('');
                     } else {
-                        $input.val(formatNumberNoDecimals(n));
+                        $input.val(formatNumberNoDecimals(n));  // ← formatNumberNoDecimals("2.3")
                     }
-                    // update diff for this row
+
                     updateDifferenceForRow($input.closest('tr'));
                 });
 
-                // allow only digits via keydown (still allow ctrl/cmd combos)
+
+                // allow only digits via keydown
                 $(document).on('keydown', '.physical', function (e) {
-                    let allowedKeys = [8, 9, 13, 27, 46, 35, 36, 37, 38, 39, 40];
-                    if (allowedKeys.indexOf(e.keyCode) !== -1) return;
-                    if ((e.ctrlKey || e.metaKey) && [65, 67, 86, 88, 90].indexOf(e.keyCode) !== -1) return;
-                    if ((e.keyCode >= 48 && e.keyCode <= 57) || (e.keyCode >= 96 && e.keyCode <= 105)) return;
+
+                    let allowedKeys = [
+                        8, 9, 13, 27, 46,          // backspace, tab, enter, esc, delete
+                        35, 36, 37, 38, 39, 40     // navigation
+                    ];
+
+                    if (allowedKeys.includes(e.keyCode)) return;
+
+                    // allow ctrl/cmd + A/C/V/X/Z
+                    if ((e.ctrlKey || e.metaKey) && [65, 67, 86, 88, 90].includes(e.keyCode)) {
+                        return;
+                    }
+
+                    // digits
+                    if ((e.keyCode >= 48 && e.keyCode <= 57) ||
+                        (e.keyCode >= 96 && e.keyCode <= 105)) {
+                        return;
+                    }
+
+                    // allow decimal point (windows)
+                    if (e.keyCode === 190 || e.keyCode === 110) return;
+
+                    // allow decimal (Safari / mobile)
+                    if (e.key === '.') return;
+
                     e.preventDefault();
                 });
+
 
                 // on paste, sanitize after paste
                 $(document).on('paste', '.physical', function () {
@@ -397,7 +461,7 @@
                 $('#fixed-header2 tbody tr').each(function () {
                     let $r = $(this);
                     let qohText = $r.find('.qoh').text().trim().replace(/,/g, '');
-                    let qoh = Math.round(parseFloat(qohText) || 0);
+                    let qoh = parseFloat(qohText) || 0;
                     $r.find('.qoh').text(formatNumberNoDecimals(qoh));
                     let $inp = $r.find('.physical');
                     if ($inp.length) {
@@ -418,7 +482,7 @@
                     responsive: false,
                     autoWidth: false
                 });
-                
+
                 // Preview button — collect numeric from data-raw (only rows where user entered a value)
                 $('#process-adjustments-btn').on('click', function () {
                     let items = [];
@@ -433,7 +497,7 @@
                         let product_id = $r.data('product-id');
                         let product_name = $r.find('td:first').text().trim();
                         let qohText = $r.find('.qoh').text().trim().replace(/,/g, '');
-                        let qoh = parseInt(qohText) || 0;
+                        let qoh = parseFloat(qohText) || 0;
 
                         let $input = $r.find('.physical');
                         let physical = $input.data('raw'); // null if empty
@@ -441,13 +505,13 @@
                         // skip rows without user input
                         if (physical === undefined || physical === null) return;
 
-                        let diff = Math.round(physical - qoh);
+                        let diff = parseFloat(physical - qoh);
 
                         // skip if no difference
                         if (diff === 0) return;
 
                         let type = diff > 0 ? 'Increase' : 'Decrease';
-                        items.push({ product_id, qoh: Math.round(qoh), physical: Math.round(physical), diff, product_name, type });
+                        items.push({ product_id, qoh: parseFloat(qoh), physical: parseFloat(physical), diff, product_name, type });
                     });
 
                     if (items.length === 0) {
@@ -462,24 +526,24 @@
                         else totalDecrease += Math.abs(item.diff);
                         let color = item.diff > 0 ? 'text-success' : 'text-danger';
                         tbody.append(`
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>${item.product_name}</td>
-                        <td class="text-right">${formatNumberNoDecimals(item.qoh)}</td>
-                        <td class="text-right">${formatNumberNoDecimals(item.physical)}</td>
-                        <td class="${color} text-right">${formatNumberNoDecimals(item.diff)}</td>
-                        <td class="${color}"><strong>${item.type}</strong></td>
-                    </tr>
-                `);
+                                            <tr>
+                                                <td>${index + 1}</td>
+                                                <td>${item.product_name}</td>
+                                                <td class="text-right">${formatNumberNoDecimals(item.qoh)}</td>
+                                                <td class="text-right">${formatNumberNoDecimals(item.physical)}</td>
+                                                <td class="${color} text-right">${formatNumberNoDecimals(item.diff)}</td>
+                                                <td class="${color}"><strong>${item.type}</strong></td>
+                                            </tr>
+                                        `);
                     });
 
                     tbody.append(`
-                <tr>
-                    <td colspan="6" class="text-right">
-                        <small>Total Increase: ${formatNumberNoDecimals(totalIncrease)} &nbsp; | &nbsp; Total Decrease: ${formatNumberNoDecimals(totalDecrease)}</small>
-                    </td>
-                </tr>
-            `);
+                                        <tr>
+                                            <td colspan="6" class="text-right">
+                                                <small>Total Increase: ${formatNumberNoDecimals(totalIncrease)} &nbsp; | &nbsp; Total Decrease: ${formatNumberNoDecimals(totalDecrease)}</small>
+                                            </td>
+                                        </tr>
+                                    `);
 
                     $('#confirmProcessBtn').data('items', items);
                     $('#previewModal').modal('show');
@@ -524,7 +588,7 @@
                 });
 
             });
-        
+
             $(document).ready(function () {
                 var baseUrl = $('#count-sheet-tablist').attr('href');
 

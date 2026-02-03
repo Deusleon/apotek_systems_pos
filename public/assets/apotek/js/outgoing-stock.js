@@ -2,11 +2,7 @@ var summary_table = $("#fixedHeader").DataTable({
     searching: true,
     bPaginate: true,
     bInfo: true,
-    columns: [
-        { data: "product_name" },
-        { data: "out_total" },
-        { data: "qoh" }
-    ],
+    columns: [{ data: "product_name" }, { data: "out_total" }, { data: "qoh" }],
     // order: [[1, "desc"]],
 });
 
@@ -32,7 +28,7 @@ $(function () {
 
     function cb(start, end) {
         $("#outgoing-date span").html(
-            start.format("YYYY/MM/DD") + " - " + end.format("YYYY/MM/DD")
+            start.format("YYYY/MM/DD") + " - " + end.format("YYYY/MM/DD"),
         );
     }
 
@@ -64,7 +60,7 @@ $(function () {
                 "This Year": [moment().startOf("year"), moment()],
             },
         },
-        cb
+        cb,
     );
 
     cb(start, end);
@@ -122,7 +118,7 @@ function bindData(data) {
     const filteredData = data.filter((item) => Number(item.out_total) > 0);
 
     filteredData.forEach((item) => {
-        item.qoh = numberWithCommas(Number(item.current_stock).toFixed(0));
+        item.qoh = numberWithCommas(Number(item.current_stock));
         item.out_total = numberWithCommas(item.out_total);
         item.product_name =
             (item.product.name ? item.product.name : "") +
@@ -154,7 +150,7 @@ function bindStockCountData(data) {
                         (item.product.pack_size ?? "") +
                         (item.product.sales_uom ?? ""),
                     out_mode: mv.out_mode || "",
-                    out_total: numberWithCommas(mv.qty),
+                    out_total: Number(mv.qty) || 0, 
                     date: mv.date,
                     created_by: mv.created_by || "",
                     // qoh:
@@ -172,13 +168,17 @@ function bindStockCountData(data) {
         if (!grouped[key]) {
             grouped[key] = { ...item };
         } else {
-            grouped[key].out_total = numberWithCommas(
-                Number(grouped[key].out_total) + Number(item.out_total)
-            );
+            // Sum the numeric values
+            grouped[key].out_total += item.out_total;
         }
     });
 
     let result = Object.values(grouped);
+
+    // Format out_total with commas AFTER grouping/summing
+    result.forEach((item) => {
+        item.out_total = numberWithCommas(item.out_total);
+    });
 
     // sort by date descending
     result.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -203,8 +203,22 @@ $(document).on("change", "#category_id", function () {
     localStorage.setItem("category_id", $("#category_id").val());
 });
 
-function numberWithCommas(digit) {
-    return String(parseFloat(digit))
-        .toString()
-        .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+function numberWithCommas(num) {
+    let str = String(num);
+
+    if (str.includes(".")) {
+        let [whole, decimal] = str.split(".");
+
+        decimal = decimal.replace(/0+$/, "");
+
+        if (decimal === "") {
+            return Number(whole).toLocaleString();
+        }
+
+        let wholeFormatted = Number(whole).toLocaleString();
+
+        return wholeFormatted + "." + decimal;
+    } else {
+        return Number(str).toLocaleString();
+    }
 }

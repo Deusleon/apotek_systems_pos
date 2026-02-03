@@ -446,15 +446,14 @@ Route::middleware(["auth","main_branch"])->group(function () {
     Route::get('accounting/expenses','ExpenseController@index')->name('expense.index');
 
     /*inventory report routes*/
-    Route::get('reports/inventory-report', 'InventoryReportController@index')->name('inventory-report-index');
+    Route::get('reports/inventory-reports', 'InventoryReportController@index')->name('inventory-report-index');
 
     /*accounting report routes*/
     Route::get('reports/accounting-report', 'AccountingReportController@index')->name('accounting-report-index');
     Route::get('accounting-management/accounting-report/report-filter', 'AccountingReportController@reportOption')->name('accounting-report-filter');
 
-
     /*sale report routes*/
-    Route::get('reports/sale-report', 'SaleReportController@index')->name('sale-report-index');
+    Route::get('reports/sales-reports', 'SaleReportController@index')->name('sale-report-index');
 
     /*purchase report routes*/
     Route::get('reports/purchase-report', 'PurchaseReportController@index')->name('purchase-report-index');

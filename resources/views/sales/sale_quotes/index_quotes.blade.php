@@ -338,7 +338,7 @@
                 },
                 type: 'GET',
                 success: function (data) {
-                    // console.log('QuotesData', data);
+                    console.log('QuotesData', data);
                     quotes_table.clear();
                     quotes_table.rows.add(data)
                     quotes_table.draw();
@@ -502,7 +502,7 @@
 
         function showQuoteDetails(event) {
             let data = quotes_table.row($(event.target).parents('tr')).data();
-            // console.log('Data', data);
+            console.log('Data', data);
             quoteDetails(data.remark, data.details, data);
         }
 

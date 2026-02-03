@@ -88,7 +88,7 @@
         <h3 align="center" style="font-weight: normal;margin-top: -1%">
             {{$pharmacy['email'] . ' | ' . $pharmacy['website']}}
         </h3>
-        <h2 align="center" style="margin-top: -1%">Credit Sales Details Report</h2>
+        <h2 align="center" style="margin-top: -1%">Credit Sales Details Report ({{ current_store()->name }})</h2>
         <h4 align="center" style="font-weight: normal;margin-top: -1%">{{$pharmacy['date_range']}}</h4>
 
         @foreach($data as $datas => $dat)

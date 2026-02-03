@@ -97,7 +97,7 @@
             {{$pharmacy['email'] . ' | ' . $pharmacy['website']}}
         </div><br>
         <div>
-            <h3 align="center" style="font-weight: bold; margin-top: -1%">Dead Stock Report</h3>
+            <h3 align="center" style="font-weight: bold; margin-top: -1%">Dead Stock Report ({{ current_store()->name }})</h3>
             <h4 align="center" style="margin-top: -1%">Branch: {{$store}}</h4>
             <h4 align="center" style="margin-top: -1%">Printed On: {{now()->format('Y-m-d H:i:s')}}</h4>
         </div>

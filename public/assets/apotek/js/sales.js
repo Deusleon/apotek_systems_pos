@@ -516,38 +516,6 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
     } catch (e) {}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function discount() {
     if (discount_enable === "YES") {
         var dis = document.getElementById("sale_discount").value;
@@ -785,54 +753,6 @@ function discount() {
     cart_table.rows.add(cart);
     cart_table.draw();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 function deselect() {
     if (discount_enable === "YES") {
@@ -1712,8 +1632,23 @@ function isNumberKey(evt, obj) {
     return !(charCode > 31 && (charCode < 48 || charCode > 57));
 }
 
-function numberWithCommas(digit) {
-    return String(parseFloat(digit))
-        .toString()
-        .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+function numberWithCommas(num) {
+    let str = String(num);
+
+    if (str.includes('.')) {
+        let [whole, decimal] = str.split('.');
+
+        decimal = decimal.replace(/0+$/, "");
+
+        if (decimal === "") {
+            return Number(whole).toLocaleString();
+        }
+
+        let wholeFormatted = Number(whole).toLocaleString();
+
+        return wholeFormatted + "." + decimal;
+
+    } else {
+        return Number(str).toLocaleString();
+    }
 }

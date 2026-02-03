@@ -1499,6 +1499,19 @@ try {
         ) );
     }
 
+    private function getAllRequisitions($dates)
+    {
+        $start = date('Y-m-d', strtotime($dates[0]));
+        $end = date('Y-m-d', strtotime($dates[1]));
+
+        $requisitions = Requisition::whereIn('status', [0, 1])
+            ->whereBetween(DB::raw('date(created_at)'), [$start, $end])
+            ->with(['reqDetails.products_', 'creator', 'fromStore', 'toStore'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return $this->formatRequisitionData($requisitions, $dates);
+    }
     private function stockRequisitionReport($dates, $status)
     {
         if (!Auth()->user()->checkPermission('Stock Requisition Report')) {
@@ -1553,4 +1566,52 @@ try {
         return $to_pdf;
     }
 
+    private function formatRequisitionData($requisitions, $dates)
+    {
+        $to_pdf = [];
+        $total_bp = 0;
+        $total_sp = 0;
+
+        foreach ($requisitions as $req) {
+            foreach ($req->reqDetails as $detail) {
+                $product = $detail->products_;
+                if (!$product) continue;
+
+                $buy_price = 0; // Can be enhanced to get actual prices if needed
+                $sell_price = 0;
+                $issue_qty = $detail->quantity;
+                $status = $req->status == 0 ? 'Pending' : 'Issued';
+
+                $buy_price_sub_total = $issue_qty * $buy_price;
+                $sell_price_sub_total = $issue_qty * $sell_price;
+
+                $total_bp += $buy_price_sub_total;
+                $total_sp += $sell_price_sub_total;
+
+                $to_pdf[] = [
+                    'product_id' => $product->id,
+                    'name' => $product->name,
+                    'brand' => $product->brand,
+                    'pack_size' => $product->pack_size,
+                    'sales_uom' => $product->sales_uom,
+                    'buy_price' => $buy_price,
+                    'sell_price' => $sell_price,
+                    'issue_qty' => $issue_qty,
+                    'sub_total' => $sell_price_sub_total,
+                    'issue_no' => $req->req_no,
+                    'issued_by' => $req->creator->name ?? '',
+                    'issued_date' => date('Y-m-d', strtotime($req->created_at)),
+                    'issued_to' => $req->toStore->name ?? '',
+                    'status' => $status,
+                    'buy_price_sb' => $buy_price_sub_total,
+                    'sell_price_sb' => $sell_price_sub_total,
+                    'total_bp' => $total_bp,
+                    'total_sp' => $total_sp,
+                    'dates' => $dates
+                ];
+            }
+        }
+
+        return $to_pdf;
+    }
 }
