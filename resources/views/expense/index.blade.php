@@ -417,16 +417,16 @@
                 contentType: false,
                 success: function (response) {
                     $('#edit').modal('hide');
+                    $('#expense_form_edit')[0].reset();
                     getExpenseDate(); // Refresh table
-                    // Show success message - assuming toastr or similar is available
-                    if (typeof toastr !== 'undefined') {
-                        toastr.success('Expense updated successfully!');
-                    }
+                    notify('Expense updated successfully!', 'top', 'right', 'success');
                 },
                 error: function (xhr) {
-                    if (typeof toastr !== 'undefined') {
-                        toastr.error('Error updating expense');
+                    var errorMsg = 'Error updating expense';
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        errorMsg = xhr.responseJSON.error;
                     }
+                    notify(errorMsg, 'top', 'right', 'danger');
                 }
             });
         });
