@@ -1,3 +1,27 @@
+@php
+    function smartFormat($num)
+    {
+        $str = (string) $num;
+
+        if (strpos($str, '.') !== false) {
+
+            list($whole, $decimal) = explode('.', $str);
+
+            $decimal = rtrim($decimal, '0');
+
+            if ($decimal === '') {
+                return number_format((int) $whole);
+            }
+
+            $wholeFormatted = number_format((int) $whole);
+
+            return $wholeFormatted . '.' . $decimal;
+
+        } else {
+            return number_format((int) $str);
+        }
+    }
+@endphp
 @extends("layouts.master")
 
 @section('page_css')
@@ -88,7 +112,7 @@
                                     </td>
                                     <td id="category_{{ $allstock->product_id }}">{{ $allstock->cat_name }}</td>
                                     <td id="pack_size_{{ $allstock->product_id }}" hidden>{{ $allstock->pack_size }}</td>
-                                    <td id="quantity_{{ $allstock->product_id }}">{{ number_format($allstock->quantity) }}</td>
+                                    <td id="quantity_{{ $allstock->product_id }}">{{ smartFormat($allstock->quantity) }}</td>
                                     @if(auth()->user()->checkPermission('Create Stock Adjustment'))
                                                         <td id="actions_{{ $allstock->product_id }}">
                                                             <!-- Adjustment Button -->
@@ -148,7 +172,7 @@
                                         <td id="d_expiry_{{ $allDet->product_id }}">{{ $allDet->expiry_date ?? '' }}</td>
                                     @endif
                                     <td id="d_quantity_{{ $allDet->product_id }}">
-                                        {{ floor($allDet->quantity) == $allDet->quantity ? number_format($allDet->quantity, 0) : number_format($allDet->quantity, 1) }}
+                                        {{ smartFormat($allDet->quantity) }}
                                     </td>
                                     @if(auth()->user()->checkPermission('Create Stock Adjustment'))
                                                         <td id="actions_{{ $allDet->product_id }}">
@@ -159,7 +183,7 @@
                                         . (!empty($allDet->brand) ? ' ' . $allDet->brand : '')
                                         . (!empty($allDet->pack_size) ? ' ' . $allDet->pack_size : '')
                                         . (!empty($allDet->sales_uom) ? $allDet->sales_uom : '') }}"
-                                                                data-from-type="detailed" data-current-stock="{{ $allDet->quantity }}">
+                                                                data-from-type="detailed" data-current-stock="{{ smartFormat($allDet->quantity) }}">
                                                                 Adjust
                                                             </button>
                                                         </td>
@@ -199,7 +223,7 @@
                                     </td>
                                     <td id="category_{{ $stock->product_id }}">{{ $stock->cat_name }}</td>
                                     <td id="pack_size_{{ $stock->product_id }}" hidden>{{ $stock->pack_size }}</td>
-                                    <td id="quantity_{{ $stock->product_id }}">{{ number_format($stock->quantity) }}</td>
+                                    <td id="quantity_{{ $stock->product_id }}">{{ smartFormat($stock->quantity) }}</td>
                                     @if(auth()->user()->checkPermission('Create Stock Adjustment'))
                                                         <td id="actions_{{ $stock->product_id }}">
                                                             <!-- Adjustment Button -->
@@ -209,7 +233,7 @@
                                         . (!empty($stock->brand) ? ' ' . $stock->brand : '')
                                         . (!empty($stock->pack_size) ? ' ' . $stock->pack_size : '')
                                         . (!empty($stock->sales_uom) ? $stock->sales_uom : '') }}"
-                                                                data-from-type="summary" data-current-stock="{{ $stock->quantity }}">
+                                                                data-from-type="summary" data-current-stock="{{ smartFormat($stock->quantity) }}">
                                                                 Adjust
                                                             </button>
                                                         </td>
@@ -259,7 +283,7 @@
                                         <td id="d_expiry_{{ $data->product_id }}">{{ $data->expiry_date ?? '' }}</td>
                                     @endif
                                     <td id="d_quantity_{{ $data->product_id }}">
-                                        {{ floor($data->quantity) == $data->quantity ? number_format($data->quantity, 0) : number_format($data->quantity, 1) }}
+                                        {{ smartFormat($data->quantity) }}
                                     </td>
                                     @if(auth()->user()->checkPermission('Create Stock Adjustment'))
                                                         <td id="actions_{{ $data->product_id }}">
@@ -270,7 +294,7 @@
                                         . (!empty($data->brand) ? ' ' . $data->brand : '')
                                         . (!empty($data->pack_size) ? ' ' . $data->pack_size : '')
                                         . (!empty($data->sales_uom) ? $data->sales_uom : '') }}"
-                                                                data-from-type="detailed" data-current-stock="{{ $data->quantity }}">
+                                                                data-from-type="detailed" data-current-stock="{{ smartFormat($data->quantity) }}">
                                                                 Adjust
                                                             </button>
                                                         </td>
@@ -312,7 +336,7 @@
                                     </td>
 
                                     <td id="o_quantity_{{ $out->product_id }}">
-                                        {{ floor($out->quantity) == $out->quantity ? number_format($out->quantity, 0) : number_format($out->quantity, 1) }}
+                                        {{ smartFormat($out->quantity) }}
                                     </td>
                                     @if(auth()->user()->checkPermission('Create Stock Adjustment'))
                                                         <td id="actions_{{ $out->product_id }}">
@@ -323,7 +347,7 @@
                                         . (!empty($out->brand) ? ' ' . $out->brand : '')
                                         . (!empty($out->pack_size) ? ' ' . $out->pack_size : '')
                                         . (!empty($out->sales_uom) ? $out->sales_uom : '') }}" data-from-type="summary"
-                                                                data-current-stock="{{ $out->quantity }}">
+                                                                data-current-stock="{{ smartFormat($out->quantity) }}">
                                                                 Adjust
                                                             </button>
                                                         </td>
@@ -371,7 +395,7 @@
                                         <td id="o_detal_expiry_{{ $outDet->product_id }}">{{ $outDet->expiry_date ?? '' }}</td>
                                     @endif
                                     <td id="o_detal_quantity_{{ $outDet->product_id }}">
-                                        {{ floor($outDet->quantity) == $outDet->quantity ? number_format($outDet->quantity, 0) : number_format($outDet->quantity, 1) }}
+                                        {{ smartFormat($outDet->quantity) }}
                                     </td>
                                     @if(auth()->user()->checkPermission('Create Stock Adjustment'))
                                                         <td id="actions_{{ $outDet->product_id }}">
@@ -470,7 +494,7 @@
                             d.category = value_es;
                         },
                         success: function (response) {
-                            console.log('Current Stock loading...', response);
+                            // console.log('Current Stock loading...', response);
                             for (var i = 0; i < response.length; i++) {
                                 var data_returned = response[i];
                                 $('#name_' + data_returned.id).text(data_returned.name);
@@ -513,9 +537,9 @@
             const product_id = $btn.data('product-id');
             const from_type = $btn.data('from-type');
             let stock = Number(current_stock);
-            let displayStock = (stock % 1 === 0) ? stock : stock.toFixed(1);
+            let displayStock = (stock % 1 === 0) ? stock : stock;
             $('#show_product_name').text(product_name);
-            $('#show_current_stock').text(numberWithCommas(displayStock));
+            $('#show_current_stock').text(smartFormat(displayStock));
             $('#confirmAdjustmentProductName').text(product_name);
             $('#product_id').val(product_id);
             $('#stock_id').val(id);
@@ -546,7 +570,7 @@
                 data: formData,
                 success: function (response) {
                     if (response.success) {
-                        console.log('Success:', response);
+                        // console.log('Success:', response);
                         notify("Stock adjusted successfully.", "top", "right", "success");
                         $('#confirmAdjustmentModal').modal('hide');
                         location.reload();
@@ -648,23 +672,23 @@
 
         $('#new_qty_to_show').on('input', function () {
             let value = this.value;
-            
+
             // Remove any non-numeric characters except decimal point
             value = value.replace(/[^0-9.]/g, '');
-            
+
             // Ensure only one decimal point
             const parts = value.split('.');
             if (parts.length > 2) {
                 value = parts[0] + '.' + parts.slice(1).join('');
             }
-            
+
             // Limit to 2 decimal places
             if (parts.length === 2 && parts[1].length > 2) {
                 value = parts[0] + '.' + parts[1].substring(0, 2);
             }
-            
+
             this.value = value;
-            
+
             // Update hidden field
             if (value !== '') {
                 document.getElementById('new_quantity').value = parseFloat(value.replace(/\,/g, ''));
@@ -692,5 +716,27 @@
         function numberWithCommas(digit) {
             return String(parseFloat(digit)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
+
+        function smartFormat(num) {
+            let str = String(num);
+
+            if (str.includes('.')) {
+                let [whole, decimal] = str.split('.');
+
+                decimal = decimal.replace(/0+$/, "");
+
+                if (decimal === "") {
+                    return Number(whole).toLocaleString();
+                }
+
+                let wholeFormatted = Number(whole).toLocaleString();
+
+                return wholeFormatted + "." + decimal;
+
+            } else {
+                return Number(str).toLocaleString();
+            }
+        }
+
     </script>
 @endpush

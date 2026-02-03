@@ -367,12 +367,12 @@
                     let row = `
                                                                                                                                                 <tr>
                                                                                                                                                     <td>${item.product_name}</td>
-                                                                                                                                                    <td>${numberWithCommas(Number(item.quantity ?? 0).toFixed(0))}</td>
+                                                                                                                                                    <td>${numberWithCommas(Number(item.quantity ?? 0))}</td>
                                                                                                                                             `;
 
                     if (status === 'Completed' || status === 'Acknowledged') {
                         row += `
-                                                                                                                                                    <td>${numberWithCommas(Number(item.accepted_qty ?? 0).toFixed(0))}</td>
+                                                                                                                                                    <td>${numberWithCommas(Number(item.accepted_qty ?? 0))}</td>
                                                                                                                                                 `;
                     }
 
@@ -382,8 +382,25 @@
             }
         });
 
-        function numberWithCommas(digit) {
-            return String(parseFloat(digit)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        function numberWithCommas(num) {
+            let str = String(num);
+
+            if (str.includes('.')) {
+                let [whole, decimal] = str.split('.');
+
+                decimal = decimal.replace(/0+$/, "");
+
+                if (decimal === "") {
+                    return Number(whole).toLocaleString();
+                }
+
+                let wholeFormatted = Number(whole).toLocaleString();
+
+                return wholeFormatted + "." + decimal;
+
+            } else {
+                return Number(str).toLocaleString();
+            }
         }
 
         $(document).on('click', '.btn-approve-transfer', function () {
@@ -497,9 +514,10 @@
                                         (item.current_stock.product.sales_uom ? item.current_stock.product.sales_uom : ''))
                                     : 'Unknown Product';
 
-                            const transferQty = Number(item.transfer_qty || 0).toFixed(0);
-                            const acceptedQty = Number(item.accepted_qty || 0).toFixed(0);
-                            const receiveDefault = (Number(transferQty) - Number(acceptedQty)).toFixed(0);
+                            const transferQty = Number(item.transfer_qty || 0);
+                            const acceptedQty = Number(item.accepted_qty || 0);
+                            const receiveDefault = (Number(transferQty) - Number(acceptedQty));
+                            console.log('Data are', transferQty, acceptedQty, receiveDefault);
 
                             $('#acknowledge_transfer_no').text(transferNo);
                             $('#acknowledge_from_store').text(item.from_store.name);
@@ -610,8 +628,8 @@
                 caretPos = newCaret;
             }
 
-            const transferred = parseInt($cell.siblings('.transferred').data('value'), 10) || 0;
-            const parsed = parseInt($cell.text().trim(), 10);
+            const transferred = parseFloat($cell.siblings('.transferred').data('value'), 10) || 0;
+            const parsed = parseFloat($cell.text().trim(), 10);
             if (!isNaN(parsed) && parsed > transferred) {
                 $cell.text(transferred);
                 setCaretPosition(el, String(transferred).length);
@@ -621,11 +639,11 @@
 
         $(document).on('blur', '#acknowledge_items_body .receive', function () {
             const $cell = $(this);
-            const transferred = parseInt($cell.siblings('.transferred').data('value'), 10) || 0;
+            const transferred = parseFloat($cell.siblings('.transferred').data('value'), 10) || 0;
             let text = $cell.text().trim();
 
             text = text.replace(/\D+/g, '').replace(/^0+(?=\d)/, '');
-            let parsed = parseInt(text, 10);
+            let parsed = parseFloat(text, 10);
             if (isNaN(parsed)) parsed = 0;
             if (parsed < 0) parsed = 0;
             if (parsed > transferred) parsed = transferred;
@@ -640,10 +658,10 @@
 
             $('#acknowledge_items_body tr').each(function (i, tr) {
                 const $tr = $(tr);
-                const transferred = parseInt($tr.find('.transferred').text().replace(/\D/g, ''), 10) || 0;
+                const transferred = parseFloat($tr.find('.transferred').text().replace(/\D/g, ''), 10) || 0;
                 let acceptedText = $tr.find('.receive').text().trim();
-                acceptedText = (acceptedText === '') ? '0' : acceptedText.replace(/\D/g, '');
-                let accepted = parseInt(acceptedText, 10);
+                acceptedText = (acceptedText === '') ? '0' : acceptedText.replace(/[^0-9.]/g, '');;
+                let accepted = parseFloat(acceptedText, 10);
                 if (isNaN(accepted)) accepted = 0;
                 if (accepted < 0) accepted = 0;
                 if (accepted > transferred) accepted = transferred;
@@ -751,7 +769,7 @@
             storeSelectValidator();
 
             const selectedValue = $(this).val(); // Get the selected dropdown value
-            console.log("DataSelected", selectedValue);
+            // console.log("DataSelected", selectedValue);
 
             if (selectedValue === 'Select store..') {
                 stockTransfer.column(4).search('').draw();

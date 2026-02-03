@@ -1,3 +1,27 @@
+@php
+    function smartFormat($num)
+    {
+        $str = (string) $num;
+
+        if (strpos($str, '.') !== false) {
+
+            list($whole, $decimal) = explode('.', $str);
+
+            $decimal = rtrim($decimal, '0');
+
+            if ($decimal === '') {
+                return number_format((int) $whole);
+            }
+
+            $wholeFormatted = number_format((int) $whole);
+
+            return $wholeFormatted . '.' . $decimal;
+
+        } else {
+            return number_format((int) $str);
+        }
+    }
+@endphp
 @extends("layouts.master")
 
 @section('page_css')
@@ -103,7 +127,7 @@
                                 <tr>
                                     <td>{{ $stock->name . ' ' . ($stock->brand ? $stock->brand . ' ' : $stock->brand) . ($stock->pack_size ?? '') . ($stock->sales_uom ?? '') }}
                                     </td>
-                                    <td style="text-align: center;">{{ number_format($stock->quantity, 0) ?? 0 }}
+                                    <td style="text-align: center;">{{ smartFormat($stock->quantity) ?? 0 }}
                                     </td>
                                     <td style="text-align: right;">{{ number_format($stock->buy_price, 2) ?? 0 }}
                                     </td>

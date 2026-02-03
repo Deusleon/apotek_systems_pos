@@ -670,7 +670,7 @@ class ProductController extends Controller
             $results = $this->processPriceUpload($data, $priceCategoryId);
 
             if($results){
-                $successMessage = "Price upload completed successfully.";
+                $successMessage = "Price upload completed.";
                 return back()->with('success', $successMessage);
             }
 
@@ -989,7 +989,7 @@ class ProductController extends Controller
             // Process the data
             $results = $this->processStockUpload($data, $adjustmentReasonId, $storeId);
 
-            $successMessage = "Stock upload completed successfully.";
+            $successMessage = "Stock upload completed.";
 
             if ($results['errors'] > 0) {
                 $message = "\n\nErrors: {$results['errors']}";
@@ -1338,7 +1338,7 @@ class ProductController extends Controller
 
             DB::commit();
 
-            $message = "Stock reset completed successfully all stock have been set to 0.\n\n";
+            $message = "Stock reset completed. All stock quantities have been set to 0.\n\n";
 
             Log::info("Stock reset completed for store ID {$storeId}: {$resetCount} batches, {$totalQuantityReset} total quantity");
 

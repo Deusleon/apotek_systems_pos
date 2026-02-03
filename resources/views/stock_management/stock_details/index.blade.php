@@ -1,3 +1,27 @@
+@php
+    function smartFormat($num)
+    {
+        $str = (string) $num;
+
+        if (strpos($str, '.') !== false) {
+
+            list($whole, $decimal) = explode('.', $str);
+
+            $decimal = rtrim($decimal, '0');
+
+            if ($decimal === '') {
+                return number_format((int) $whole);
+            }
+
+            $wholeFormatted = number_format((int) $whole);
+
+            return $wholeFormatted . '.' . $decimal;
+
+        } else {
+            return number_format((int) $str);
+        }
+    }
+@endphp
 @extends("layouts.master")
 
 @section('page_css')
@@ -51,7 +75,7 @@
                                         @if ($expireEnabled)
                                             <td class="expiry-date">{{ $data->expiry_date ?? '' }}</td>
                                         @endif
-                                        <td>{{ floor($data->quantity) == $data->quantity ? number_format($data->quantity, 0) : number_format($data->quantity, 1) }}</td>
+                                        <td>{{ smartFormat($data->quantity) }}</td>
                                         <td>
                                             @if(auth()->user()->checkPermission('Edit Stock Details'))
                                                 <button type="button" class="btn btn-info btn-rounded btn-sm btn-edit"

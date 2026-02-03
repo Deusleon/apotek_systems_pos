@@ -1,3 +1,27 @@
+@php
+    function smartFormat($num)
+    {
+        $str = (string) $num;
+
+        if (strpos($str, '.') !== false) {
+
+            list($whole, $decimal) = explode('.', $str);
+
+            $decimal = rtrim($decimal, '0');
+
+            if ($decimal === '') {
+                return number_format((int) $whole);
+            }
+
+            $wholeFormatted = number_format((int) $whole);
+
+            return $wholeFormatted . '.' . $decimal;
+
+        } else {
+            return number_format((int) $str);
+        }
+    }
+@endphp
 @extends("layouts.master")
 
 @section('page_css')
@@ -89,7 +113,7 @@
                                         </td>
                                         <td id="category_{{ $allstock->product_id }}">{{ $allstock->cat_name }}</td>
                                         <td id="pack_size_{{ $allstock->product_id }}" hidden>{{ $allstock->pack_size }}</td>
-                                        <td id="quantity_{{ $allstock->product_id }}">{{ number_format($allstock->quantity) }}</td>
+                                        <td id="quantity_{{ $allstock->product_id }}">{{ smartFormat($allstock->quantity) }}</td>
                                         <td id="actions_{{ $allstock->product_id }}" hidden>
                                             @if(auth()->user()->checkPermission('Manage Current Stock'))
                                                 <button type="button" class="btn btn-primary btn-rounded btn-sm"
@@ -140,7 +164,7 @@
                                             <td id="d_expiry_{{ $allDet->product_id }}">{{ $allDet->expiry_date ?? '' }}</td>
                                         @endif
                                         <td id="d_quantity_{{ $allDet->product_id }}">
-                                            {{ floor($allDet->quantity) == $allDet->quantity ? number_format($allDet->quantity, 0) : number_format($allDet->quantity, 1) }}
+                                            {{ floor($allDet->quantity) == $allDet->quantity ? smartFormat($allDet->quantity) : smartFormat($allDet->quantity) }}
                                         </td>
                                     </tr>
                                 @endforeach
@@ -175,7 +199,7 @@
                                         </td>
                                         <td id="category_{{ $stock->product_id }}">{{ $stock->cat_name }}</td>
                                         <td id="pack_size_{{ $stock->product_id }}" hidden>{{ $stock->pack_size }}</td>
-                                        <td id="quantity_{{ $stock->product_id }}">{{ number_format($stock->quantity) }}</td>
+                                        <td id="quantity_{{ $stock->product_id }}">{{ smartFormat($stock->quantity) }}</td>
                                         <td id="actions_{{ $stock->product_id }}" hidden>
                                             @if(auth()->user()->checkPermission('Manage Current Stock'))
                                                 <button type="button" class="btn btn-primary btn-rounded btn-sm"
@@ -226,7 +250,7 @@
                                             <td id="d_expiry_{{ $data->product_id }}">{{ $data->expiry_date ?? '' }}</td>
                                         @endif
                                         <td id="d_quantity_{{ $data->product_id }}">
-                                            {{ floor($data->quantity) == $data->quantity ? number_format($data->quantity, 0) : number_format($data->quantity, 1) }}
+                                            {{ floor($data->quantity) == $data->quantity ? smartFormat($data->quantity) : smartFormat($data->quantity) }}
                                         </td>
                                     </tr>
                                 @endforeach
@@ -262,7 +286,7 @@
                                         </td>
 
                                         <td id="o_quantity_{{ $out->product_id }}">
-                                            {{ floor($out->quantity) == $out->quantity ? number_format($out->quantity, 0) : number_format($out->quantity, 1) }}
+                                            {{ floor($out->quantity) == $out->quantity ? smartFormat($out->quantity) : smartFormat($out->quantity) }}
                                         </td>
                                     </tr>
                                 @endforeach
@@ -304,7 +328,7 @@
                                             <td id="o_detal_expiry_{{ $out->product_id }}">{{ $out->expiry_date ?? '' }}</td>
                                         @endif
                                         <td id="o_detal_quantity_{{ $out->product_id }}">
-                                            {{ floor($out->quantity) == $out->quantity ? number_format($out->quantity, 0) : number_format($out->quantity, 1) }}
+                                            {{ floor($out->quantity) == $out->quantity ? smartFormat($out->quantity) : smartFormat($out->quantity) }}
                                         </td>
                                     </tr>
                                 @endforeach

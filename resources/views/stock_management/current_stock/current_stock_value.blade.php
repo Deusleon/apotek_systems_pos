@@ -1,8 +1,31 @@
+@php
+    function smartFormat($num)
+    {
+        $str = (string) $num;
+
+        if (strpos($str, '.') !== false) {
+
+            list($whole, $decimal) = explode('.', $str);
+
+            $decimal = rtrim($decimal, '0');
+
+            if ($decimal === '') {
+                return number_format((int) $whole);
+            }
+
+            $wholeFormatted = number_format((int) $whole);
+
+            return $wholeFormatted . '.' . $decimal;
+
+        } else {
+            return number_format((int) $str);
+        }
+    }
+@endphp
 @extends("layouts.master")
 
 @section('page_css')
     <style>
-
 
     </style>
 @endsection
@@ -94,7 +117,7 @@
                                 ) }}
                                                         </td>
                                                         <td style="text-align: center;" id="quantity_{{ $stock->product_id }}">
-                                                            {{ floor($stock->quantity) == $stock->quantity ? number_format($stock->quantity, 0) : number_format($stock->quantity, 1) }}
+                                                            {{ floor($stock->quantity) == $stock->quantity ? smartFormat($stock->quantity) : smartFormat($stock->quantity) }}
                                                         </td>
                                                         <td style="text-align: right" id="unitcost_{{ $stock->product_id }}">{{ number_format($stock->unit_cost, 2) ?? '' }}
                                                         </td>

@@ -22,7 +22,7 @@ var cart_table = $("#cart_table").DataTable({
         {
             title: "QOH",
             render: function (num) {
-                console.log("cart:", cart);
+                // console.log("cart:", cart);
                 return numberWithCommas(num);
             },
         },
@@ -225,12 +225,12 @@ function val() {
     const product_id = Number(selected_fields[5]);
     const stock_id = Number(selected_fields[6]);
 
-    console.log("Parsed selected product:", {
-        item_name,
-        QoH,
-        product_id,
-        stock_id,
-    });
+    // console.log("Parsed selected product:", {
+    //     item_name,
+    //     QoH,
+    //     product_id,
+    //     stock_id,
+    // });
 
     const quantity = 1;
 
@@ -498,7 +498,7 @@ function saveStockTransfer() {
         processData: false,
         contentType: false,
         success: function (response) {
-            console.log("Stock transfer response:", response);
+            // console.log("Stock transfer response:", response);
             if (response.success) {
                 notify(
                     response.message || "Stock transferred successfully",
@@ -672,10 +672,25 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
     }
 }
 
-function numberWithCommas(digit) {
-    return String(parseFloat(digit))
-        .toString()
-        .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+function numberWithCommas(num) {
+    let str = String(num);
+
+    if (str.includes('.')) {
+        let [whole, decimal] = str.split('.');
+
+        decimal = decimal.replace(/0+$/, "");
+
+        if (decimal === "") {
+            return Number(whole).toLocaleString();
+        }
+
+        let wholeFormatted = Number(whole).toLocaleString();
+
+        return wholeFormatted + "." + decimal;
+
+    } else {
+        return Number(str).toLocaleString();
+    }
 }
 
 function isNumberKey(evt, obj) {

@@ -192,13 +192,35 @@
         }
         function capitalize(s) { s = s || ''; return s.charAt(0).toUpperCase() + s.slice(1); }
 
+        // function formatNumber(num) {
+        //     if (num === null || num === undefined || num === '') return '';
+        //     return parseFloat(num).toLocaleString('en-US', {
+        //         minimumFractionDigits: 0,
+        //         maximumFractionDigits: 1
+        //     });
+        // }
+        
         function formatNumber(num) {
-            if (num === null || num === undefined || num === '') return '';
-            return parseFloat(num).toLocaleString('en-US', {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 1
-            });
+            let str = String(num);
+
+            if (str.includes('.')) {
+                let [whole, decimal] = str.split('.');
+
+                decimal = decimal.replace(/0+$/, "");
+
+                if (decimal === "") {
+                    return Number(whole).toLocaleString();
+                }
+
+                let wholeFormatted = Number(whole).toLocaleString();
+
+                return wholeFormatted + "." + decimal;
+
+            } else {
+                return Number(str).toLocaleString();
+            }
         }
+
 
     </script>
 @endpush

@@ -35,7 +35,7 @@ class PriceCategoryController extends Controller
 
         if($existing > 0)
         {
-            session()->flash("alert-danger", "Price Category Name Exists!");
+            session()->flash("alert-danger", "Price category exists!");
             return back();
         }
         try {
@@ -60,7 +60,7 @@ class PriceCategoryController extends Controller
 
         if($existing > 0)
         {
-            session()->flash("alert-danger", "Price Category Name Exists!");
+            session()->flash("alert-danger", "Price category exists!");
             return back();
         }
 
@@ -84,16 +84,16 @@ class PriceCategoryController extends Controller
 
         if($check_existance > 0)
         {
-            session()->flash("alert-danger", "Price Category is in use!");
+            session()->flash("alert-danger", "Price category is in use!");
             return back();
         }
 
         try {
             PriceCategory::destroy($request->price_category_id);
-            session()->flash("alert-danger", "Price category deleted successfully!");
+            session()->flash("alert-success", "Price category deleted successfully!");
             return back();
         } catch (Exception $e) {
-            session()->flash("alert-danger", "Price category in use!");
+            session()->flash("alert-danger", "Price category is in use!");
             return back();
         }
 

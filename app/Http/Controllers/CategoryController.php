@@ -35,7 +35,7 @@ class CategoryController extends Controller
 
         if($existing > 0)
         {
-            session()->flash("alert-danger", "Product Category Exists!");
+            session()->flash("alert-danger", "Product category exists!");
             return back();
         }
 
@@ -43,10 +43,10 @@ class CategoryController extends Controller
             $category = new Category;
             $category->name = $request->name;
             $category->save();
-            session()->flash("alert-success", "Product Category Added Successfully!");
+            session()->flash("alert-success", "Product category added successfully!");
             return back();
         } catch (Exception $exception) {
-            session()->flash("alert-danger", "Product Category Exists!");
+            session()->flash("alert-danger", "Product category exists!");
             return back();
         }
 
@@ -58,15 +58,15 @@ class CategoryController extends Controller
 
         if($check_existance > 0)
         {
-            session()->flash("alert-danger", "Product Category is in use!");
+            session()->flash("alert-danger", "Product category is in use!");
             return back();
         }
         try {
             Category::destroy($request->id);
-            session()->flash("alert-danger", "Product Category Deleted successfully!");
+            session()->flash("alert-success", "Product category deleted successfully!");
             return back();
         } catch (Exception $exception) {
-            session()->flash("alert-danger", "Product Category in use!");
+            session()->flash("alert-danger", "Product category is in use!");
             return back();
         }
 
@@ -78,7 +78,7 @@ class CategoryController extends Controller
 
         if($existing > 0)
         {
-            session()->flash("alert-danger", "Product Category Exists!");
+            session()->flash("alert-danger", "Product category exists!");
             return back();
         }
 

@@ -33,7 +33,7 @@ class AdjustmentReasonController extends Controller
 
         if ( $existing > 0 )
  {
-            session()->flash( 'alert-danger', 'Reason Exists!' );
+            session()->flash( 'alert-danger', 'Reason exists!' );
             return back();
         }
         try {
@@ -43,7 +43,7 @@ class AdjustmentReasonController extends Controller
             session()->flash( 'alert-success', 'Reason added successfully!' );
             return back();
         } catch ( Exception $exception ) {
-            session()->flash( 'alert-danger', 'Reason Exists!' );
+            session()->flash( 'alert-danger', 'Reason exists!' );
             return back();
         }
     }
@@ -77,10 +77,10 @@ class AdjustmentReasonController extends Controller
  {
         try {
             AdjustmentReason::destroy( $request->adjustment_id );
-            session()->flash( 'alert-danger', 'Reason Deleted successfully!' );
+            session()->flash( 'alert-success', 'Reason deleted successfully!' );
             return back();
         } catch ( Exception $exception ) {
-            session()->flash( 'alert-danger', 'Reason in use!' );
+            session()->flash( 'alert-danger', 'Reason is in use!' );
             return back();
         }
 
