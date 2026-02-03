@@ -41,7 +41,7 @@ class StoreController extends Controller
 
         if($exist>0)
         {
-            session()->flash("alert-danger", "Branch Name Exists!");
+            session()->flash("alert-danger", "Branch name exists!");
             return back();
         }
 
@@ -50,11 +50,11 @@ class StoreController extends Controller
             $store->name = strtoupper($request->name);
             $store->save();
         } catch (Exception $e) {
-            session()->flash("alert-danger", "Branch Name Exists!");
+            session()->flash("alert-danger", "Branch name exists!");
             return back();
         }
 
-        session()->flash("alert-success", "Branch Added Successfully!");
+        session()->flash("alert-success", "Branch added successfully!");
         return back();
     }
 
@@ -81,7 +81,7 @@ class StoreController extends Controller
                 return back();
             } else {
                 Store::destroy($request->id);
-                session()->flash("alert-danger", "Branch Deleted successfully!");
+                session()->flash("alert-success", "Branch deleted successfully!");
                 return back();
             }
 
@@ -99,17 +99,17 @@ class StoreController extends Controller
 
         if($exist>0)
         {
-            session()->flash("alert-danger", "Branch Name Exists!");
+            session()->flash("alert-danger", "Branch name exists!");
             return back();
         }
         $store = Store::find($request->id);
         $store->name = $request->name;
         try {
             $store->save();
-            session()->flash("alert-success", "Branch Updated Successfully!");
+            session()->flash("alert-success", "Branch updated successfully!");
             return back();
         } catch (Exception $exception) {
-            session()->flash("alert-danger", "Branch Exists!");
+            session()->flash("alert-danger", "Branch name exists!");
             return back();
         }
 

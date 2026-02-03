@@ -43,7 +43,7 @@ class RoleController extends Controller
             'description' => 'required|string|min:5|max:50',
             'permissions' => 'required',
         ], [
-            'name.unique' => 'Role with this name exist',
+            'name.unique' => 'Role with this name exists!',
         ] );
 
         $role = Role::create( [
@@ -79,7 +79,7 @@ class RoleController extends Controller
             'description' => 'required|string|min:2|max:255',
             'permissions' => 'required|array|min:1',
         ], [
-            'name.unique' => 'Role with this name exist',
+            'name.unique' => 'Role with this name exists!',
         ] );
 
         $role = Role::findOrFail( $validated[ 'id' ] );
@@ -106,7 +106,7 @@ class RoleController extends Controller
             session()->flash( 'alert-success', 'Role deleted successfully!' );
             return back();
         } catch ( Exception $exception ) {
-            session()->flash( 'alert-danger', 'Role in use!' );
+            session()->flash( 'alert-danger', 'Role is in use!' );
             return back();
         }
     }

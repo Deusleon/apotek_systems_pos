@@ -1,3 +1,27 @@
+@php
+    function smartFormat($num)
+    {
+        $str = (string) $num;
+
+        if (strpos($str, '.') !== false) {
+
+            list($whole, $decimal) = explode('.', $str);
+
+            $decimal = rtrim($decimal, '0');
+
+            if ($decimal === '') {
+                return number_format((int) $whole);
+            }
+
+            $wholeFormatted = number_format((int) $whole);
+
+            return $wholeFormatted . '.' . $decimal;
+
+        } else {
+            return number_format((int) $str);
+        }
+    }
+@endphp
 <!DOCTYPE html>
 <html>
 
@@ -126,7 +150,7 @@
                             ($item->currentStock->product->pack_size ?? '') . ' ' .
                             ($item->currentStock->product->sales_uom ?? '') }}
                                                 </td>
-                                                <td align="center">{{ number_format($item->transfer_qty ?? 0) }}</td>
+                                                <td align="center">{{ smartFormat($item->transfer_qty ?? 0) }}</td>
                                                 <td align="left">{{ $transfer->fromStore->name ?? '' }}</td>
                                                 <td align="left">{{ $transfer->toStore->name ?? '' }}</td>
                                                 <td align="left">

@@ -158,9 +158,9 @@
                                     </div>
                                     <div class="modal-body">
                                         @if(is_all_store())
-                                            This action will <b>RESET</b> (make quantity zero) for all your products for the specified branch.<br> This action cannot be undone! Make sure you have a recent backup before proceeding.
+                                            This action will reset the quantity of all products in the specified branch.<br> This action cannot be undone. Please ensure you have a recent backup before proceeding.
                                         @else
-                                            This action will <b>RESET</b> (make quantity zero) for all your products in {{ current_store()->name }} branch.<br> This action cannot be undone! Make sure you have a recent backup before proceeding.
+                                            This action will reset the quantity of all products in the {{ current_store()->name }} branch to zero.<br> This action cannot be undone. Please ensure you have a recent backup before proceeding.
                                         @endif
                                     </div>
                                     <div class="modal-footer">

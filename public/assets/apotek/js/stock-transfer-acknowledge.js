@@ -29,7 +29,6 @@ var table_stock_transfer_list = $('#fixed-header-main').DataTable({
     info: false,
 });
 
-
 //show table details
 var table_stock_detail = $('#fixed-header2').DataTable({
     'columns': [
@@ -70,7 +69,6 @@ var table_re_print = $('#fixed-header-re-print1').DataTable({
     ]
 });
 
-
 function storeSelect() {
     try {
         var from = document.getElementById("from_id");
@@ -94,7 +92,6 @@ function storeSelect() {
     filterByStore(from_id, to_id);
 
 }
-
 
 function storeSelectRePrint() {
     try {
@@ -171,7 +168,6 @@ function filterByStoreRePrint(data, data1) {
     });
 }
 
-
 $('#tbody').on('click', '#completed', function () {
     var datas = table_stock_transfer.row($(this).parents('tr')).data();
     var index = table_stock_transfer.row($(this).parents('tr')).index();
@@ -188,7 +184,6 @@ $('#tbody').on('click', '#completed', function () {
     $('#completes').find('.modal-body #stock_id').val(datas.stock_id);
 
 });
-
 
 $('#tbody').on('click', '#shows', function () {
 
@@ -276,7 +271,6 @@ $('#tbodyRePrint').on('click', '#print', function () {
     document.getElementById("transfer_no").value = datas[0];
 });
 
-
 $('#quantity_rcvd').on('change', function () {
 
     var in_stock = document.getElementById('quantity_trn').value;
@@ -335,7 +329,6 @@ function showStockTransfer(data, data1, data2) {
     });
 }
 
-
 function updateStockTransfer(data, data1, data2) {
     var transfer_no = data;
     var from_val = data1;
@@ -389,6 +382,23 @@ function bindDataShow(data) {
 
 }
 
-function numberWithCommas(digit) {
-    return String(parseFloat(digit)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+function numberWithCommas(num) {
+    let str = String(num);
+
+    if (str.includes('.')) {
+        let [whole, decimal] = str.split('.');
+
+        decimal = decimal.replace(/0+$/, "");
+
+        if (decimal === "") {
+            return Number(whole).toLocaleString();
+        }
+
+        let wholeFormatted = Number(whole).toLocaleString();
+
+        return wholeFormatted + "." + decimal;
+
+    } else {
+        return Number(str).toLocaleString();
+    }
 }

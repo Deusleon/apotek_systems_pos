@@ -173,13 +173,13 @@ class StockTransferAcknowledgeController extends Controller
             $acceptedMap = [];
             foreach ( $submittedTransfers as $i => $t ) {
                 if ( isset( $t[ 'id' ] ) ) {
-                    $acceptedMap[ $t[ 'id' ] ] = ( int ) str_replace( ',', '', ( $t[ 'accepted_qty' ] ?? 0 ) );
+                    $acceptedMap[ $t[ 'id' ] ] = ( float ) str_replace( ',', '', ( $t[ 'accepted_qty' ] ?? 0 ) );
                 } elseif ( isset( $t[ 'stock_id' ] ) ) {
                     // fallback if front-end used stock_id as identifier
-                    $acceptedMap[ $t[ 'stock_id' ] ] = ( int ) str_replace( ',', '', ( $t[ 'accepted_qty' ] ?? 0 ) );
+                    $acceptedMap[ $t[ 'stock_id' ] ] = ( float ) str_replace( ',', '', ( $t[ 'accepted_qty' ] ?? 0 ) );
                 } else {
                     // fallback by index: we try to use numeric index mapping
-                    $acceptedMap[ $i ] = ( int ) str_replace( ',', '', ( $t[ 'accepted_qty' ] ?? 0 ) );
+                    $acceptedMap[ $i ] = ( float ) str_replace( ',', '', ( $t[ 'accepted_qty' ] ?? 0 ) );
                 }
             }
 
@@ -192,17 +192,17 @@ class StockTransferAcknowledgeController extends Controller
                 // We try by transfer->id, then by stock_id, then by index.
                 $acceptedToday = 0;
                 if ( isset( $acceptedMap[ $transfer->id ] ) ) {
-                    $acceptedToday = max( 0, ( int )$acceptedMap[ $transfer->id ] );
+                    $acceptedToday = max( 0, ( float )$acceptedMap[ $transfer->id ] );
                 } elseif ( isset( $acceptedMap[ $stockId ] ) ) {
-                    $acceptedToday = max( 0, ( int )$acceptedMap[ $stockId ] );
+                    $acceptedToday = max( 0, ( float )$acceptedMap[ $stockId ] );
                 } elseif ( isset( $acceptedMap[ $index ] ) ) {
-                    $acceptedToday = max( 0, ( int )$acceptedMap[ $index ] );
+                    $acceptedToday = max( 0, ( float )$acceptedMap[ $index ] );
                 }
 
-                $transferedQty = ( int ) str_replace( ',', '', $transfer->transfer_qty );
+                $transferedQty = ( float ) str_replace( ',', '', $transfer->transfer_qty );
 
                 // previously accepted ( may be null )
-                $alreadyAccepted = ( int ) ( $transfer->accepted_qty ?? 0 );
+                $alreadyAccepted = ( float ) ( $transfer->accepted_qty ?? 0 );
 
                 // new total accepted after this acknowledge action
                 $newAcceptedTotal = $alreadyAccepted + $acceptedToday;

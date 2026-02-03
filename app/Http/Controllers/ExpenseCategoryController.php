@@ -34,7 +34,7 @@ class ExpenseCategoryController extends Controller
     {
         $existing = AccExpenseCategory::where( 'name', $request->name )->count();
         if ( $existing > 0 ) {
-            session()->flash("alert-danger", "Expense Category Exists!");
+            session()->flash("alert-danger", "Expense category exists!");
             return back();
         }
         try {
@@ -42,14 +42,13 @@ class ExpenseCategoryController extends Controller
             $expense_category->name = $request->name;
             $expense_category->save();
 
-            session()->flash("alert-success", "Expense Category Added Successfully!");
+            session()->flash("alert-success", "Expense category added successfully!");
             return back();
         } catch (Exception $exception) {
-            session()->flash("alert-danger", "Expense Category Exists!");
+            session()->flash("alert-danger", "Expense category exists!");
             return back();
         }
     }
-
 
     public function update(Request $request)
     {
@@ -79,16 +78,15 @@ class ExpenseCategoryController extends Controller
 
     }
 
-
     public function destroy(Request $request)
     {
 
         try {
             AccExpenseCategory::find($request->id)->delete();
-            session()->flash("alert-danger", "Expense category deleted Successfully!");
+            session()->flash("alert-success", "Expense category deleted successfully!");
             return back();
         } catch (Exception $e) {
-            session()->flash("alert-danger", "Expense category in use");
+            session()->flash("alert-danger", "Expense category is in use!");
             return back();
         }
 
