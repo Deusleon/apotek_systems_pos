@@ -285,4 +285,25 @@ class InvoiceController extends Controller
         ]);
     }
 
+    public function destroy($id)
+    {
+        try {
+            $invoice = Invoice::findOrFail($id);
+            
+            // Check if invoice has any payments
+            $hasPayments = Payment::where('invoice_id', $id)->exists();
+            
+            if ($hasPayments) {
+                return response()->json(['success' => false, 'error' => 'Cannot delete invoice with existing payments'], 200);
+            }
+            
+            // Delete the invoice
+            $invoice->delete();
+            
+            return response()->json(['success' => true, 'message' => 'Invoice deleted successfully!'], 200);
+        } catch (Exception $exception) {
+            return response()->json(['success' => false, 'error' => 'Failed to delete invoice: ' . $exception->getMessage()], 200);
+        }
+    }
+
 }

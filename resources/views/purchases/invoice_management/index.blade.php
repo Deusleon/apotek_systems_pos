@@ -142,6 +142,7 @@ Invoices
 @include('purchases.invoice_management.create')
 @include('purchases.invoice_management.edit')
 @include('purchases.invoice_management.show')
+@include('purchases.invoice_management.delete')
 
 @endsection
 
@@ -464,12 +465,22 @@ Invoices
 
             {
                 data: "action",
-                defaultContent: 
-                    `<input type='button' value='Show' id='dtl_btn' class='btn btn-success btn-rounded btn-sm' size='2'/>
+                render: function(data, type, row) {
+                    var buttons = '<input type="button" value="Show" id="dtl_btn" class="btn btn-success btn-rounded btn-sm" size="2"/>';
                     
                     @if(auth()->user()->checkPermission('Edit Invoices'))
-                        <input type='button' value='Edit' id='edit_btn' class='btn btn-primary btn-rounded btn-sm' size='2'/>
-                    @endif`
+                        buttons += '<input type="button" value="Edit" id="edit_btn" class="btn btn-primary btn-rounded btn-sm" style="margin-left: 5px;" size="2"/>';
+                    @endif
+                    
+                    {{-- Delete button (only for invoices with no payments - unpaid status) --}}
+                    @if(auth()->user()->checkPermission('Delete Invoices'))
+                        if (row.paid_status === 'Unpaid') {
+                            buttons += '<button class="btn btn-sm btn-rounded btn-danger delete-btn" style="margin-left: 5px;" data-id="' + row.id + '" data-invoice_no="' + row.invoice_no + '" type="button" data-toggle="modal" data-target="#delete">Delete</button>';
+                        }
+                    @endif
+                    
+                    return buttons;
+                }
             }
             //
             ,
@@ -558,6 +569,45 @@ Invoices
 
     $("#received_status").select2({
         dropdownParent: $('#create')
+    });
+
+    // DELETE modal handler
+    $('#delete').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var invoiceNo = button.data('invoice_no');
+        var invoiceId = button.data('id');
+        var message = "Are you sure you want to delete invoice '" + invoiceNo + "'?";
+        var modal = $(this);
+        modal.find('.modal-body #message').text(message);
+        modal.find('.modal-body #id').val(invoiceId);
+        modal.find('.modal-body #invoice_no').val(invoiceNo);
+    });
+
+    // Handle delete form submission via AJAX
+    $('#delete form').on('submit', function(e) {
+        e.preventDefault();
+        var form = $(this);
+        var id = form.find('#id').val();
+        var url = form.attr('action').replace('id', id);
+        
+        $.ajax({
+            url: url,
+            type: 'DELETE',
+            data: form.serialize(),
+            success: function(response) {
+                if (response.success) {
+                    $('#delete').modal('hide');
+                    notify(response.message, 'top', 'right', 'success');
+                    getInvoice(); // Refresh the table
+                } else {
+                    notify(response.error, 'top', 'right', 'error');
+                }
+            },
+            error: function(xhr) {
+                var errorMessage = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'An error occurred';
+                notify(errorMessage, 'top', 'right', 'error');
+            }
+        });
     });
 </script>
 

@@ -227,6 +227,7 @@ Route::middleware(["auth","main_branch"])->group(function () {
 
     Route::get('accounting/invoices','InvoiceController@index')->name('invoice-management.index');
     Route::get('accounting/invoices/payments','InvoiceController@payments')->name('invoice-management.payments');
+    Route::delete('accounting/invoices/{invoice}','InvoiceController@destroy')->name('invoice-management.destroy');
 
     // Invoice Payment Routes
     Route::post('accounting/invoices/payments', 'InvoiceController@storePayment')->name('invoice-payments.store');
