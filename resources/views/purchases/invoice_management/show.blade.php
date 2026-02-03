@@ -16,7 +16,7 @@
                     <div class="col-md-3">
                         <input type="text" readonly class="form-control-plaintext" id="inv_no">
                     </div>
-                    <label class="col-md-3 col-form-label text-md-right">Supplier's Name:</label>
+                    <label class="col-md-3 col-form-label text-md-right">Supplier Name:</label>
                     <div class="col-md-3">
                         <input type="text" readonly class="form-control-plaintext" id="supplier">
                     </div>
