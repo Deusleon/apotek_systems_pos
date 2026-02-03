@@ -427,7 +427,7 @@ Route::middleware(["auth","main_branch"])->group(function () {
     ]);
 
     /*petty cash routes*/
-    Route::resource('petty-cash', 'PettyCashController')->only([
+    Route::resource('accounting/petty-cash', 'PettyCashController')->only([
         'index', 'store', 'update', 'destroy'
     ]);
 
