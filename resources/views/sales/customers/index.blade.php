@@ -174,16 +174,8 @@
                                     <span class="flex-grow-1" id="show_tin"></span>
                                 </div>
                                 <div class="form-group d-flex align-items-start">
-                                    <label class="mr-2 text-right" style="min-width: 90px;">VAT Reg:</label>
-                                    <span class="flex-grow-1" id="show_vat"></span>
-                                </div>
-                                <div class="form-group d-flex align-items-start">
                                     <label class="mr-2 text-right" style="min-width: 90px;">Credit Limit:</label>
                                     <span class="flex-grow-1" id="show_credit_limit"></span>
-                                </div>
-                                <div class="form-group d-flex align-items-start">
-                                    <label class="mr-2 text-right" style="min-width: 90px;">Grace Period:</label>
-                                    <span class="flex-grow-1" id="show_grace_period"></span>
                                 </div>
                                 <div class="form-group d-flex align-items-start">
                                     <label class="mr-2 text-right" style="min-width: 90px;">Total Credit:</label>
