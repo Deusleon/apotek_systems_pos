@@ -25,6 +25,23 @@ ini_set('memory_limit', '512M');
 class PurchaseReportController extends Controller
 {
 
+    /**
+     * Get the branch filter condition for queries.
+     * If store_id == 1 (ALL), return null (no filter).
+     * Otherwise, apply store_id filter.
+     */
+    protected function getBranchFilter()
+    {
+        $store_id = current_store_id();
+        
+        // If store_id is 1 (ALL branch), no filtering needed
+        if ($store_id == 1) {
+            return null;
+        }
+        
+        return $store_id;
+    }
+
     public function index()
     {
         $price_category = PriceCategory::all();
@@ -126,37 +143,63 @@ class PurchaseReportController extends Controller
 
     public function materialReceivedReport($supplier, $date, $invoice_no)
     {
-
         $dates = explode(" - ", $date);
+        
+        // Get branch filter
+        $store_id = $this->getBranchFilter();
 
         if ($invoice_no == null) {
             if ($supplier == null) {
-                $datas = GoodsReceiving::whereBetween(DB::raw('date(created_at)'),
+                $query = GoodsReceiving::whereBetween(DB::raw('date(created_at)'),
                     [date('Y-m-d', strtotime($dates[0])), date('Y-m-d', strtotime($dates[1]))])
-                    ->orderby('created_at', 'DESC')
-                    ->get();
+                    ->orderby('created_at', 'DESC');
+                
+                // Apply branch filter if not ALL
+                if ($store_id !== null) {
+                    $query->where('store_id', $store_id);
+                }
+                
+                $datas = $query->get();
             } else {
-                $datas = GoodsReceiving::where('supplier_id', $supplier)
+                $query = GoodsReceiving::where('supplier_id', $supplier)
                     ->whereBetween(DB::raw('date(created_at)'),
                         [date('Y-m-d', strtotime($dates[0])), date('Y-m-d', strtotime($dates[1]))])
-                    ->orderby('created_at', 'DESC')
-                    ->get();
+                    ->orderby('created_at', 'DESC');
+                
+                // Apply branch filter if not ALL
+                if ($store_id !== null) {
+                    $query->where('store_id', $store_id);
+                }
+                
+                $datas = $query->get();
             }
 
         } else {
             if ($supplier == null) {
-                $datas = GoodsReceiving::whereBetween(DB::raw('date(created_at)'),
+                $query = GoodsReceiving::whereBetween(DB::raw('date(created_at)'),
                     [date('Y-m-d', strtotime($dates[0])), date('Y-m-d', strtotime($dates[1]))])
                     ->where('invoice_no', '=', $invoice_no)
-                    ->orderby('created_at', 'DESC')
-                    ->get();
+                    ->orderby('created_at', 'DESC');
+                
+                // Apply branch filter if not ALL
+                if ($store_id !== null) {
+                    $query->where('store_id', $store_id);
+                }
+                
+                $datas = $query->get();
             } else {
-                $datas = GoodsReceiving::where('supplier_id', $supplier)
+                $query = GoodsReceiving::where('supplier_id', $supplier)
                     ->whereBetween(DB::raw('date(created_at)'),
                         [date('Y-m-d', strtotime($dates[0])), date('Y-m-d', strtotime($dates[1]))])
                     ->where('invoice_no', '=', $invoice_no)
-                    ->orderby('created_at', 'DESC')
-                    ->get();
+                    ->orderby('created_at', 'DESC');
+                
+                // Apply branch filter if not ALL
+                if ($store_id !== null) {
+                    $query->where('store_id', $store_id);
+                }
+                
+                $datas = $query->get();
             }
 
             if ($dates != null) {
@@ -308,8 +351,21 @@ class PurchaseReportController extends Controller
     public function InvoiceSummaryReport($supplier, $date, $status, $period)
     {
         $dates = explode(" - ", $date);
+        
+        // Get branch filter
+        $store_id = $this->getBranchFilter();
+        
         $query = Invoice::whereBetween(DB::raw('date(invoice_date)'),
             [date('Y-m-d', strtotime($dates[0])), date('Y-m-d', strtotime($dates[1]))]);
+
+        // Apply branch filter through goods receiving if not ALL
+        if ($store_id !== null) {
+            $query->whereIn('invoice_no', function($subquery) use ($store_id) {
+                $subquery->select('invoice_no')
+                    ->from('inv_incoming_stock')
+                    ->where('store_id', $store_id);
+            });
+        }
 
         if ($supplier !== null) {
             $query->where('supplier_id', $supplier);
@@ -336,28 +392,40 @@ class PurchaseReportController extends Controller
 
     public function InvoiceDetailsReport()
     {
-        $datas = Invoice::all();
+        // Get branch filter
+        $store_id = $this->getBranchFilter();
+        
+        if ($store_id !== null) {
+            $datas = Invoice::whereIn('invoice_no', function($subquery) use ($store_id) {
+                $subquery->select('invoice_no')
+                    ->from('inv_incoming_stock')
+                    ->where('store_id', $store_id);
+            })->get();
+        } else {
+            $datas = Invoice::all();
+        }
+        
         return $datas;
     }
 
     private function supplierList()
     {
+        // Suppliers are master records, no branch filtering needed
         $suppliers = Supplier::all();
         return $suppliers;
     }
 
     private function supplierPriceComparison()
     {
-        $prices = array();
-        $supplier_prices = GoodsReceiving::all();
-//        foreach ($supplier_prices as $supplier_price) {
-//            array_push($prices, array(
-//                'product_name' => $supplier_price->product['name'],
-//                'supplier' => $supplier_price->supplier['name'],
-//                'buy_price' => $supplier_price->unit_cost
-//            ));
-//        }
-//        dd($prices);
+        // Get branch filter
+        $store_id = $this->getBranchFilter();
+        
+        if ($store_id !== null) {
+            $supplier_prices = GoodsReceiving::where('store_id', $store_id)->get();
+        } else {
+            $supplier_prices = GoodsReceiving::all();
+        }
+        
         return $supplier_prices;
     }
 
@@ -372,15 +440,24 @@ class PurchaseReportController extends Controller
         if (count($dates) < 2) {
             return collect(); // Return empty collection if date range is invalid
         }
+        
+        // Get branch filter
+        $store_id = $this->getBranchFilter();
 
-        $orders = Order::with(['supplier', 'details.product'])
+        $query = Order::with(['supplier', 'details.product'])
             ->whereBetween(DB::raw('date(ordered_at)'), [
                 date('Y-m-d', strtotime($dates[0])),
                 date('Y-m-d', strtotime($dates[1]))
             ])
             ->where('status', '!=', 'cancelled')
-            ->orderBy('ordered_at', 'DESC')
-            ->get();
+            ->orderBy('ordered_at', 'DESC');
+        
+        // Apply branch filter if not ALL
+        if ($store_id !== null) {
+            $query->where('store_id', $store_id);
+        }
+        
+        $orders = $query->get();
 
         // Add date range to each order for PDF display
         foreach ($orders as $order) {
@@ -401,10 +478,13 @@ class PurchaseReportController extends Controller
         if (count($dates) < 2) {
             return collect(); // Return empty collection if date range is invalid
         }
+        
+        // Get branch filter
+        $store_id = $this->getBranchFilter();
 
         // Get approved purchase returns - filter by purchase_returns.status = 'approved'
         // Note: We join with inv_incoming_stock to get product and supplier info
-        $returns = PurchaseReturn::join('inv_incoming_stock', 'inv_incoming_stock.id', '=', 'purchase_returns.goods_receiving_id')
+        $query = PurchaseReturn::join('inv_incoming_stock', 'inv_incoming_stock.id', '=', 'purchase_returns.goods_receiving_id')
             ->join('inv_products', 'inv_products.id', '=', 'inv_incoming_stock.product_id')
             ->join('inv_suppliers', 'inv_suppliers.id', '=', 'inv_incoming_stock.supplier_id')
             ->select(
@@ -421,8 +501,14 @@ class PurchaseReportController extends Controller
             ->where(DB::Raw("DATE(purchase_returns.date)"), '>=', date('Y-m-d', strtotime($dates[0])))
             ->where(DB::Raw("DATE(purchase_returns.date)"), '<=', date('Y-m-d', strtotime($dates[1])))
             ->where('purchase_returns.status', '=', 'approved')
-            ->orderBy('purchase_returns.date', 'desc')
-            ->get();
+            ->orderBy('purchase_returns.date', 'desc');
+        
+        // Apply branch filter if not ALL (through inv_incoming_stock)
+        if ($store_id !== null) {
+            $query->where('inv_incoming_stock.store_id', $store_id);
+        }
+        
+        $returns = $query->get();
 
         // Add date range to each return for PDF display
         foreach ($returns as $return) {
