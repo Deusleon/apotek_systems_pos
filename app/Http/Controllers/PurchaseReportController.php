@@ -402,16 +402,25 @@ class PurchaseReportController extends Controller
             return collect(); // Return empty collection if date range is invalid
         }
 
-        // Based on the PurchaseReturnController logic, approved returns have goods_receiving status of 3 or 5
+        // Get approved purchase returns - filter by purchase_returns.status = 'approved'
+        // Note: We join with inv_incoming_stock to get product and supplier info
         $returns = PurchaseReturn::join('inv_incoming_stock', 'inv_incoming_stock.id', '=', 'purchase_returns.goods_receiving_id')
-            ->select('purchase_returns.*', 'inv_incoming_stock.*', 'purchase_returns.quantity as return_quantity', 'inv_incoming_stock.quantity as received_quantity')
+            ->join('inv_products', 'inv_products.id', '=', 'inv_incoming_stock.product_id')
+            ->join('inv_suppliers', 'inv_suppliers.id', '=', 'inv_incoming_stock.supplier_id')
+            ->select(
+                'purchase_returns.*', 
+                'inv_incoming_stock.*', 
+                'inv_products.name as product_name',
+                'inv_products.brand as product_brand',
+                'inv_products.pack_size as product_pack_size',
+                'inv_products.sales_uom as product_sales_uom',
+                'inv_suppliers.name as supplier_name',
+                'purchase_returns.quantity as return_quantity', 
+                'inv_incoming_stock.quantity as received_quantity'
+            )
             ->where(DB::Raw("DATE(purchase_returns.date)"), '>=', date('Y-m-d', strtotime($dates[0])))
             ->where(DB::Raw("DATE(purchase_returns.date)"), '<=', date('Y-m-d', strtotime($dates[1])))
-            ->where(function($q) {
-                $q->where('inv_incoming_stock.status', '=', 3)
-                  ->orWhere('inv_incoming_stock.status', '=', 5);
-            })
-            ->with(['goodsReceiving.product', 'goodsReceiving.supplier'])
+            ->where('purchase_returns.status', '=', 'approved')
             ->orderBy('purchase_returns.date', 'desc')
             ->get();
 
