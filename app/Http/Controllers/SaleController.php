@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\CurrentStock;
 use App\Customer;
 use App\GeneralSetting;
+use App\Product;
 use App\PriceCategory;
 use App\PriceList;
 use App\Sale;
@@ -1126,7 +1127,7 @@ class SaleController extends Controller
                 'receipt_number' => $item->sale['receipt_number'],
                 'ref_no' => $item->sale['ref_no'],
                 'payment_type' => $item->sale['paymentType']['name'] ?? '',
-                'grace_period' => $grace_period,
+                'grace_period' => $grace_period ?? '',
                 'name' => $item->currentStock['product']['name'],
                 'brand' => $item->currentStock['product']['brand'],
                 'pack_size' => $item->currentStock['product']['pack_size'],
@@ -1286,5 +1287,122 @@ class SaleController extends Controller
         $pdf = PDF::loadView('sales.credit_sales.receipt',
             compact('data', 'pharmacy'));
         return $pdf->download('Recept.pdf');
+    }
+
+    /**
+     * Mobile POS - Show mobile-only POS interface
+     */
+    public function mobilePOS()
+    {
+        try {
+            if (!Auth()->user()->checkPermission('View Cash Sales')) {
+                abort(403, 'Access Denied');
+            }
+
+            $vat = Setting::where('id', 120)->value('value') / 100;
+            $default_customer = Customer::where('name', 'CASH')->first();
+            
+            if (!$default_customer) {
+                return back()->with('error', 'Default CASH customer not found. Please create a customer named "CASH".');
+            }
+
+            return view('sales.mobile-pos', compact('vat', 'default_customer'));
+        } catch (\Exception $e) {
+            Log::error('Error in mobilePOS method: ' . $e->getMessage());
+            return back()->with('error', 'An error occurred while loading the mobile POS page.');
+        }
+    }
+
+    /**
+     * Get products for mobile POS (simplified)
+     */
+ public function getMobileProducts(Request $request)
+{
+    try {
+        $search = $request->get('search', '');
+
+        $products = Product::where('inv_products.status', 1)
+            ->when($search, function($query) use ($search) {
+                return $query->where(function($q) use ($search) {
+                    $q->where('inv_products.name', 'LIKE', "%{$search}%")
+                      ->orWhere('inv_products.barcode', 'LIKE', "%{$search}%")
+                      ->orWhere('inv_products.brand', 'LIKE', "%{$search}%");
+                });
+            })
+            ->select(
+                'inv_products.id as product_id',
+                'inv_products.name',
+                'inv_products.brand',
+                'inv_products.pack_size',
+                'inv_products.barcode',
+                'inv_products.sales_uom'
+            )
+            ->limit(50)
+            ->get();
+
+        return response()->json(['success' => true, 'products' => $products]);
+
+    } catch (\Exception $e) {
+        Log::error('Error in getMobileProducts: ' . $e->getMessage());
+        return response()->json(['success' => false, 'message' => 'Error fetching products'], 500);
+    }
+}
+
+    /**
+     * Store mobile POS sale
+     */
+
+    public function storeMobileSale(Request $request)
+    {
+        try {
+            if (!Auth()->user()->checkPermission('View Cash Sales')) {
+                return response()->json(['success' => false, 'message' => 'Access denied'], 403);
+            }
+
+            $request->validate([
+                'item' => 'nullable|string',
+                'customer' => 'nullable|string',
+                'weight' => 'required|numeric|min:1',
+                'price' => 'required|numeric|min:100',
+            ]);
+            Log::info('Mobile Sale Request: ', $request->all());
+
+            DB::beginTransaction();
+
+            $store_id = current_store_id();
+            $user = Auth::user();
+
+            // Generate receipt number
+            $receipt_number = strtoupper(substr(md5(microtime()), rand(0, 24), 8));
+
+            $data = [
+                'item_name' => $request->item ?? '',
+                'weight' => $request->weight,
+                'customer_name' => $request->customer ?? '',
+                'price' => $request->price,
+                'created_by' => Auth::id(),
+                'receipt_number' => $receipt_number,
+                'created_at' => now()->format('Y-m-d'),
+            ];
+
+            DB::table('waste_collection')->insert($data);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Saved successfully',
+                'receipt_number' => $receipt_number,
+                'total' => $request->price,
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error in storeMobileSale: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error completing sale: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
