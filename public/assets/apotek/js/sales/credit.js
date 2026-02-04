@@ -684,41 +684,6 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
     } catch (e) {}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function discount() {
     if (discount_enable === "YES") {
         var dis = document.getElementById("sale_discount").value;
@@ -929,52 +894,8 @@ function discount() {
     cart_table.draw();
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function deselect() {
     // document.getElementById("sales_form").reset();
-    // rePopulateSelect2();
-    // rePopulateSelect2Customer();
     $("#customer_id").val("").change();
     if (discount_enable === "YES") {
         document.getElementById("sale_discount").value = '0.00';
@@ -1214,25 +1135,8 @@ $("#price_category").change(function () {
             },
             dataType: "json",
             success: function (result) {
-                $("#products").empty().trigger("change");
-                if (result.data && result.data.length > 0) {
-                    result.data.forEach(function (p) {
-                        $("#products").append(
-                            $("<option>", {
-                                value: "",
-                                text: "Select product",
-                            }),
-                            $("<option>", {
-                                value: p.id,
-                                text: p.name,
-                                "data-name": p.name,
-                                "data-price": p.price,
-                                "data-quantity": p.quantity,
-                            })
-                        );
-                    });
-                    $("#products").trigger("change");
-                }
+                populateProducts(result.data || []);
+                $("#barcode_input").focus();
             },
         });
     }
@@ -1250,25 +1154,8 @@ $(document).ready(function () {
             },
             dataType: "json",
             success: function (result) {
-                $("#products").empty().trigger("change");
-                if (result.data && result.data.length > 0) {
-                    result.data.forEach(function (p) {
-                        $("#products").append(
-                            $("<option>", {
-                                value: "",
-                                text: "Select product",
-                            }),
-                            $("<option>", {
-                                value: p.id,
-                                text: p.name,
-                                "data-name": p.name,
-                                "data-price": p.price,
-                                "data-quantity": p.quantity,
-                            })
-                        );
-                    });
-                    $("#products").trigger("change");
-                }
+                populateProducts(result.data || []);
+                $("#barcode_input").focus();
             },
         });
     }
@@ -1554,6 +1441,48 @@ $("#credit_sales_form").on("submit", function (e) {
     saveCreditSale();
 });
 
+function populateProducts(optionsList) {
+    const $sel = $("#products");
+
+    // only init/destroy if select2 is present
+    if ($sel.data("select2")) {
+        $sel.select2("destroy");
+    }
+
+    $sel.empty();
+
+    // Add default option once
+    $sel.append($("<option>", { value: "", text: "Select product" }));
+
+    if (Array.isArray(optionsList) && optionsList.length) {
+        optionsList.forEach(function (p) {
+            const formattedQty = numberWithCommas(p.quantity);
+            $sel.append(
+                $("<option>", {
+                    value: p.id,
+                    text: p.name +
+                        " - [QoH - " +
+                        formattedQty +
+                        "]",
+                    "data-name": p.name,
+                    "data-price": p.price,
+                    "data-quantity": p.quantity,
+                }),
+            );
+        });
+    }
+
+    // Re-init select2 (only if plugin loaded)
+    if ($.fn.select2) {
+        $sel.select2({ placeholder: "Select Product...", allowClear: false });
+    } else {
+        console.error("Select2 not loaded");
+    }
+
+    // ensure no selection
+    $sel.val("").trigger("change");
+}
+
 function saveCreditSale() {
     var form = $("#credit_sales_form").serialize();
 
@@ -1571,6 +1500,7 @@ function saveCreditSale() {
                 "success"
             );
             deselect1();
+            refreshProducts();
             if (data.to === "receipt") {
                 window.open(data.redirect_to);
             }
@@ -1578,6 +1508,25 @@ function saveCreditSale() {
             $("#loading").hide();
         },
     });
+}
+
+// Re-fetch products to update QoH after a sale is saved
+function refreshProducts() {
+    var priceCategory = $("#price_category").val();
+    if (priceCategory) {
+        $.ajax({
+            url: config.routes.selectProducts,
+            type: "post",
+            data: {
+                _token: config.token,
+                id: priceCategory,
+            },
+            dataType: "json",
+            success: function (result) {
+                populateProducts(result.data || []);
+            },
+        });
+    }
 }
 
 $("#quote_sale_form").on("submit", function (e) {
@@ -1622,8 +1571,23 @@ function isNumberKey(evt, obj) {
     return !(charCode > 31 && (charCode < 48 || charCode > 57));
 }
 
-function numberWithCommas(digit) {
-    return String(parseFloat(digit))
-        .toString()
-        .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+function numberWithCommas(num) {
+    let str = String(num);
+
+    if (str.includes('.')) {
+        let [whole, decimal] = str.split('.');
+
+        decimal = decimal.replace(/0+$/, "");
+
+        if (decimal === "") {
+            return Number(whole).toLocaleString();
+        }
+
+        let wholeFormatted = Number(whole).toLocaleString();
+
+        return wholeFormatted + "." + decimal;
+
+    } else {
+        return Number(str).toLocaleString();
+    }
 }

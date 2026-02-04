@@ -792,6 +792,7 @@ class SaleController extends Controller
                 array_push($sales, array(
                     'receipt_number' => $item->sale['receipt_number'],
                     'ref_no' => $item->sale['ref_no'],
+                    'payment_type' => $item->sale['paymentType']['name'] ?? '',
                     'name' => $item->currentStock['product']['name'],
                     'brand' => $item->currentStock['product']['brand'],
                     'pack_size' => $item->currentStock['product']['pack_size'],
@@ -1087,7 +1088,7 @@ class SaleController extends Controller
         $remark = null;
         if (intVal($page) == -1) {
             /*get paid amount*/
-            $amounts = SalesCredit::select('sale_id', 'remark', DB::raw('sum(paid_amount) as paid'), DB::raw('sum(balance) as balance'))
+            $amounts = SalesCredit::select('sale_id', 'remark', 'grace_period', DB::raw('sum(paid_amount) as paid'), DB::raw('sum(balance) as balance'))
                 ->where('sale_id', $id)
                 ->groupby('sale_id')
                 ->first();
@@ -1095,6 +1096,12 @@ class SaleController extends Controller
             $paid = $amounts->paid;
             $balance = $amounts->balance;
             $remark = $amounts->remark;
+            $grace_pr = $amounts->grace_period;
+            if($grace_pr > 1){
+                $grace_period = $grace_pr.' Days';
+            }else{
+                $grace_period = $grace_pr.' Day';
+            }
         }
 
         $sale_detail = SalesDetail::where('sale_id', $id)->get();
@@ -1118,6 +1125,8 @@ class SaleController extends Controller
             array_push($sales, array(
                 'receipt_number' => $item->sale['receipt_number'],
                 'ref_no' => $item->sale['ref_no'],
+                'payment_type' => $item->sale['paymentType']['name'] ?? '',
+                'grace_period' => $grace_period,
                 'name' => $item->currentStock['product']['name'],
                 'brand' => $item->currentStock['product']['brand'],
                 'pack_size' => $item->currentStock['product']['pack_size'],
@@ -1244,6 +1253,7 @@ class SaleController extends Controller
             array_push($sales, array(
                 'receipt_number' => $item->sale['receipt_number'],
                 'ref_no' => $item->sale['ref_no'],
+                'payment_type' => $item->sale['paymentType']['name'] ?? '',
                 'name' => $item->currentStock['product']['name'],
                 'paid' => $item->paid_amount,
                 'balance' => $item->balance,

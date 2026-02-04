@@ -119,12 +119,12 @@
                                 <input type="hidden" name="" id="is_all_store" value="{{ current_store()->name }}">
                                 <div id="sale-panel">
                                     <div class="row">
-                                        <div class="col-md-2">
+                                        <div class="col-md-3">
                                             <div class="form-group">
-                                                <label id="cat_label">Sales Type<font color="red">*</font></label>
+                                                <label id="cat_label">Price Category<font color="red">*</font></label>
                                                 <select id="price_category" class="js-example-basic-single form-control"
                                                     required>
-                                                    <option value="">Select Type</option>
+                                                    <option value="">Select Price Category</option>
                                                     @foreach($price_category as $price)
                                                         <!-- <option value="{{$price->id}}">{{$price->name}}</option> -->
                                                         <option value="{{$price->id}}" {{$default_sale_type === $price->id ? 'selected' : ''}}>{{$price->name}}</option>
@@ -143,14 +143,14 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="col-md-2">
+                                        {{-- <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="code">PO #</label>
                                                 <input type="text" id="ref_no" name="ref_no" class="form-control"
                                                     placeholder="PO #" />
                                             </div>
-                                        </div>
-                                        <div class="col-md-2" hidden>
+                                        </div> --}}
+                                        <div class="col-md-3" hidden>
                                             <div class="form-group">
                                                 <label for="code">Payment Type</label>
                                                 <select name="payment_type" id="payment_type"
@@ -163,7 +163,7 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="col-md-2">
+                                        <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="code">Customer Name<font color="red">*</font></label>
                                                 <select name="customer_id" id="customer_id"

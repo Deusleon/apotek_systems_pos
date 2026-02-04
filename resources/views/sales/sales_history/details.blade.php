@@ -2,7 +2,7 @@
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Sale Products List</h5>
+        <h5 class="modal-title">Product List</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -11,7 +11,7 @@
         <div class="row">
           <div class="col-3">
             <div class="row">
-              <span class="col-12">Receipt Number:</span>
+              <span class="col-12">Receipt #:</span>
               <span id="receipt_no" class="text-body col-12"></span>
             </div>
           </div>

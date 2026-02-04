@@ -1320,10 +1320,14 @@ function populateProducts(optionsList) {
 
     if (Array.isArray(optionsList) && optionsList.length) {
         optionsList.forEach(function (p) {
+            const formattedQty = numberWithCommas(p.quantity);
             $sel.append(
                 $("<option>", {
                     value: p.id,
-                    text: p.name,
+                    text: p.name +
+                        " - [QoH - " +
+                        formattedQty +
+                        "]",
                     "data-name": p.name,
                     "data-price": p.price,
                     "data-quantity": p.quantity,
@@ -1341,6 +1345,25 @@ function populateProducts(optionsList) {
 
     // ensure no selection
     $sel.val("").trigger("change");
+}
+
+// Re-fetch products to update QoH after a sale is saved
+function refreshProducts() {
+    var priceCategory = $("#price_category").val();
+    if (priceCategory) {
+        $.ajax({
+            url: config.routes.selectProducts,
+            type: "post",
+            data: {
+                _token: config.token,
+                id: priceCategory,
+            },
+            dataType: "json",
+            success: function (result) {
+                populateProducts(result.data || []);
+            },
+        });
+    }
 }
 
 $("#save-customer").click(function () {
@@ -1521,6 +1544,7 @@ function saveCashSale() {
         complete: function () {
             notify("Sales recorded successfully", "top", "right", "success");
             deselect();
+            refreshProducts();
             $("#save_btn").attr("disabled", false);
             $("#barcode_input").focus();
             $("#loading").hide();
@@ -1581,6 +1605,7 @@ function saveCreditSale() {
                 "success",
             );
             deselect1();
+            refreshProducts();
             window.open(data.redirect_to);
             $("#save_btn").attr("disabled", false);
         },
@@ -1617,6 +1642,7 @@ function saveQuoteForm() {
         success: function (data) {
             notify("Quote recorded successfully", "top", "right", "success");
             deselectQuote();
+            refreshProducts();
             window.open(data.redirect_to);
             $("#save_btn").attr("disabled", false);
         },

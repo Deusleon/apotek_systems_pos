@@ -210,7 +210,7 @@
                 <tr style="width: 100%; position: relative;">
                     <td style="width: 18%; position: absolute; padding-left: 10px;">Invoice Date : <span style="margin-left: 3px;">{{date('Y-m-d', strtotime($dat[0]['created_at']))}}</span></td>
                     <td style="width: 55.5%; padding-left: 10px;">Address : <span style="margin-left: 3px;">{{$dat[0]['customer_address'] ?? 'N/A'}}</span></td>
-                    <td style="width: 26.5%; padding-left: 10px;">Customer PO : <span style="margin-left: 3px;">{{$dat[0]['ref_no'] ?? 'N/A'}}</span></td>
+                    <td style="width: 26.5%; padding-left: 10px;">Grace Period : <span style="margin-left: 3px;">{{!empty($dat[0]['grace_period']) ? $dat[0]['grace_period'] : 'N/A'}}</span></td>
                 </tr>
                 <tr style="width: 100%; position: relative;">
                     <td colspan="2" style="width: 42%; padding-left: 10px;">Bill To : <span style="margin-left: 3px;">{{$dat[0]['customer'] ?? 'CASH'}}</span></td>

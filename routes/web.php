@@ -606,7 +606,6 @@ Route::middleware(["auth","main_branch"])->group(function () {
     /* Sales Details */
     Route::post('sale_detail',[SaleController::class,'salesDetailsData'])->name('sale_detail');
 
-
     /* TOOLS */
     Route::get('settings/tools/database-backup', 'DatabaseBackupController@index')->name('database-backup.index');
     Route::post('settings/tools/database-backup', 'DatabaseBackupController@create')->name('database-backup.create');

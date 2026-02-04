@@ -100,9 +100,9 @@
                     <div class="row">
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label id="cat_label">Sales Type<font color="red">*</font></label>
+                                <label id="cat_label">Price Category<font color="red">*</font></label>
                                 <select id="price_category" class="js-example-basic-single form-control">
-                                    <option value="">Select Sales Type</option>
+                                    <option value="">Select Price Category</option>
                                     @foreach ($price_category as $price)
                                         <!-- <option value="{{ $price->id }}">{{ $price->name }}</option> -->
                                         <option value="{{ $price->id }}" {{ $default_sale_type === $price->id ? 'selected' : '' }}>{{ $price->name }}
