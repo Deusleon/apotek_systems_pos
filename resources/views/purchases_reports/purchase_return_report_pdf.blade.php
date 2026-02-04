@@ -161,9 +161,9 @@
                     <tr>
                         <td align="left">{{$loop->iteration}}.</td>
                         <td align="left">
-                            {{$return->goodsReceiving->product->name ?? ''}} {{$return->goodsReceiving->product->brand ?? ''}} {{$return->goodsReceiving->product->pack_size ?? ''}}{{$return->goodsReceiving->product->sales_uom ?? ''}}
+                            {{$return->product_name ?? ''}} {{$return->product_brand ?? ''}} {{$return->product_pack_size ?? ''}}{{$return->product_sales_uom ?? ''}}
                         </td>
-                        <td align="left">{{date('Y-m-d', strtotime($return->goodsReceiving->created_at ?? now()))}}</td>
+                        <td align="left">{{date('Y-m-d', strtotime($return->created_at ?? now()))}}</td>
                         <td align="center">{{number_format($return->received_quantity ?? 0, 0)}}</td>
                         <td align="left">{{date('Y-m-d', strtotime($return->date ?? now()))}}</td>
                         <td align="center">{{number_format($return->return_quantity ?? 0, 0)}}</td>
