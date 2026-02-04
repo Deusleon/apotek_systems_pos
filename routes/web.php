@@ -273,6 +273,11 @@ Route::middleware(["auth","main_branch"])->group(function () {
     //Cash Sales routes
     Route::get('sales/cash-sales', 'SaleController@cashSale')->name('cash-sales.cashSale');
 
+    //Mobile POS routes
+    Route::get('sales/mobile-pos', 'SaleController@mobilePOS')->name('mobile-pos.index');
+    Route::post('sales/mobile-pos/complete-sale', 'SaleController@storeMobileSale')->name('mobile-pos.storeMobileSale');
+    Route::get('sales/mobile-pos/get-products', 'SaleController@getMobileProducts')->name('mobile-pos.getProducts');
+
     //Delivery note routes
     Route::get('sales/delivery-note', 'DeliveryNoteController@index')->name('delivery-notes.index');
 
