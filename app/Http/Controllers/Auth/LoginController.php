@@ -110,6 +110,11 @@ class LoginController extends Controller {
         // Force session save
         session()->save();
 
+        // Redirect users with "View Waste Collection" permission to mobile-pos
+        if ($user->checkPermission('View Waste Collection')) {
+            return redirect()->route('mobile-pos.index');
+        }
+
         return null;
     }
     /**

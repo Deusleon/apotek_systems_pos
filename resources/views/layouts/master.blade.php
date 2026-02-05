@@ -345,7 +345,6 @@ $store_id = Auth::user()->store_id;
                                 <a href="{{ route('logout') }}" class="dud-logout" title="Logout" onclick="event.preventDefault();
                                     document.getElementById('logout-form').submit();">
                                     <i class="feather icon-log-out"></i>
-
                                 </a>
 
                             </div>

@@ -90,15 +90,6 @@ class HomeController extends Controller {
         ->havingRaw('SUM(inv_current_stock.quantity) = 0')
         ->orderBy('inv_products.name', 'ASC')
         ->get();
-
-        // $outOfStockList = CurrentStock::select(
-        //         'product_id',
-        //         DB::raw('SUM(quantity) as total_quantity')
-        //     )
-        //     ->when(!$isAdmin, function ($q) use ($storeId) { return $q->where('store_id', $storeId); })
-        //     ->groupBy('product_id')
-        //     ->havingRaw('SUM(quantity) = 0')
-        //     ->get();
             
         $outOfStock = $outOfStockList->count(); // number of products out of stock
 

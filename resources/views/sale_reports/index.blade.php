@@ -121,6 +121,9 @@
                                                 <option value="15">Discount Report</option>
                                             @endif
                                         @endif
+                                        @if(auth()->user()->checkPermission('Waste Collection Report'))
+                                            <option value="16">Waste Collection Report</option>
+                                        @endif
                                     </select>
                                 </div>
                             </div>

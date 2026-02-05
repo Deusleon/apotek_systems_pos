@@ -1365,7 +1365,6 @@ class SaleController extends Controller
                 'weight' => 'required|numeric|min:1',
                 'price' => 'required|numeric|min:100',
             ]);
-            Log::info('Mobile Sale Request: ', $request->all());
 
             DB::beginTransaction();
 
@@ -1374,6 +1373,16 @@ class SaleController extends Controller
 
             // Generate receipt number
             $receipt_number = strtoupper(substr(md5(microtime()), rand(0, 24), 8));
+
+            $pharmacy['name'] = Setting::where('id', 100)->value('value');
+            $pharmacy['logo'] = Setting::where('id', 105)->value('value');
+            $pharmacy['address'] = Setting::where('id', 106)->value('value');
+            $pharmacy['tin_number'] = Setting::where('id', 102)->value('value');
+            $pharmacy['phone'] = Setting::where('id', 107)->value('value');
+            $pharmacy[ 'website' ] = Setting::where( 'id', 109 )->value( 'value' );
+            $pharmacy[ 'email' ] = Setting::where( 'id', 108 )->value( 'value' );
+            $pharmacy['slogan'] = Setting::where('id', 104)->value('value');
+            $pharmacy['vrn_number'] = Setting::where('id', 103)->value('value');
 
             $data = [
                 'item_name' => $request->item ?? '',
@@ -1393,6 +1402,15 @@ class SaleController extends Controller
                 'success' => true,
                 'message' => 'Saved successfully',
                 'receipt_number' => $receipt_number,
+                'company_logo' => $pharmacy['logo'],
+                'company_name' => $pharmacy['name'],
+                'company_address' => $pharmacy['address'],
+                'company_phone' => $pharmacy['phone'],
+                'company_tin' => $pharmacy['tin_number'],
+                'company_email' => $pharmacy['email'],
+                'company_website' => $pharmacy['website'],
+                'company_slogan' => $pharmacy['slogan'],
+                'company_vrn' => $pharmacy['vrn_number'],
                 'total' => $request->price,
             ]);
 
