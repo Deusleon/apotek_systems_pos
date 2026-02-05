@@ -218,6 +218,16 @@ class SaleReportController extends Controller {
             ->setPaper( 'a4', '' );
             return $pdf->stream( 'Discount_report.pdf' );
 
+            case 16:
+            $data = $this->wasteCollectionReport( $from, $to );
+            if ( empty( $data ) ) {
+                return response()->view( 'error_pages.pdf_zero_data' );
+            }
+            $pdf = PDF::loadView( 'sale_reports.waste_collection_report_pdf',
+            compact( 'data', 'pharmacy' ) )
+            ->setPaper( 'a4', 'landscape' );
+            return $pdf->stream( 'Waste_collection_report.pdf' );
+
             default:
 
         }
@@ -1521,5 +1531,50 @@ unset($dayData);
         $discount_report = $query->get();
 
         return $discount_report;
+    }
+
+    /**
+     * Waste Collection Report
+     */
+    private function wasteCollectionReport($from, $to)
+    {
+        if (!Auth()->user()->checkPermission('Waste Collection Report')) {
+            abort(403, 'Access Denied');
+        }
+
+        $from = date('Y-m-d', strtotime($from));
+        $to = date('Y-m-d', strtotime($to));
+
+        $query = DB::table('waste_collection as wc')
+            ->leftJoin('users as u', 'u.id', '=', 'wc.created_by')
+            ->select(
+                'wc.id',
+                'wc.receipt_number',
+                'wc.created_at as date',
+                'wc.item_name',
+                'wc.customer_name',
+                'wc.weight',
+                'wc.price as amount',
+                'u.name as collected_by'
+            )
+            ->whereBetween('wc.created_at', [$from, $to])
+            ->orderBy('wc.created_at', 'desc');
+
+        $waste_collection = $query->get();
+
+        $data = [];
+        foreach ($waste_collection as $item) {
+            $data[] = [
+                'receipt_number' => $item->receipt_number,
+                'date' => date('Y-m-d', strtotime($item->date)),
+                'item_name' => $item->item_name ?? 'N/A',
+                'customer_name' => $item->customer_name ?? 'N/A',
+                'weight' => $item->weight ?? 0,
+                'amount' => $item->amount ?? 0,
+                'collected_by' => $item->collected_by ?? 'N/A',
+            ];
+        }
+
+        return $data;
     }
 }

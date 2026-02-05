@@ -103,7 +103,6 @@
     @endif
 </li>
 
-
 <li class="nav-item pcoded-hasmenu">
     @if(auth()->user()->checkPermission('View Transport'))
         <a href="#!" class="nav-link"><span class="pcoded-micon"><i class="fas fa-truck"></i></span>
@@ -155,7 +154,6 @@
     @endif
 </li>
 
-
 <li data-username="Vertical Horizontal Box Layout RTL fixed static collapse menu color icon dark"
     class="nav-item pcoded-hasmenu">
     @if(auth()->user()->checkPermission('View Reports'))
@@ -185,7 +183,6 @@
         </ul>
     @endif
 </li>
-
 
 <li class="nav-item pcoded-hasmenu">
     @if(auth()->user()->checkPermission('View Settings'))
@@ -291,8 +288,8 @@
     <label>HELP</label>
 </li> --}}
 
-{{-- <li class="nav-item"><a href="{{ url('help/contact-us') }}" class="nav-link"><span class="pcoded-micon"><i
-                class="fas fa-tablet"></i></span><span class="pcoded-mtext">Contact Us</span></a></li> --}}
+{{-- <li class="nav-item"><a href="{{ route('mobile-pos.index') }}" class="nav-link"><span class="pcoded-micon"><i
+                class="fas fa-tablet"></i></span><span class="pcoded-mtext">Waste Collection</span></a></li> --}}
 <li class="nav-item"><a href="{{ route('support.index') }}" class="nav-link"><span class="pcoded-micon"><i
                 class="fas fa-question"></i></span><span class="pcoded-mtext">Support</span></a>
 </li>
