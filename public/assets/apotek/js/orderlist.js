@@ -109,7 +109,7 @@ $(function () {
 
     function cb(start, end) {
         $("#date_filter span").html(
-            start.format("YYYY/MM/DD") + " - " + end.format("YYYY/MM/DD")
+            start.format("YYYY/MM/DD") + " - " + end.format("YYYY/MM/DD"),
         );
     }
 
@@ -140,11 +140,24 @@ $(function () {
                 "This Year": [moment().startOf("year"), moment()],
             },
         },
-        cb
+        cb,
     );
 
     cb(start, end);
 });
+
+function formatQuantity(num) {
+    // Format quantity: no decimals for whole numbers, preserve decimals otherwise
+    if (num === null || num === undefined) return "0";
+    var parsed = parseFloat(num);
+    if (isNaN(parsed)) return "0";
+    // Check if it's a whole number
+    if (parsed % 1 === 0) {
+        return parsed.toString();
+    }
+    // Remove trailing zeros from decimal
+    return parsed.toString().replace(/\.?0+$/, "");
+}
 
 function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
     try {
@@ -153,7 +166,7 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
 
         const negativeSign = amount < 0 ? "-" : "";
         const absoluteAmount = Math.abs(Number(amount) || 0).toFixed(
-            decimalCount
+            decimalCount,
         );
 
         // Split integer and decimal parts
@@ -255,17 +268,17 @@ function updateModalButtons(status) {
         // Set appropriate message based on status
         if (status === "2" || status === "3" || status === "4") {
             statusMessage.text(
-                "This order has already been approved and cannot be modified."
+                "This order has already been approved and cannot be modified.",
             );
             statusMessage.removeClass("alert-info").addClass("alert-success");
         } else if (status === "Cancelled") {
             statusMessage.text(
-                "This order has been Rejected and cannot be modified."
+                "This order has been Rejected and cannot be modified.",
             );
             statusMessage.removeClass("alert-info").addClass("alert-warning");
         } else {
             statusMessage.text(
-                "This order cannot be modified in its current status."
+                "This order cannot be modified in its current status.",
             );
         }
     }
@@ -286,8 +299,8 @@ function orderDetails(items) {
         if (item.sales_uom) fullProductName += "" + item.sales_uom;
         item_data.push(fullProductName);
 
-        // Quantity
-        item_data.push(formatMoney(item.ordered_qty, 0));
+        // Quantity - show decimals only when present
+        item_data.push(formatQuantity(item.ordered_qty));
 
         // Price, VAT, Amount
         item_data.push(formatMoney(item.price));
@@ -313,7 +326,7 @@ $("#order_history_datatable tbody").on("click", "#cancel_btn", function () {
     $("#cancel-order").modal("show");
     var message = "Are you sure you want to Reject Order '".concat(
         data.order_number,
-        "'?"
+        "'?",
     );
     var modal = $(this);
     $("#cancel-order").find(".modal-body #message").text(message);
@@ -331,7 +344,7 @@ function applyClientApprove() {
     // Build the URL with the actual order ID
     var approveUrl = config2.routes.approveOrder.replace(
         ":id",
-        currentOrderData.id
+        currentOrderData.id,
     );
     console.log("API URL:", approveUrl);
 
@@ -390,7 +403,7 @@ $(document).on("click", "#approve_btn", function () {
     $("#approve_message").text(
         "Are you sure you want to Approve Order '" +
             currentOrderData.order_number +
-            "'?"
+            "'?",
     );
 
     $("#approve-order").modal("show"); // <-- show confirm modal

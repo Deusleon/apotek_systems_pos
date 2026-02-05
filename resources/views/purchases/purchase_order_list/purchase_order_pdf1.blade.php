@@ -170,7 +170,7 @@
                 <tr>
                     <td style="width: 20px; text-align: center;">{{$loop->iteration}}.</td>
                     <td style="width: 287.5px; text-align: left; padding-left: 7px;">{{$item->product['name']}}</td>
-                    <td style="width: 50px; text-align: center;">{{number_format($item->ordered_qty, 0)}}</td>
+                    <td style="width: 50px; text-align: center;">{{ is_numeric($item->ordered_qty) ? (strpos($item->ordered_qty, '.') !== false ? rtrim(rtrim($item->ordered_qty, '0'), '.') : $item->ordered_qty) : $item->ordered_qty }}</td>
                     <td style="width: 82.5px; text-align: right;">{{number_format($item->unit_price, 2)}}</td>
                     <td style="width: 82.5px; text-align: right;">{{number_format($item->vat, 2)}}</td>
                     <td style="width: 82.5px; text-align: right;">{{number_format($item->amount, 2)}}</td>

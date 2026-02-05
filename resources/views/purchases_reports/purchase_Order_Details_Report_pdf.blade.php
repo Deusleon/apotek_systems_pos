@@ -182,8 +182,8 @@
                         <td align="left">
                             {{$detail->name.' '.$detail->brand.' '.$detail->pack_size.$detail->sales_uom}}
                         </td>
-                        <td align="center">{{number_format($detail->ordered_qty, 0)}}</td>
-                        <td align="center">{{number_format($detail->received_qty, 0)}}</td>
+                        <td align="center">@php echo is_numeric($detail->ordered_qty) ? (strpos($detail->ordered_qty, '.') !== false ? rtrim(rtrim($detail->ordered_qty, '0'), '.') : $detail->ordered_qty) : $detail->ordered_qty; @endphp</td>
+                        <td align="center">@php echo is_numeric($detail->received_qty) ? (strpos($detail->received_qty, '.') !== false ? rtrim(rtrim($detail->received_qty, '0'), '.') : $detail->received_qty) : $detail->received_qty; @endphp</td>
                         <td align="right">{{number_format($detail->price, 2)}}</td>
                         <td align="right">{{number_format($detail->vat, 2)}}</td>
                         <td align="right">{{number_format($detail->amount, 2)}}</td>

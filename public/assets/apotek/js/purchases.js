@@ -373,9 +373,30 @@ function deselect() {
 }
 
 function numberWithCommas(digit) {
-    return String(parseFloat(digit))
-        .toString()
-        .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    // Handle null/undefined
+    if (digit === null || digit === undefined) {
+        return "0";
+    }
+
+    // Parse as float first to handle decimal values
+    var num = parseFloat(digit);
+    if (isNaN(num)) {
+        return "0";
+    }
+
+    // Get the parts
+    var parts = num.toFixed(2).toString().split(".");
+    var integerPart = parts[0];
+    var decimalPart = parts.length > 1 ? parts[1] : "";
+
+    // Remove trailing zeros from decimal part
+    decimalPart = decimalPart.replace(/0+$/, "");
+
+    // Add commas to integer part
+    var result = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+    // Return with or without decimal part
+    return decimalPart ? result + "." + decimalPart : result;
 }
 
 function isNumberKey(evt, obj) {
