@@ -161,17 +161,8 @@
 
         /* Receipt Print Styles */
         @media print {
-            /* Hide everything except receipt */
-            html, body {
-                margin: 0 !important;
-                padding: 0 !important;
-                width: 80mm !important;
-                height: auto !important;
-                background: white !important;
-            }
-
             body * {
-                visibility: hidden !important;
+                visibility: hidden;
             }
 
             #receipt-print,
@@ -180,46 +171,23 @@
             }
 
             #receipt-print {
-                display: block !important;
-                position: fixed !important;
-                left: 0 !important;
-                top: 0 !important;
-                width: 80mm !important;
-                min-height: auto !important;
-                max-height: none !important;
-                margin: 0 !important;
-                padding: 2mm !important;
-                background: white !important;
-                font-size: 12px !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-
-            /* Hide other elements */
-            .pcoded-navbar,
-            .pcoded-main-container,
-            #desktop-warning,
-            #mobile-pos,
-            .toast,
-            nav {
-                display: none !important;
-                visibility: hidden !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 80mm;
             }
 
             @page {
                 size: 80mm auto;
-                margin: 0 !important;
-                padding: 0 !important;
+                margin: 0;
             }
         }
 
-        /* Screen styles for receipt (hidden on screen) */
         #receipt-print {
             font-family: Arial, Helvetica, sans-serif;
             width: 80mm;
-            padding: 2mm;
+            padding: 10mm;
             background: white;
-            display: none;
         }
 
         .receipt-header {
@@ -403,7 +371,7 @@
                         autocomplete="off">
                 </div>
                 <div style="display: flex; flex-direction: column;">
-                    <label for="priceInput">Price</label>
+                    <label for="priceInput">Amount (Tsh)</label>
                     <input type="text" inputmode="numeric" id="priceInput" class="input" placeholder="Price"
                         autocomplete="off">
                 </div>
@@ -427,7 +395,7 @@
         </div>
 
         <!-- Receipt Print Template -->
-        <div id="receipt-print">
+        <div id="receipt-print" style="display:block; visibility:hidden;">
             <div class="receipt-header">
                 <div class="receipt-title">RECEIPT</div>
                 <div class="receipt-info" id="companyName"></div>
@@ -469,7 +437,8 @@
 
     <script src="{{asset("assets/js/vendor-all.min.js")}}"></script>
     <script src="{{asset("assets/plugins/bootstrap/js/bootstrap.min.js")}}"></script>
-    <script src="{{asset("assets/js/pcoded.min.js")}}"></script>
+    {{--
+    <script src="{{asset(" assets/js/pcoded.min.js")}}"></script> --}}
 
     <script>
 

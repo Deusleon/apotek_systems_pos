@@ -288,8 +288,8 @@
     <label>HELP</label>
 </li> --}}
 
-{{-- <li class="nav-item"><a href="{{ route('mobile-pos.index') }}" class="nav-link"><span class="pcoded-micon"><i
-                class="fas fa-tablet"></i></span><span class="pcoded-mtext">Waste Collection</span></a></li> --}}
+<li class="nav-item"><a href="{{ route('mobile-pos.index') }}" class="nav-link"><span class="pcoded-micon"><i
+                class="fas fa-tablet"></i></span><span class="pcoded-mtext">Waste Collection</span></a></li>
 <li class="nav-item"><a href="{{ route('support.index') }}" class="nav-link"><span class="pcoded-micon"><i
                 class="fas fa-question"></i></span><span class="pcoded-mtext">Support</span></a>
 </li>
