@@ -134,7 +134,7 @@
             {{$pharmacy['email'] . ' | ' . $pharmacy['website']}}
         </div><br>
         <div>
-            <h3 align="center" style="font-weight: bold; margin-top: -1%">Purchase Returns Report</h3>
+            <h3 align="center" style="font-weight: bold; margin-top: -1%">Purchase Returns Report ({{ $branch_name }})</h3>
             <h4 align="center" style="margin-top: -1%">From: <b>{{date('Y-m-d',strtotime($data->first()->date_range[0] ?? 'now'))}}</b> To:
                 <b>{{date('Y-m-d',strtotime($data->first()->date_range[1] ?? 'now'))}}</b>
             </h4>

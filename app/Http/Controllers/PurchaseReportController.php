@@ -70,6 +70,16 @@ class PurchaseReportController extends Controller
         $pharmacy['website'] = Setting::where('id', 109)->value('value');
         $pharmacy['phone'] = Setting::where('id', 107)->value('value');
         $pharmacy['tin_number'] = Setting::where('id', 102)->value('value');
+        
+        // Get store/branch name for the report
+        $store_id = current_store_id();
+        $branch_name = 'ALL';
+        if ($store_id != 1) {
+            $store = DB::table('inv_stores')->where('id', $store_id)->value('name');
+            if ($store) {
+                $branch_name = $store;
+            }
+        }
 
         switch ($request->report_option) {
             case 1:
@@ -80,7 +90,7 @@ class PurchaseReportController extends Controller
                         return response()->view('error_pages.pdf_zero_data');
                     }
                 $pdf = PDF::loadView( 'purchases_reports.material_received_report_pdf',
-                compact( 'data', 'pharmacy') )
+                compact( 'data', 'pharmacy', 'branch_name') )
                 ->setPaper( 'a4', '' );
                 return $pdf->stream( 'material_received_report.pdf' );
                 } else {
@@ -89,7 +99,7 @@ class PurchaseReportController extends Controller
                     }
 
                     $pdf = PDF::loadView('purchases_reports.material_received_all_supplier_report_pdf',
-                        compact('data', 'pharmacy'));
+                        compact('data', 'pharmacy', 'branch_name'));
                     return $pdf->stream('material_received_all_supplier.pdf');
                 }
 
@@ -102,7 +112,7 @@ class PurchaseReportController extends Controller
                     return response()->view('error_pages.pdf_zero_data');
                 }
                 $pdf = PDF::loadView( 'purchases_reports.invoice_summary_report_pdf',
-                compact( 'data', 'pharmacy') )
+                compact( 'data', 'pharmacy', 'branch_name') )
                 ->setPaper( 'a4', '' );
                 return $pdf->stream( 'invoice_summary_report.pdf' );
             case 3:
@@ -110,13 +120,13 @@ class PurchaseReportController extends Controller
             case 4:
                 $data = $this->supplierList();
                 $pdf = PDF::loadView( 'purchases_reports.supplier_list_pdf',
-                compact( 'data', 'pharmacy') )
+                compact( 'data', 'pharmacy', 'branch_name') )
                 ->setPaper( 'a4', '' );
                 return $pdf->stream( 'supplier_list_report.pdf' );
             case 5:
                 $data = $this->supplierPriceComparison();
                 $pdf = PDF::loadView( 'purchases_reports.supplier_price_comparison_report_pdf',
-                compact( 'data', 'pharmacy') )
+                compact( 'data', 'pharmacy', 'branch_name') )
                 ->setPaper( 'a4', '' );
                 return $pdf->stream( 'supplier_price_comparison_report.pdf' );
             case 6:
@@ -125,7 +135,7 @@ class PurchaseReportController extends Controller
                     return response()->view('error_pages.pdf_zero_data');
                 }
                 $pdf = PDF::loadView( 'purchases_reports.purchase_Order_Details_Report_pdf',
-                compact( 'data', 'pharmacy') )
+                compact( 'data', 'pharmacy', 'branch_name') )
                 ->setPaper( 'a4', 'landscape' );
                 return $pdf->stream( 'purchase_order_details_report.pdf' );
             case 7:
@@ -134,7 +144,7 @@ class PurchaseReportController extends Controller
                     return response()->view('error_pages.pdf_zero_data');
                 }
                 $pdf = PDF::loadView( 'purchases_reports.purchase_return_report_pdf',
-                compact( 'data', 'pharmacy') )
+                compact( 'data', 'pharmacy', 'branch_name') )
                 ->setPaper( 'a4', 'landscape' );
                 return $pdf->stream( 'purchase_return_report.pdf' );
             default;

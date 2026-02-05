@@ -96,7 +96,7 @@
             {{$pharmacy['email'] . ' | ' . $pharmacy['website']}}
         </div><br>
         <div>
-            <h3 align="center" style="font-weight: bold; margin-top: -1%">Material Received Report</h3>
+            <h3 align="center" style="font-weight: bold; margin-top: -1%">Material Received Report ({{ $branch_name }})</h3>
             <h4 align="center" style="margin-top: -1.5%">Printed On: {{now()->format('Y-m-d H:i:s')}}</h4>
         </div>
     </div>

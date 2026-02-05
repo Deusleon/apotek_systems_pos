@@ -91,7 +91,7 @@
 </div>
 <h4 align="center">{{$pharmacy['name']}}</h4>
 <h3 align="center" style="margin-top: -2%">{{$pharmacy['address']}}</h3>
-<h2 align="center" style="margin-top: -2%">Supplier Price Comparison Report</h2>
+<h2 align="center" style="margin-top: -2%">Supplier Price Comparison Report ({{ $branch_name }})</h2>
 <div class="row" style="margin-top: 10%;">
     <div class="col-md-12">
 
