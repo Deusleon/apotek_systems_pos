@@ -369,7 +369,7 @@ class GoodsReceivingController extends Controller
             'items' => 'required|array',
             'items.*.purchase_order_detail_id' => 'required|exists:order_details,id',
             'items.*.product_id' => 'required|exists:inv_products,id',
-            'items.*.quantity' => 'required|integer|min:0',
+            'items.*.quantity' => 'required|numeric|min:0',
             'items.*.cost_price' => 'required|numeric|min:0',
         ]);
         
@@ -395,13 +395,13 @@ class GoodsReceivingController extends Controller
         $default_store_id = current_store_id();
 
         foreach ($validated['items'] as $itemData) {
-            $received_qty = (int)$itemData['quantity'];
+            $received_qty = (float)$itemData['quantity'];
             if ($received_qty <= 0) continue;
 
             $order_detail = OrderDetail::findOrFail($itemData['purchase_order_detail_id']);
 
-            $current_received = (int)($order_detail->received_qty ?? 0);
-            $remaining_qty = (int)$order_detail->ordered_qty - $current_received;
+            $current_received = (float)($order_detail->received_qty ?? 0);
+            $remaining_qty = (float)$order_detail->ordered_qty - $current_received;
 
             if ($received_qty > $remaining_qty) {
                 throw new \Exception("Cannot receive more than the remaining quantity for product ID {$itemData['product_id']}.");
@@ -429,6 +429,7 @@ class GoodsReceivingController extends Controller
             $goods_receiving->batch_number = $batch_number;
             $goods_receiving->expire_date  = $expiry_date_value;
             $goods_receiving->created_by   = Auth::id();
+            $goods_receiving->created_at   = now(); // Set created_at timestamp
             $goods_receiving->save();
 
             // Update or create stock with reference to incoming_stock

@@ -342,7 +342,7 @@
                     <td class="text-right d-none">${totalPrice.toLocaleString('en-US',{ minimumFractionDigits:2 })}</td>
                     <td class="receive-cell text-center">
                         <span class="plain-receive">${remaining.toLocaleString('en-US')}</span>
-                        <input type="text" name="items[${index}][quantity]"
+                        <input type="number" step="any" name="items[${index}][quantity]"
                             class="form-control form-control-sm text-center receive-qty-input edit-mode-hidden"
                             min="0" max="${remaining}" value="${remaining}" ${isFullyReceived?'readonly':''}>
                     </td>
