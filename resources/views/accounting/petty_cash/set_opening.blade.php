@@ -21,7 +21,7 @@
                    </div>
                    <div class="form-group">
                        <label for="opening_balance">Amount Received</label>
-                       <input type="text" class="form-control" id="opening_balance" name="opening_balance" value="0" required>
+                       <input type="text" class="form-control" id="opening_balance" name="opening_balance" value="0.00" required>
                    </div>
                </div>
                 <div class="modal-footer">
