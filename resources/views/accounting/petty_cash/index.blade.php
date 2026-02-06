@@ -488,7 +488,13 @@ function updatePreviousClosingBalance(date) {
 $('#amount').on('blur', function() {
     var value = $(this).val().replace(/,/g, '');
     if (!isNaN(value) && value !== '') {
-        $(this).val(parseFloat(value).toLocaleString());
+        var number = parseFloat(value);
+        $(this).val(number.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }));
+    } else {
+        $(this).val('0.00');
     }
 });
 
@@ -513,7 +519,13 @@ $('#add-expense-submit').on('click', function() {
 $('#opening_balance').on('blur', function() {
     var value = $(this).val().replace(/,/g, '');
     if (!isNaN(value) && value !== '') {
-        $(this).val(parseFloat(value).toLocaleString());
+        var number = parseFloat(value);
+        $(this).val(number.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }));
+    } else {
+        $(this).val('0.00');
     }
 });
 
