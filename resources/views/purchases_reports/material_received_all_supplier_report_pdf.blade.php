@@ -50,9 +50,9 @@
         }
 
         #table-detail-main {
-            width: 103%;
-            margin-top: -2%;
-            margin-bottom: -2%;
+            width: 100%;
+            margin-top: 10px;
+            margin-bottom: -10px;
             border-collapse: collapse;
         }
 
@@ -149,21 +149,20 @@
                         <td><b>Supplier: </b>{{$key}}</td>
                     </tr>
                 </table>
-
                 <table id="table-detail" align="center">
                     <thead>
                     <tr style="background: #1f273b; color: white;">
                         <th align="left" style="width: 1%;">#</th>
-                        <th align="left" style="width: 25%;">Product Name</th>
+                        <th align="left" style="width: 35%;">Product Name</th>
                         @if($store_id == 1)
                         <th align="left" style="width: 10%;">Branch</th>
                         @endif
-                        <th align="center" style="width: 8%;">Quantity</th>
-                        <th align="right" style="width: 8%;">Buy Price</th>
-                        <th align="right" style="width: 8%;">Sell Price</th>
-                        <th align="center" style="width: 8%;">Profit</th>
-                        <th align="center" style="width: 12%;">Receive Date</th>
-                        <th align="left" style="width: 12%;">Received By</th>
+                        <th align="center" style="width: 10%;">Quantity</th>
+                        <th align="right" style="width: 10%;">Buy Price</th>
+                        <th align="right" style="width: 10%;">Sell Price</th>
+                        <th align="center" style="width: 10%;">Profit</th>
+                        <th align="center" style="width: 15%;">Receive Date</th>
+                        <th align="left" style="width: 15%;">Received By</th>
                     </tr>
                     </thead>
 
