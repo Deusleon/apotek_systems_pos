@@ -177,7 +177,7 @@ function populateHistoryTable(data) {
                 (item.brand ? item.brand + " " : "") +
                 (item.pack_size ? item.pack_size : "") +
                 (item.sales_uom ? item.sales_uom : ""),
-            numberWithCommas(Number(item.quantity).toFixed(0)),
+            numberWithCommas(Number(item.quantity)),
             numberWithCommas(Number(item.price).toFixed(2)),
         ]);
     });
@@ -186,10 +186,25 @@ function populateHistoryTable(data) {
     saleHistoryDataTable.draw();
 }
 
-function numberWithCommas(digit) {
-    return String(parseFloat(digit))
-        .toString()
-        .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+function numberWithCommas(num) {
+    let str = String(num);
+
+    if (str.includes('.')) {
+        let [whole, decimal] = str.split('.');
+
+        decimal = decimal.replace(/0+$/, "");
+
+        if (decimal === "") {
+            return Number(whole).toLocaleString();
+        }
+
+        let wholeFormatted = Number(whole).toLocaleString();
+
+        return wholeFormatted + "." + decimal;
+
+    } else {
+        return Number(str).toLocaleString();
+    }
 }
 
 function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
