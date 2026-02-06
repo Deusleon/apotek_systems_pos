@@ -13,7 +13,7 @@
                     <table class="table table-striped">
                         <thead>
                             <tr>
-                                <th>Details</th>
+                                <th>Purpose / Details</th>
                                 <th>Amount</th>
                                 <th>Date</th>
                             </tr>
