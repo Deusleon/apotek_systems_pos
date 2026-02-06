@@ -1,13 +1,11 @@
-@extends("layouts.master")
-
-@section('content-title')
+<?php $__env->startSection('content-title'); ?>
     Sales History
-@endsection
-@section('content-sub-title')
-    <li class="breadcrumb-item"><a href="{{route('home')}}"><i class="feather icon-home"></i></a></li>
+<?php $__env->stopSection(); ?>
+<?php $__env->startSection('content-sub-title'); ?>
+    <li class="breadcrumb-item"><a href="<?php echo e(route('home')); ?>"><i class="feather icon-home"></i></a></li>
     <li class="breadcrumb-item"><a href="#">Sales / Sales History / Returns</a></li>
-@endsection
-@section("content")
+<?php $__env->stopSection(); ?>
+<?php $__env->startSection("content"); ?>
 
     <style>
         #loading {
@@ -33,45 +31,45 @@
 
     <div class="col-sm-12">
         <ul class="nav nav-pills mb-3" id="myTab" role="tablist">
-            @if(Auth::user()->checkPermission('View Sales History'))
+            <?php if(Auth::user()->checkPermission('View Sales History')): ?>
                 <li class="nav-item">
                     <a class="nav-link text-uppercase" id="sales-history-tablist" data-toggle="pill"
-                        href="{{ route('sale-histories.SalesHistory') }}" role="tab" aria-controls="sales_history"
+                        href="<?php echo e(route('sale-histories.SalesHistory')); ?>" role="tab" aria-controls="sales_history"
                         aria-selected="true">Sales History</a>
                 </li>
-            @endif
-            @if(Auth::user()->checkPermission('View Sales Returns'))
+            <?php endif; ?>
+            <?php if(Auth::user()->checkPermission('View Sales Returns')): ?>
                 <li class="nav-item">
                     <a class="nav-link active text-uppercase" id="sales-return-tablist" data-toggle="pill"
-                        href="{{ route('sale-returns.index') }}" role="tab" aria-controls="sales_returns"
+                        href="<?php echo e(route('sale-returns.index')); ?>" role="tab" aria-controls="sales_returns"
                         aria-selected="false">Returns
                     </a>
                 </li>
-            @endif
-            @if(Auth::user()->checkPermission('View Sales Returns Approvals'))
+            <?php endif; ?>
+            <?php if(Auth::user()->checkPermission('View Sales Returns Approvals')): ?>
                 <li class="nav-item">
                     <a class="nav-link text-uppercase" id="sales-approval-tablist" data-toggle="pill"
-                        href="{{ route('sale-returns-approval.getSalesReturn') }}" role="tab" aria-controls="sales_returns"
+                        href="<?php echo e(route('sale-returns-approval.getSalesReturn')); ?>" role="tab" aria-controls="sales_returns"
                         aria-selected="false">Approvals
                     </a>
                 </li>
-            @endif
+            <?php endif; ?>
         </ul>
         <div class="card-block">
-            @if(Auth::user()->checkPermission('View Sales Returns'))
+            <?php if(Auth::user()->checkPermission('View Sales Returns')): ?>
                 <div class="tab-content" id="myTabContent">
-                    {{-- Sales Return Start--}}
+                    
                     <div class="tab-pane fade show active" id="sales-return" role="tabpanel" aria-labelledby="sales_return-tab">
-                        <input type="hidden" value="{{$vat}}" id="vat">
+                        <input type="hidden" value="<?php echo e($vat); ?>" id="vat">
                         <div class="table-responsive" id="items" style="display: none;">
-                            {{-- <h4>Sale Items List</h4>--}}
+                            
                             <table id="items_table" class="table nowrap table-striped table-hover" width="100%"></table>
                             <div class="btn-group" style="float: right; margin-right: 4%; margin-top: 2%">
                                 <button class="btn btn-sm btn-rounded btn-danger" onclick="return false" id="cancel">Back
                                 </button>
                             </div>
                         </div>
-                        <input type="hidden" name="" value="{{ $enable_discount }}" id="discount_enabled">
+                        <input type="hidden" name="" value="<?php echo e($enable_discount); ?>" id="discount_enabled">
                         <div id="sales">
                             <div class="d-flex justify-content-end mb-3 align-items-center">
                                 <label class="mr-2" for="">Date:</label>
@@ -87,9 +85,9 @@
                                             <th>Date</th>
                                             <th>Sub Total</th>
                                             <th>VAT</th>
-                                            @if ($enable_discount === 'YES')
+                                            <?php if($enable_discount === 'YES'): ?>
                                                 <th>Discount</th>
-                                            @endif
+                                            <?php endif; ?>
                                             <th>Amount</th>
                                             <th>Action</th>
                                         </tr>
@@ -103,19 +101,12 @@
                         </div>
 
                         <!-- ajax loading gif -->
-                        {{-- <div id="loading">
-                            <image id="loading-image" src="{{asset('assets/images/spinner.gif')}}"></image>
-                        </div>
-
-                        <input type="hidden" value="" id="category">
-                        <input type="hidden" value="" id="customers">
-                        <input type="hidden" value="" id="print">
-                        <input type="hidden" value="" id="fixed_price"> --}}
+                        
 
                     </div>
-                    {{-- Sales Return End--}}
+                    
 
-                    {{-- Sales Return Approval Start--}}
+                    
                     <div class="tab-pane fade" id="sales-return-approval" role="tabpanel"
                         aria-labelledby="sales_return_approval-tab">
                         <div class="form-group row">
@@ -167,7 +158,7 @@
 
                             <!-- ajax loading gif -->
                             <div id="loading">
-                                <image id="loading-image" src="{{asset('assets/images/spinner.gif')}}"></image>
+                                <image id="loading-image" src="<?php echo e(asset('assets/images/spinner.gif')); ?>"></image>
                             </div>
 
                             <input type="hidden" value="" id="category">
@@ -177,12 +168,12 @@
 
                         </div>
                     </div>
-                    {{-- Sales Return Approval End--}}
+                    
 
                 </div>
-            @endif
+            <?php endif; ?>
 
-            @if(!Auth::user()->checkPermission('View Sales Returns'))
+            <?php if(!Auth::user()->checkPermission('View Sales Returns')): ?>
                 <div class="card">
                     <div class="card-body">
                         <div class="form-group row">
@@ -192,22 +183,22 @@
                         </div>
                     </div>
                 </div>
-            @endif
+            <?php endif; ?>
 
         </div>
 
 
     </div>
     </div>
-    @include('sales.sale_returns.return')
+    <?php echo $__env->make('sales.sale_returns.return', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 
-@endsection
-@push("page_scripts")
-    {{-- Return Sale --}}
-    @include('partials.notification')
-    <script src="{{asset("assets/plugins/bootstrap-datetimepicker/js/bootstrap-datepicker.min.js")}}"></script>
-    <script src="{{asset("assets/js/pages/ac-datepicker.js")}}"></script>
-    <script src="{{asset("assets/apotek/js/sales.js")}}"></script>
+<?php $__env->stopSection(); ?>
+<?php $__env->startPush("page_scripts"); ?>
+    
+    <?php echo $__env->make('partials.notification', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+    <script src="<?php echo e(asset("assets/plugins/bootstrap-datetimepicker/js/bootstrap-datepicker.min.js")); ?>"></script>
+    <script src="<?php echo e(asset("assets/js/pages/ac-datepicker.js")); ?>"></script>
+    <script src="<?php echo e(asset("assets/apotek/js/sales.js")); ?>"></script>
 
     <script type="text/javascript">
 
@@ -332,12 +323,12 @@
                 "processing": true,
                 "serverSide": true,
                 "ajax": {
-                    "url": '{{route('getSales')}}',
+                    "url": '<?php echo e(route('getSales')); ?>',
                     "dataType": "json",
                     "type": "post",
                     "cache": false,
                     "data": {
-                        _token: "{{csrf_token()}}",
+                        _token: "<?php echo e(csrf_token()); ?>",
                         range: range
                     }
                 },
@@ -360,7 +351,7 @@
     </script>
 
 
-    {{-- Return Sale Approval --}}
+    
     <script type="text/javascript">
 
         $(function () {
@@ -413,9 +404,9 @@
             if (date) {
                 $('#loading').show();
                 $.ajax({
-                    url: '{{route('getRetunedProducts')}}',
+                    url: '<?php echo e(route('getRetunedProducts')); ?>',
                     data: {
-                        "_token": '{{ csrf_token() }}',
+                        "_token": '<?php echo e(csrf_token()); ?>',
                         "date": date,
                         "status": status,
                         "action": action,
@@ -491,22 +482,40 @@
     </script>
 
     <script>
+        // $('#rtn_qty_to_show').on('keyup', function () {
+        //     var newValue = document.getElementById('rtn_qty_to_show').value;
+        //     if (newValue !== '') {
+        //         document.getElementById('rtn_qty_to_show').value =
+        //             numberWithCommas(parseFloat(newValue.replace(/\,/g, ''), 10));
+        //         document.getElementById('rtn_qty').value = parseFloat(newValue.replace(/\,/g, ''), 10);
+        //     } else {
+        //         document.getElementById('rtn_qty_to_show').value = '';
+        //         document.getElementById('rtn_qty').value = '';
+        //     }
+        // });
         $('#rtn_qty_to_show').on('keyup', function () {
             let newValue = document.getElementById('rtn_qty_to_show').value;
 
+            // Ondoa commas ili tupate namba halisi
             let cleanValue = newValue.replace(/,/g, '');
 
+            // Kama user ameacha decimal point tu kama "12."
             if (cleanValue.slice(-1) === '.' && cleanValue.split('.').length - 1 === 1) {
+                // Usifanye formatting bado
                 document.getElementById('rtn_qty').value = cleanValue;
                 return;
             }
 
+            // Ruhusu decimals halisi
             if (!isNaN(cleanValue) && cleanValue !== '') {
+                // Format number (preserve decimals)
                 let formatted = numberWithCommas(cleanValue.toString());
                 document.getElementById('rtn_qty_to_show').value = formatted;
 
+                // Set actual numeric value
                 document.getElementById('rtn_qty').value = cleanValue;
             } else {
+                // On empty string
                 document.getElementById('rtn_qty_to_show').value = '';
                 document.getElementById('rtn_qty').value = '';
             }
@@ -516,24 +525,25 @@
         $(document).ready(function () {
             // Listen for the click event on the Transfer History tab
             $('#sales-history-tablist').on('click', function (e) {
-                e.preventDefault(); 
-                var redirectUrl = $(this).attr('href'); 
-                window.location.href = redirectUrl; 
+                e.preventDefault(); // Prevent default tab switching behavior
+                var redirectUrl = $(this).attr('href'); // Get the URL from the href attribute
+                window.location.href = redirectUrl; // Redirect to the URL
             });
 
             $('#sales-return-tablist').on('click', function (e) {
-                e.preventDefault(); 
-                var redirectUrl = $(this).attr('href'); 
-                window.location.href = redirectUrl; 
+                e.preventDefault(); // Prevent default tab switching behavior
+                var redirectUrl = $(this).attr('href'); // Get the URL from the href attribute
+                window.location.href = redirectUrl; // Redirect to the URL
             });
 
             $('#sales-approval-tablist').on('click', function (e) {
-                e.preventDefault(); 
-                var redirectUrl = $(this).attr('href'); 
-                window.location.href = redirectUrl; 
+                e.preventDefault(); // Prevent default tab switching behavior
+                var redirectUrl = $(this).attr('href'); // Get the URL from the href attribute
+                window.location.href = redirectUrl; // Redirect to the URL
             });
         });
     </script>
 
 
-@endpush
+<?php $__env->stopPush(); ?>
+<?php echo $__env->make("layouts.master", \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\Users\Little Pro\Desktop\APOTEk\apotek_systems_pos\resources\views/sales/sale_returns/index.blade.php ENDPATH**/ ?>

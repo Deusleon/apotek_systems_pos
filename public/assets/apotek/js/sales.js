@@ -938,7 +938,7 @@ $("#items_table tbody").on("click", "#rtn_btn", function () {
             document.getElementById("qty_error").style.display = "block";
             $("#sale-return")
                 .find(".modal-body #qty_error")
-                .text("Maximum quantity is " + Math.floor(data[2]));
+                .text("Maximum quantity is " + numberWithCommas(data[2]));
         } else {
             document.getElementById("qty_error").style.display = "none";
             $("#save_btn").prop("disabled", false);

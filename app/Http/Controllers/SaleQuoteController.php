@@ -131,7 +131,6 @@ class SaleQuoteController extends Controller {
         ->get();
         return response()->json( $sale_quotes, 200 );
     }
-
     public function storeQuote( Request $request ) {
         if ( $request->ajax() ) {
             $this->store( $request );
@@ -140,7 +139,6 @@ class SaleQuoteController extends Controller {
             ] );
         }
     }
-
     //Edit Sales Order
     public function updateQuote( Request $request ) {
         $quantity = $request->quantity;
@@ -164,7 +162,6 @@ class SaleQuoteController extends Controller {
         return redirect()->back();
 
     }
-
     public function addQuoteItem( Request $request ) {
         $vatRate = Setting::where( 'id', 120 )->value( 'value' ) / 100;
         $price   = $request->price;

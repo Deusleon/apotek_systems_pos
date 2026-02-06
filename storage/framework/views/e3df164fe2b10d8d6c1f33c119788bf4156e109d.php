@@ -1,16 +1,14 @@
-@extends("layouts.master")
-
-@section('content-title')
+<?php $__env->startSection('content-title'); ?>
     Sales Order
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('content-sub-title')
-    <li class="breadcrumb-item"><a href="{{ route('home') }}"><i class="feather icon-home"></i></a></li>
+<?php $__env->startSection('content-sub-title'); ?>
+    <li class="breadcrumb-item"><a href="<?php echo e(route('home')); ?>"><i class="feather icon-home"></i></a></li>
     <li class="breadcrumb-item"><a href="#">Sales / Sales Order / Order List</a></li>
-@endsection
+<?php $__env->stopSection(); ?>
 
 
-@section('content')
+<?php $__env->startSection('content'); ?>
     <style>
         .ms-container {
             background: transparent url('../assets/plugins/multi-select/img/switch.png') no-repeat 50% 50%;
@@ -33,23 +31,23 @@
     </style>
     <div class="col-sm-12">
         <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-            @if(auth()->user()->checkPermission('View Sales Order'))
+            <?php if(auth()->user()->checkPermission('View Sales Order')): ?>
                 <li class="nav-item">
-                    <a class="nav-link" id="new-order" data-toggle="pill" href="{{ route('sale-quotes.index') }}" role="tab"
+                    <a class="nav-link" id="new-order" data-toggle="pill" href="<?php echo e(route('sale-quotes.index')); ?>" role="tab"
                         aria-controls="pills-home" aria-selected="true">New Order</a>
                 </li>
-            @endif
-            @if(auth()->user()->checkPermission('View Order List'))
+            <?php endif; ?>
+            <?php if(auth()->user()->checkPermission('View Order List')): ?>
                 <li class="nav-item">
-                    <a class="nav-link active" id="order-list" data-toggle="pill" href="{{ route('sale-quotes.order_list') }}"
+                    <a class="nav-link active" id="order-list" data-toggle="pill" href="<?php echo e(route('sale-quotes.order_list')); ?>"
                         role="tab" aria-controls="pills-profile" aria-selected="false">Order List</a>
                 </li>
-            @endif
+            <?php endif; ?>
         </ul>
         <div class="tab-content" id="pills-tabContent">
             <div class="tab-pane fade" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
                 <form id="quote_sale_form">
-                    @if (auth()->user()->checkPermission('Manage Customers'))
+                    <?php if(auth()->user()->checkPermission('Manage Customers')): ?>
                         <div class="row">
                             <div class="col-md-12">
                                 <button style="float: right;margin-bottom: 2%;" type="button" class="btn btn-secondary btn-sm"
@@ -59,19 +57,20 @@
                             </div>
 
                         </div>
-                    @endif
-                    @csrf()
+                    <?php endif; ?>
+                    <?php echo csrf_field(); ?>
                     <div class="row">
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label id="cat_label">Sales Type</label>
                                 <select id="price_category" class="js-example-basic-single form-control">
                                     <option value="">Select Sales Type</option>
-                                    @foreach ($price_category as $price)
-                                        <!-- <option value="{{ $price->id }}">{{ $price->name }}</option> -->
-                                        <option value="{{ $price->id }}" {{ $default_sale_type === $price->id ? 'selected' : '' }}>{{ $price->name }}
+                                    <?php $__currentLoopData = $price_category; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $price): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <!-- <option value="<?php echo e($price->id); ?>"><?php echo e($price->name); ?></option> -->
+                                        <option value="<?php echo e($price->id); ?>" <?php echo e($default_sale_type === $price->id ? 'selected' : ''); ?>><?php echo e($price->name); ?>
+
                                         </option>
-                                    @endforeach
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </select>
                             </div>
                         </div>
@@ -89,9 +88,9 @@
                                 <select id="customer_id" name="customer_id" class="js-example-basic-single form-control"
                                     required>
                                     <option value="" disabled selected="true">Select Customer</option>
-                                    @foreach ($customers as $customer)
-                                        <option value="{{ $customer->id }}">{{ $customer->name }}</option>
-                                    @endforeach
+                                    <?php $__currentLoopData = $customers; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $customer): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <option value="<?php echo e($customer->id); ?>"><?php echo e($customer->name); ?></option>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </select>
                             </div>
                         </div>
@@ -107,13 +106,13 @@
                     <hr>
                     <div class="row">
                         <div class="col-md-4">
-                            @if ($enable_discount === 'YES')
+                            <?php if($enable_discount === 'YES'): ?>
                                 <div style="width: 99%">
                                     <label>Discount</label>
                                     <input type="text" onchange="discount()" id="sale_discount" class="form-control"
                                         value="0" />
                                 </div>
-                            @endif
+                            <?php endif; ?>
                         </div>
                         <div class="col-md-4">
 
@@ -146,7 +145,7 @@
                         </div>
 
 
-                        <input type="hidden" value="{{ $vat }}" id="vat">
+                        <input type="hidden" value="<?php echo e($vat); ?>" id="vat">
                         <input type="hidden" value="0" id="sale_paid">
                         <input type="hidden" value="Yes" id="quotes_page">
                         <input type="hidden" value="0" id="change_amount">
@@ -158,7 +157,7 @@
                         <input type="hidden" value="" id="category">
                         <input type="hidden" value="" id="customers">
                         <input type="hidden" value="" id="print">
-                        <input type="hidden" value="{{ $enable_discount }}" id="enable_discount">
+                        <input type="hidden" value="<?php echo e($enable_discount); ?>" id="enable_discount">
 
                     </div>
                     <hr>
@@ -202,11 +201,11 @@
                                 <th>Date</th>
                                 <th>Amount</th>
                                 <th>Action</th>
-                                {{-- <th>Sale Type</th>--}}
-                                {{-- <th>VAT</th>--}}
-                                {{-- <th>Discount</th>--}}
-                                {{-- <th>Amount</th>--}}
-                                {{-- <th>id</th>--}}
+                                
+                                
+                                
+                                
+                                
                             </tr>
                         </thead>
                         <tbody>
@@ -216,12 +215,12 @@
             </div>
         </div>
     </div>
-    @include('sales.sale_quotes.details')
-    @include('sales.customers.create')
-@endsection
+    <?php echo $__env->make('sales.sale_quotes.details', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+    <?php echo $__env->make('sales.customers.create', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+<?php $__env->stopSection(); ?>
 
-@push('page_scripts')
-@include('partials.notification')
+<?php $__env->startPush('page_scripts'); ?>
+<?php echo $__env->make('partials.notification', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
     <script type="text/javascript">
         // Clear invalid localStorage entries immediately
         (function () {
@@ -258,11 +257,11 @@
         let quotes_table = null;
 
         var config = {
-            token: '{{ csrf_token() }}',
+            token: '<?php echo e(csrf_token()); ?>',
             routes: {
-                selectProducts: '{{ route('selectProducts') }}',
-                storeQuote: '{{ route('storeQuote') }}',
-                filterProductByWord: '{{ route('filter-product-by-word') }}'
+                selectProducts: '<?php echo e(route('selectProducts')); ?>',
+                storeQuote: '<?php echo e(route('storeQuote')); ?>',
+                filterProductByWord: '<?php echo e(route('filter-product-by-word')); ?>'
             }
         };
 
@@ -330,7 +329,7 @@
 
         function getQuotes() {
             $.ajax({
-                url: "{{ route('sale-quotes.get-quotes') }}",
+                url: "<?php echo e(route('sale-quotes.get-quotes')); ?>",
                 dataType: "json",
                 data: {
                     date: $('#date_range').val()
@@ -408,8 +407,8 @@
                     }, {
                         data: null,
                         render: function (data, type, row) {
-                            let receipt_url = '{{ route('receiptReprint', 'receipt_id') }}'.replace('receipt_id', row.id);
-                            let update_url = '{{ route('updateSale', 'receipt_id') }}'.replace('receipt_id', row.id);
+                            let receipt_url = '<?php echo e(route('receiptReprint', 'receipt_id')); ?>'.replace('receipt_id', row.id);
+                            let update_url = '<?php echo e(route('updateSale', 'receipt_id')); ?>'.replace('receipt_id', row.id);
 
                             let buttons = ``;
 
@@ -418,7 +417,7 @@
                                                                                                                             onclick="showQuoteDetails(event)"
                                                                                                                             id="quote_details">Show
                                                                                                                     </button>`;
-                            @if(auth()->user()->checkPermission('Print Sales Orders'))
+                            <?php if(auth()->user()->checkPermission('Print Sales Orders')): ?>
                                 buttons += `
                                                                                                                                                                     <a href="${receipt_url}" target="_blank">
                                                                                                                                                                         <button class="btn btn-sm btn-rounded btn-secondary" type="button">
@@ -426,23 +425,23 @@
                                                                                                                                                                             Print
                                                                                                                                                                         </button>
                                                                                                                                                                     </a>`;
-                            @endif
+                            <?php endif; ?>
 
                                                                                              if (parseInt(row.status, 10) === 1) {
-                                @if(auth()->user()->checkPermission('Edit Sales Orders'))
+                                <?php if(auth()->user()->checkPermission('Edit Sales Orders')): ?>
                                     buttons += `
                                                                                                                                                                 <a class="btn btn-sm btn-rounded btn-info" href="${update_url}">
                                                                                                                                                                     Edit
                                                                                                                                                                 </a>`;
-                                @endif
-                                @if(auth()->user()->checkPermission('Convert Sales Orders'))
+                                <?php endif; ?>
+                                <?php if(auth()->user()->checkPermission('Convert Sales Orders')): ?>
                                     buttons += `
                                                                                                                                                             <button class="btn btn-sm btn-rounded btn-warning"
                                                                                                                                                                     type="button"
                                                                                                                                                                     onclick="convertQuoteToSale(${row.id})">
                                                                                                                                                                 Convert
                                                                                                                                                             </button>`;
-                                @endif
+                                <?php endif; ?>
                                                                                                         } else {
                                 buttons += `
                                                                                                         <button class="btn btn-sm btn-rounded btn-primary opacity-75"
@@ -537,9 +536,9 @@
         });
 
     </script>
-    <script src="{{ asset('assets/apotek/js/notification.js') }}"></script>
-    <script src="{{ asset('assets/apotek/js/sales.js') }}"></script>
-    <script src="{{ asset('assets/apotek/js/customer.js') }}"></script>
+    <script src="<?php echo e(asset('assets/apotek/js/notification.js')); ?>"></script>
+    <script src="<?php echo e(asset('assets/apotek/js/sales.js')); ?>"></script>
+    <script src="<?php echo e(asset('assets/apotek/js/customer.js')); ?>"></script>
 
     <!-- Professional Conversion Modal -->
     <div class="modal fade" id="professionalConvertModal" tabindex="-1" role="dialog"
@@ -566,15 +565,12 @@
                                 class="text-danger">*</span></label>
                         <select name="payment_type" id="payment_type" class="form-control" required>
                                 <option value="" disabled>Select Payment</option>
-                            @foreach($payment_type as $payment)
-                                <option value="{{$payment->id}}">{{$payment->name}}</option>
-                            @endforeach
+                            <?php $__currentLoopData = $payment_type; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $payment): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($payment->id); ?>"><?php echo e($payment->name); ?></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </select>
                     </div>
-                    {{-- <div class="form-group" id="gracePeriodDiv">
-                        <label for="gracePeriod">Grace Period<span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="" id="gracePeriod">
-                    </div> --}}
+                    
                     <div class="form-group" id="gracePeriodDiv">
                         <label>Grace Period (Days)<font color="red">*</font></label>
                         <select class="form-control" name="" id="gracePeriod">
@@ -696,7 +692,7 @@
                 <div class="modal-body">
                     <p class="mb-3">Are you sure you want to convert this Sales Order? <br> This action cannot be
                         undone!.</p>
-                    {{-- <p>Stock quantities will be automatically deducted from inventory.</p> --}}
+                    
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
@@ -730,7 +726,7 @@
         </div>
     </div>
     </div>
-@endpush
+<?php $__env->stopPush(); ?>
 
 <!-- Place this script at the end of the file so convertQuoteToSale is globally available -->
 <script type="text/javascript">
@@ -781,7 +777,7 @@
         }
 
         $.ajax({
-            url: '{{ route('convert-to-sales') }}',
+            url: '<?php echo e(route('convert-to-sales')); ?>',
             type: 'POST',
             data: {
                 quote_id: quoteId,
@@ -789,7 +785,7 @@
                 sale_type: sale_type,
                 payment_type: payment_type,
                 grace_period: grace_period,
-                _token: '{{ csrf_token() }}'
+                _token: '<?php echo e(csrf_token()); ?>'
             },
             success: function (response) {
                 // console.log('Response is: ', response);
@@ -809,8 +805,8 @@
                     }
 
                     // Set document links
-                    $('#deliveryNoteLink').attr('href', '{{ route('generate-delivery-note', '') }}/' + response.sale_id);
-                    $('#receiptLink').attr('href', '{{ route('getCashReceipt', '') }}/' + response.saletype);
+                    $('#deliveryNoteLink').attr('href', '<?php echo e(route('generate-delivery-note', '')); ?>/' + response.sale_id);
+                    $('#receiptLink').attr('href', '<?php echo e(route('getCashReceipt', '')); ?>/' + response.saletype);
 
                     // $('#successModal').modal('show');
                     notify(response.message, "top", "right", "success");
@@ -824,7 +820,7 @@
 
                     // Open receipt in new tab
                     if (response.redirect_to === 'receipt') {
-                        let receiptUrl = '{{ route('getCashReceipt', '') }}/' + response.saletype;
+                        let receiptUrl = '<?php echo e(route('getCashReceipt', '')); ?>/' + response.saletype;
                         window.open(receiptUrl, '_blank');
                     }
 
@@ -867,3 +863,4 @@
         }, 5000);
     }
 </script>
+<?php echo $__env->make("layouts.master", \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\Users\Little Pro\Desktop\APOTEk\apotek_systems_pos\resources\views/sales/sale_quotes/index_quotes.blade.php ENDPATH**/ ?>

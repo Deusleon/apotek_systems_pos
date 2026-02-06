@@ -19,40 +19,39 @@ $store_id = Auth::user()->store_id;
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
     <!-- Favicon icon -->
-    {{--
-    <link rel="shortcut icon" type="image/x-icon" href="{{asset(" fileStore/php6J3S8Q.png")}}">--}}
-    <link rel="shortcut icon" type="image/x-icon" href="{{asset("APOTEk2.ico")}}">
+    
+    <link rel="shortcut icon" type="image/x-icon" href="<?php echo e(asset("APOTEk2.ico")); ?>">
     <!-- range slider -->
-    <link rel="stylesheet" href="{{asset("/assets/plugins/range-slider/css/bootstrap-slider.min.css")}}">
-    <link rel="stylesheet" href="{{asset("/assets/css/pages/rangeslider.css")}}">
+    <link rel="stylesheet" href="<?php echo e(asset("/assets/plugins/range-slider/css/bootstrap-slider.min.css")); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset("/assets/css/pages/rangeslider.css")); ?>">
     <!-- fontawesome icon -->
-    <link rel="stylesheet" href="{{asset("assets/fonts/fontawesome/css/fontawesome-all.min.css")}}">
+    <link rel="stylesheet" href="<?php echo e(asset("assets/fonts/fontawesome/css/fontawesome-all.min.css")); ?>">
     <!-- animation css -->
-    <link rel="stylesheet" href="{{asset("assets/plugins/animation/css/animate.min.css")}}">
+    <link rel="stylesheet" href="<?php echo e(asset("assets/plugins/animation/css/animate.min.css")); ?>">
     <!-- notification css -->
-    <link rel="stylesheet" href="{{asset("assets/plugins/notification/css/notification.min.css")}}">
+    <link rel="stylesheet" href="<?php echo e(asset("assets/plugins/notification/css/notification.min.css")); ?>">
     <!-- data tables css -->
-    <link rel="stylesheet" href="{{asset("assets/plugins/data-tables/css/datatables.min.css")}}">
+    <link rel="stylesheet" href="<?php echo e(asset("assets/plugins/data-tables/css/datatables.min.css")); ?>">
     <!-- vendor css -->
-    <link rel="stylesheet" href="{{asset("assets/css/style.css")}}">
+    <link rel="stylesheet" href="<?php echo e(asset("assets/css/style.css")); ?>">
     <!-- select2 css -->
-    <link rel="stylesheet" href="{{asset("assets/plugins/select2/css/select2.min.css")}}">
+    <link rel="stylesheet" href="<?php echo e(asset("assets/plugins/select2/css/select2.min.css")); ?>">
     <!-- multi-select css -->
-    <link rel="stylesheet" href="{{asset("assets/plugins/multi-select/css/multi-select.css")}}">
+    <link rel="stylesheet" href="<?php echo e(asset("assets/plugins/multi-select/css/multi-select.css")); ?>">
     <!-- tel-input css -->
-    <link rel="stylesheet" href="{{asset("assets/plugins/intl-tel-input/css/intlTelInput.css")}}">
+    <link rel="stylesheet" href="<?php echo e(asset("assets/plugins/intl-tel-input/css/intlTelInput.css")); ?>">
     <!-- Datepicker css -->
-    <link href="{{asset("assets/plugins/bootstrap-datetimepicker/css/prettify.css")}}" rel="stylesheet">
-    <link href="{{asset("assets/plugins/bootstrap-datetimepicker/css/bootstrap-datepicker3.min.css")}}"
+    <link href="<?php echo e(asset("assets/plugins/bootstrap-datetimepicker/css/prettify.css")); ?>" rel="stylesheet">
+    <link href="<?php echo e(asset("assets/plugins/bootstrap-datetimepicker/css/bootstrap-datepicker3.min.css")); ?>"
         rel="stylesheet">
-    <link href="{{asset("assets/plugins/daterangepicker-master/css/daterangepicker.css")}}" rel="stylesheet">
+    <link href="<?php echo e(asset("assets/plugins/daterangepicker-master/css/daterangepicker.css")); ?>" rel="stylesheet">
 
-    <link href="{{asset("assets/plugins/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css")}}"
+    <link href="<?php echo e(asset("assets/plugins/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css")); ?>"
         rel="stylesheet">
 
-    @yield("page_css")
+    <?php echo $__env->yieldContent("page_css"); ?>
 
 
     <style>
@@ -171,7 +170,7 @@ $store_id = Auth::user()->store_id;
             animation: slideInRight 0.5s ease-out;
         }
 
-        @keyframes slideInRight {
+        @keyframes  slideInRight {
             from {
                 transform: translateX(100%);
                 opacity: 0;
@@ -207,11 +206,10 @@ $store_id = Auth::user()->store_id;
     <nav class="pcoded-navbar brand-red  active-red menu-item-icon-style4 icon-colored">
         <div class="navbar-wrapper">
             <div class="navbar-brand header-logo">
-                <a href="{{route('home')}}" class="b-brand">
-                    {{-- <div class="b-bg"> --}}
-                        <img style="width: 2vw;" src="{{asset('APOTEk2.ico')}}" alt="Apotek">
-                        {{--
-                    </div> --}}
+                <a href="<?php echo e(route('home')); ?>" class="b-brand">
+                    
+                        <img style="width: 2vw;" src="<?php echo e(asset('APOTEk2.ico')); ?>" alt="Apotek">
+                        
                     <span class="b-title">APOTEk System</span>
                 </a>
                 <a class="mobile-menu" id="mobile-collapse" href="#!"><span></span></a>
@@ -220,7 +218,7 @@ $store_id = Auth::user()->store_id;
                 <ul class="nav pcoded-inner-navbar">
 
 
-                    @include('layouts.menu')
+                    <?php echo $__env->make('layouts.menu', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 
                 </ul>
             </div>
@@ -230,11 +228,11 @@ $store_id = Auth::user()->store_id;
 
     <!-- [ Header ] start -->
     <header class="navbar pcoded-header navbar-expand-lg navbar-light">
-        {{-- @if(auth()->user()->checkPermission(100))--}}
-        {{-- <p>yes</p>--}}
-        {{-- @else--}}
-        {{-- <p>no</p>--}}
-        {{-- @endif--}}
+        
+        
+        
+        
+        
         <div class="m-header">
             <a class="mobile-menu" id="mobile-collapse1" href="#!"><span></span></a>
             <a href="index.html" class="b-brand">
@@ -254,7 +252,7 @@ $store_id = Auth::user()->store_id;
                 </li>
             </ul>
             <ul class="navbar-nav ml-auto">
-                @php
+                <?php
                     $userStore = Auth::user()->store;
                     $canAccessAll = Auth::user()->store->name === "ALL";
                     $multiStore = Setting::where('id', 121)->value('value');
@@ -262,44 +260,45 @@ $store_id = Auth::user()->store_id;
                     $expiry = Setting::where('id', 123)->value('value');
                     $expiryEnabled = $expiry === 'YES';
                     $defaultStore = Setting::where('id', 122)->value('value');
-                @endphp
+                ?>
 
-                @if($canAccessAll)
-                    @if ($multiStoreEnabled)
+                <?php if($canAccessAll): ?>
+                    <?php if($multiStoreEnabled): ?>
                         <li>
                             <div class="form-group" style="width: 200px!important; max-width: 100%; text-overflow: ellipsis;">
-                                <form method="POST" action="{{ route('change_store') }}" id="storeForm">
-                                    @csrf
+                                <form method="POST" action="<?php echo e(route('change_store')); ?>" id="storeForm">
+                                    <?php echo csrf_field(); ?>
                                     <select name="store_id" id="store_id" class="js-example-basic-single form-control"
                                         onchange="this.form.submit()">
-                                        <option value="" disabled {{ !session('current_store_id') ? 'selected' : '' }}>Select
+                                        <option value="" disabled <?php echo e(!session('current_store_id') ? 'selected' : ''); ?>>Select
                                             Branch</option>
-                                        @foreach($all_stores as $store)
-                                            <option value="{{ $store->id }}" {{ session('current_store_id') == $store->id ? 'selected' : '' }}>
-                                                {{ $store->name }}
+                                        <?php $__currentLoopData = $all_stores; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $store): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($store->id); ?>" <?php echo e(session('current_store_id') == $store->id ? 'selected' : ''); ?>>
+                                                <?php echo e($store->name); ?>
+
                                             </option>
-                                        @endforeach
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                     </select>
                                 </form>
                             </div>
                         </li>
-                    @endif
-                @endif
+                    <?php endif; ?>
+                <?php endif; ?>
 
                 <li>
                     <div class="dropdown">
-                        @if(auth()->user()->checkPermission('View Settings'))
+                        <?php if(auth()->user()->checkPermission('View Settings')): ?>
                             <dfn data-info="This is the default branch, where all activities will be based on."><a
-                                    href="{{route('configurations.index')}}">
-                                    @if(session()->get('store') !== "Please Set Store")
-                                    <span class="badge badge-info">Branch: {{ current_store()->name }}</span> @else
-                                    <span class="badge badge-danger">Please Set Default Branch</span> @endif</a></dfn>
-                        @else
+                                    href="<?php echo e(route('configurations.index')); ?>">
+                                    <?php if(session()->get('store') !== "Please Set Store"): ?>
+                                    <span class="badge badge-info">Branch: <?php echo e(current_store()->name); ?></span> <?php else: ?>
+                                    <span class="badge badge-danger">Please Set Default Branch</span> <?php endif; ?></a></dfn>
+                        <?php else: ?>
                             <dfn data-info="This is the default branch, where all activities will be based on."><a href="#">
-                                    @if(session()->get('store') !== "Please Set Store")
-                                    <span class="badge badge-info">Branch: {{current_store()->name}}</span> @else
-                                    <span class="badge badge-danger">Please Set Default Branch</span> @endif</a></dfn>
-                        @endif
+                                    <?php if(session()->get('store') !== "Please Set Store"): ?>
+                                    <span class="badge badge-info">Branch: <?php echo e(current_store()->name); ?></span> <?php else: ?>
+                                    <span class="badge badge-danger">Please Set Default Branch</span> <?php endif; ?></a></dfn>
+                        <?php endif; ?>
                     </div>
                 </li>
                 <li>
@@ -311,8 +310,8 @@ $store_id = Auth::user()->store_id;
                             <div class="noti-head">
                                 <h6 class="d-inline-block m-b-0">Notifications</h6>
                                 <div class="float-right">
-                                    {{-- <a href="#!" id="mark_as_read" class="m-r-10">mark as read</a> --}}
-                                    {{-- <a href="#!">clear all</a>--}}
+                                    
+                                    
                                 </div>
                             </div>
                             <ul class="noti-body" id="notification">
@@ -335,31 +334,29 @@ $store_id = Auth::user()->store_id;
                         </a>
                         <div class="dropdown-menu dropdown-menu-right profile-notification">
                             <div class="pro-head">
-                                {{-- <img src="assets/images/user/avatar-1.jpg" class="img-radius"
-                                    alt="User-Profile-Image"> --}}
+                                
                                 <span>
-                                    {{Auth::user()->name}}
+                                    <?php echo e(Auth::user()->name); ?>
+
                                 </span>
 
-                                <a href="{{ route('logout') }}" class="dud-logout" title="Logout" onclick="event.preventDefault();
+                                <a href="<?php echo e(route('logout')); ?>" class="dud-logout" title="Logout" onclick="event.preventDefault();
                                     document.getElementById('logout-form').submit();">
                                     <i class="feather icon-log-out"></i>
                                 </a>
 
                             </div>
-                            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                                @csrf
+                            <form id="logout-form" action="<?php echo e(route('logout')); ?>" method="POST" style="display: none;">
+                                <?php echo csrf_field(); ?>
                             </form>
                             <ul class="pro-body">
-                                {{-- <li><a href="#!" class="dropdown-item"><i class="feather icon-settings"></i>
-                                        Settings</a></li> --}}
-                                {{-- <li><a href="message.html" class="dropdown-item"><i class="feather icon-mail"></i>
-                                        My Messages</a></li>--}}
-                                <li><a href="{{route('showProfile')}}" class="dropdown-item"><i
+                                
+                                
+                                <li><a href="<?php echo e(route('showProfile')); ?>" class="dropdown-item"><i
                                             class="feather icon-user"></i> Profile</a></li>
-                                <li><a href="{{route('changePasswordForm')}}" class="dropdown-item"><i
+                                <li><a href="<?php echo e(route('changePasswordForm')); ?>" class="dropdown-item"><i
                                             class="feather icon-x-circle"></i> Change Password</a></li>
-                                <li><a href="{{ route('logout') }}" class="dropdown-item">
+                                <li><a href="<?php echo e(route('logout')); ?>" class="dropdown-item">
                                         <i class="feather icon-log-out"></i> Logout</a>
                                 </li>
                             </ul>
@@ -416,11 +413,11 @@ $store_id = Auth::user()->store_id;
                                 <div class="col-md-12">
                                     <div class="page-header-title">
                                         <h5 class="m-b-10">
-                                            @yield("content-title")
+                                            <?php echo $__env->yieldContent("content-title"); ?>
                                         </h5>
                                     </div>
                                     <ul class="breadcrumb">
-                                        @yield("content-sub-title")
+                                        <?php echo $__env->yieldContent("content-sub-title"); ?>
 
                                     </ul>
                                 </div>
@@ -433,58 +430,62 @@ $store_id = Auth::user()->store_id;
                             <!-- [ static-layout ] start -->
 
                             <!-- Session Messages -->
-                            @if(session('success'))
+                            <?php if(session('success')): ?>
                                 <div class="col-12">
                                     <div class="alert alert-success alert-dismissible fade show alert-top-right"
                                         role="alert">
                                         <i class="feather icon-check-circle"></i>
-                                        <strong>Success!</strong> {{ session('success') }}
+                                        <strong>Success!</strong> <?php echo e(session('success')); ?>
+
                                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                             <span aria-hidden="true">&times;</span>
                                         </button>
                                     </div>
                                 </div>
-                            @endif
+                            <?php endif; ?>
 
-                            @if(session('error'))
+                            <?php if(session('error')): ?>
                                 <div class="col-12">
                                     <div class="alert alert-danger alert-dismissible fade show alert-top-right"
                                         role="alert">
                                         <i class="feather icon-alert-circle"></i>
-                                        <strong>Error!</strong> {{ session('error') }}
+                                        <strong>Error!</strong> <?php echo e(session('error')); ?>
+
                                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                             <span aria-hidden="true">&times;</span>
                                         </button>
                                     </div>
                                 </div>
-                            @endif
+                            <?php endif; ?>
 
-                            @if(session('warning'))
+                            <?php if(session('warning')): ?>
                                 <div class="col-12">
                                     <div class="alert alert-warning alert-dismissible fade show alert-top-right"
                                         role="alert">
                                         <i class="feather icon-alert-triangle"></i>
-                                        <strong>Warning!</strong> {{ session('warning') }}
+                                        <strong>Warning!</strong> <?php echo e(session('warning')); ?>
+
                                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                             <span aria-hidden="true">&times;</span>
                                         </button>
                                     </div>
                                 </div>
-                            @endif
+                            <?php endif; ?>
 
-                            @if(session('info'))
+                            <?php if(session('info')): ?>
                                 <div class="col-12">
                                     <div class="alert alert-info alert-dismissible fade show alert-top-right" role="alert">
                                         <i class="feather icon-info"></i>
-                                        <strong>Info!</strong> {{ session('info') }}
+                                        <strong>Info!</strong> <?php echo e(session('info')); ?>
+
                                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                             <span aria-hidden="true">&times;</span>
                                         </button>
                                     </div>
                                 </div>
-                            @endif
+                            <?php endif; ?>
 
-                            @yield("content")
+                            <?php echo $__env->yieldContent("content"); ?>
                             <!-- [ static-layout ] end -->
                         </div>
                         <!-- [ Main Content ] end -->
@@ -499,58 +500,58 @@ $store_id = Auth::user()->store_id;
 
 
     <!-- Required Js -->
-    <script src="{{asset("assets/plugins/jquery/js/jquery.min.js")}}"></script>
-    <script src="{{asset("assets/js/vendor-all.min.js")}}"></script>
-    <script src="{{asset("assets/plugins/bootstrap/js/bootstrap.min.js")}}"></script>
-    <script src="{{asset("assets/js/pcoded.min.js")}}"></script>
+    <script src="<?php echo e(asset("assets/plugins/jquery/js/jquery.min.js")); ?>"></script>
+    <script src="<?php echo e(asset("assets/js/vendor-all.min.js")); ?>"></script>
+    <script src="<?php echo e(asset("assets/plugins/bootstrap/js/bootstrap.min.js")); ?>"></script>
+    <script src="<?php echo e(asset("assets/js/pcoded.min.js")); ?>"></script>
     <!-- notification Js -->
-    <script src="{{asset("assets/plugins/notification/js/bootstrap-growl.min.js")}}"></script>
+    <script src="<?php echo e(asset("assets/plugins/notification/js/bootstrap-growl.min.js")); ?>"></script>
 
     <!-- datatable Js -->
-    <script src="{{asset("assets/plugins/data-tables/js/datatables.min.js")}}"></script>
-    <script src="{{asset("assets/js/pages/tbl-datatable-custom.js")}}"></script>
+    <script src="<?php echo e(asset("assets/plugins/data-tables/js/datatables.min.js")); ?>"></script>
+    <script src="<?php echo e(asset("assets/js/pages/tbl-datatable-custom.js")); ?>"></script>
 
     <!-- select2 Js -->
-    <script src="{{asset("assets/plugins/select2/js/select2.full.min.js")}}"></script>
+    <script src="<?php echo e(asset("assets/plugins/select2/js/select2.full.min.js")); ?>"></script>
 
     <!-- multi-select Js -->
-    <script src="{{asset("assets/plugins/multi-select/js/jquery.quicksearch.js")}}"></script>
-    <script src="{{asset("assets/plugins/multi-select/js/jquery.multi-select.js")}}"></script>
+    <script src="<?php echo e(asset("assets/plugins/multi-select/js/jquery.quicksearch.js")); ?>"></script>
+    <script src="<?php echo e(asset("assets/plugins/multi-select/js/jquery.multi-select.js")); ?>"></script>
 
     <!-- form-select-custom Js -->
-    <script src="{{asset("assets/js/pages/form-select-custom.js")}}"></script>
+    <script src="<?php echo e(asset("assets/js/pages/form-select-custom.js")); ?>"></script>
 
     <!-- Input mask Js -->
-    <script src="{{asset("assets/plugins/inputmask/js/inputmask.min.js")}}"></script>
-    <script src="{{asset("assets/plugins/inputmask/js/jquery.inputmask.min.js")}}"></script>
-    <script src="{{asset("assets/plugins/inputmask/js/autoNumeric.js")}}"></script>
+    <script src="<?php echo e(asset("assets/plugins/inputmask/js/inputmask.min.js")); ?>"></script>
+    <script src="<?php echo e(asset("assets/plugins/inputmask/js/jquery.inputmask.min.js")); ?>"></script>
+    <script src="<?php echo e(asset("assets/plugins/inputmask/js/autoNumeric.js")); ?>"></script>
     <!-- tel-input js -->
-    <script src="{{asset("assets/plugins/intl-tel-input/js/intlTelInput.js")}}"></script>
+    <script src="<?php echo e(asset("assets/plugins/intl-tel-input/js/intlTelInput.js")); ?>"></script>
     <!-- moment js -->
-    <script src="{{asset("assets/plugins/moment/js/moment.js")}}"></script>
+    <script src="<?php echo e(asset("assets/plugins/moment/js/moment.js")); ?>"></script>
     <!-- daterangepicker js -->
-    <script src="{{asset("assets/plugins/daterangepicker-master/js/daterangepicker.js")}}"></script>
+    <script src="<?php echo e(asset("assets/plugins/daterangepicker-master/js/daterangepicker.js")); ?>"></script>
 
-    <script src="{{ asset('assets/plugins/intl-tel-input/js/intlTelInput.js') }}"></script>
+    <script src="<?php echo e(asset('assets/plugins/intl-tel-input/js/intlTelInput.js')); ?>"></script>
     <script>
         var input = document.querySelector("#phone");
         if (input) {
             window.intlTelInput(input, {
-                utilsScript: "{{ asset('assets/plugins/intl-tel-input/js/utils.js') }}", // <-- Hapa
+                utilsScript: "<?php echo e(asset('assets/plugins/intl-tel-input/js/utils.js')); ?>", // <-- Hapa
             });
         }
     </script>
 
-    {{-- custom java scripts for the page --}}
+    
 
-    {{-- <script src="{{asset("assets/apotek/js/scheduling.js")}}"></script> --}}
-    <script src="{{asset("assets/apotek/js/notification.js")}}"></script>
+    
+    <script src="<?php echo e(asset("assets/apotek/js/notification.js")); ?>"></script>
     <script>
 
         var config = {
-            token: '{{ csrf_token() }}',
+            token: '<?php echo e(csrf_token()); ?>',
             routes: {
-                task: '{{route('task')}}'
+                task: '<?php echo e(route('task')); ?>'
             }
         };
 
@@ -561,7 +562,7 @@ $store_id = Auth::user()->store_id;
 
         function loadInventoryNotifications() {
             $.ajax({
-                url: '{{ route("inventory.notifications") }}',
+                url: '<?php echo e(route("inventory.notifications")); ?>',
                 type: 'GET',
                 dataType: 'json',
                 success: function(data) {
@@ -615,7 +616,7 @@ $store_id = Auth::user()->store_id;
 
         $('#mark_as_read').on('click', function () {
             $.ajax({
-                url: '{{route('task-read')}}',
+                url: '<?php echo e(route('task-read')); ?>',
                 type: "get",
                 dataType: "json",
                 success: function (data) {
@@ -734,8 +735,8 @@ $store_id = Auth::user()->store_id;
 
     </script>
 
-    @stack("page_scripts")
+    <?php echo $__env->yieldPushContent("page_scripts"); ?>
 
 </body>
 
-</html>
+</html><?php /**PATH C:\Users\Little Pro\Desktop\APOTEk\apotek_systems_pos\resources\views/layouts/master.blade.php ENDPATH**/ ?>

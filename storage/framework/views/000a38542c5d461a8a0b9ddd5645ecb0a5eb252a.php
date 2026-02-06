@@ -1,16 +1,14 @@
-@extends("layouts.master")
-
-@section('content-title')
+<?php $__env->startSection('content-title'); ?>
     Sales Order
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('content-sub-title')
-    <li class="breadcrumb-item"><a href="{{ route('home') }}"><i class="feather icon-home"></i></a></li>
+<?php $__env->startSection('content-sub-title'); ?>
+    <li class="breadcrumb-item"><a href="<?php echo e(route('home')); ?>"><i class="feather icon-home"></i></a></li>
     <li class="breadcrumb-item"><a href="#">Sales / Sales Order</a></li>
-@endsection
+<?php $__env->stopSection(); ?>
 
 
-@section('content')
+<?php $__env->startSection('content'); ?>
     <style>
         .ms-container {
             background: transparent url('../assets/plugins/multi-select/img/switch.png') no-repeat 50% 50%;
@@ -46,26 +44,26 @@
         }
     </style>
     <div class="col-sm-12">
-        @if(auth()->user()->checkPermission('View Sales Order'))
+        <?php if(auth()->user()->checkPermission('View Sales Order')): ?>
             <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-                @if(auth()->user()->checkPermission('View Sales Order'))
+                <?php if(auth()->user()->checkPermission('View Sales Order')): ?>
                     <li class="nav-item">
-                        <a class="nav-link active" id="new-order" data-toggle="pill" href="{{ route('sale-quotes.index') }}"
+                        <a class="nav-link active" id="new-order" data-toggle="pill" href="<?php echo e(route('sale-quotes.index')); ?>"
                             role="tab" aria-controls="pills-home" aria-selected="true">New Order</a>
                     </li>
-                @endif
-                @if(auth()->user()->checkPermission('View Order List'))
+                <?php endif; ?>
+                <?php if(auth()->user()->checkPermission('View Order List')): ?>
                     <li class="nav-item">
-                        <a class="nav-link" id="order-list" data-toggle="pill" href="{{ route('sale-quotes.order_list') }}"
+                        <a class="nav-link" id="order-list" data-toggle="pill" href="<?php echo e(route('sale-quotes.order_list')); ?>"
                             role="tab" aria-controls="pills-profile" aria-selected="false">Order List</a>
                     </li>
-                @endif
+                <?php endif; ?>
             </ul>
 
             <div class="tab-content" id="pills-tabContent">
                 <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
                     <form id="quote_sale_form">
-                        @if (auth()->user()->checkPermission('Manage Customers'))
+                        <?php if(auth()->user()->checkPermission('Manage Customers')): ?>
                             <div class="row">
                                 <div class="col-md-12">
                                     <button style="float: right;margin-bottom: 2%;" type="button" class="btn btn-secondary btn-sm"
@@ -75,7 +73,7 @@
                                 </div>
 
                             </div>
-                        @endif
+                        <?php endif; ?>
                         <div class="row">
                             <div class="col-md-12">
                                 <button style="float: right;margin-bottom: 2%;" type="button" class="btn btn-secondary btn-sm"
@@ -85,19 +83,20 @@
                             </div>
 
                         </div>
-                        @csrf()
-                        <input type="hidden" name="" id="is_all_store" value="{{ current_store()->name }}">
+                        <?php echo csrf_field(); ?>
+                        <input type="hidden" name="" id="is_all_store" value="<?php echo e(current_store()->name); ?>">
                         <div class="row">
                             <div class="col-md-2">
                                 <div class="form-group">
                                     <label id="cat_label">Price Category<font color="red">*</font></label>
                                     <select id="price_category" class="js-example-basic-single form-control">
                                         <option value="" selected="true" disabled>Select Price Category</option>
-                                        @foreach ($price_category as $price)
-                                            <!-- <option value="{{ $price->id }}">{{ $price->name }}</option> -->
-                                            <option value="{{ $price->id }}" {{ $default_sale_type === $price->id ? 'selected' : '' }}>{{ $price->name }}
+                                        <?php $__currentLoopData = $price_category; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $price): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <!-- <option value="<?php echo e($price->id); ?>"><?php echo e($price->name); ?></option> -->
+                                            <option value="<?php echo e($price->id); ?>" <?php echo e($default_sale_type === $price->id ? 'selected' : ''); ?>><?php echo e($price->name); ?>
+
                                             </option>
-                                        @endforeach
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                     </select>
                                 </div>
                             </div>
@@ -123,9 +122,9 @@
                                     <select id="customer_id" name="customer_id" class="js-example-basic-single form-control"
                                         required>
                                         <option value="" disabled selected="true">Select Customer</option>
-                                        @foreach ($customers as $customer)
-                                            <option value="{{ $customer->id }}">{{ $customer->name }}</option>
-                                        @endforeach
+                                        <?php $__currentLoopData = $customers; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $customer): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($customer->id); ?>"><?php echo e($customer->name); ?></option>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                     </select>
                                 </div>
                             </div>
@@ -142,13 +141,13 @@
                         <hr>
                         <div class="row">
                             <div class="col-md-4">
-                                @if ($enable_discount === 'YES')
+                                <?php if($enable_discount === 'YES'): ?>
                                     <div style="width: 99%">
                                         <label>Discount</label>
                                         <input type="text" onchange="discount()" id="sale_discount" class="form-control"
                                             value="0.00" />
                                     </div>
-                                @endif
+                                <?php endif; ?>
                             </div>
                             <div class="col-md-4">
 
@@ -181,23 +180,22 @@
                             </div>
 
 
-                            <input type="hidden" value="{{ $vat }}" id="vat">
+                            <input type="hidden" value="<?php echo e($vat); ?>" id="vat">
                             <input type="hidden" value="0.00" id="sale_paid">
                             <input type="hidden" value="Yes" id="quotes_page">
                             <input type="hidden" value="0.00" id="change_amount">
                             <input type="hidden" id="price_cat" name="price_category_id">
                             <input type="hidden" id="discount_value" name="discount_amount">
                             <input type="hidden" id="order_cart" name="cart">
-                            <input type="hidden" value="{{$fixed_price}}" id="fixed_price">
+                            <input type="hidden" value="<?php echo e($fixed_price); ?>" id="fixed_price">
 
                             <input type="hidden" value="" id="category">
                             <input type="hidden" value="" id="customers">
                             <input type="hidden" value="" id="print">
-                            <input type="hidden" value="{{ $enable_discount }}" id="enable_discount">
+                            <input type="hidden" value="<?php echo e($enable_discount); ?>" id="enable_discount">
 
                         </div>
-                        {{--
-                        <hr> --}}
+                        
                         <div class="row" hidden>
                             <div class="col-md-12">
                                 <div class="form-group">
@@ -252,12 +250,12 @@
 
                 </div>
             </div>
-        @endif
+        <?php endif; ?>
         <!-- ajax loading gif -->
         <div id="loading">
-            <img id="loading-image" src="{{asset('assets/images/spinner.gif')}}" />
+            <img id="loading-image" src="<?php echo e(asset('assets/images/spinner.gif')); ?>" />
         </div>
-        @if(!Auth::user()->checkPermission('View Sales Order'))
+        <?php if(!Auth::user()->checkPermission('View Sales Order')): ?>
             <div class="" style="background-color: #fff; min-height: 80px; ">
                 <div class="tab-pane fade show" id="credit-sale-receiving" role="tabpanel" aria-labelledby="credit_sales-tab">
                     <div class="row" style="padding: 10px 0px 0px 30px;">
@@ -265,14 +263,14 @@
                     </div>
                 </div>
             </div>
-        @endif
+        <?php endif; ?>
     </div>
-    @include('sales.sale_quotes.details')
-    @include('sales.customers.create')
-@endsection
+    <?php echo $__env->make('sales.sale_quotes.details', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+    <?php echo $__env->make('sales.customers.create', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+<?php $__env->stopSection(); ?>
 
-@push('page_scripts')
-    @include('partials.notification')
+<?php $__env->startPush('page_scripts'); ?>
+    <?php echo $__env->make('partials.notification', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
     <script type="text/javascript">
         $(document).ready(function () {
             loadProducts();
@@ -709,11 +707,11 @@
                 var priceCategory = $('#price_category').val();
 
                 $.ajax({
-                    url: '{{ route("selectProducts") }}',
+                    url: '<?php echo e(route("selectProducts")); ?>',
                     type: 'POST',
                     data: {
                         id: priceCategory,
-                        _token: '{{ csrf_token() }}'
+                        _token: '<?php echo e(csrf_token()); ?>'
                     },
                     success: function (response) {
                         // console.log('Products loaded:', data);
@@ -762,7 +760,7 @@
                 var price_category = $("#price_category").val();
 
                 $.ajax({
-                    url: "{{ route('filter-product-by-word')}}",
+                    url: "<?php echo e(route('filter-product-by-word')); ?>",
                     method: "GET",
                     data: {
                         word: barcode,
@@ -1082,7 +1080,7 @@
                     cart: JSON.stringify(order_cart),
                     discount_amount: parseFloat(sale_discount) || 0,
                     remark: remark,
-                    _token: '{{ csrf_token() }}'
+                    _token: '<?php echo e(csrf_token()); ?>'
                 };
 
                 // console.log('Saving quote with data:', formData);
@@ -1091,7 +1089,7 @@
                 $('#save_btn').prop('disabled', true).text('Saving...');
 
                 $.ajax({
-                    url: "{{ route('storeQuote') }}",
+                    url: "<?php echo e(route('storeQuote')); ?>",
                     type: "POST",
                     data: formData,
                     success: function (response) {
@@ -1157,6 +1155,7 @@
             });
         });
     </script>
-    <script src="{{ asset('assets/apotek/js/notification.js') }}"></script>
-    <script src="{{ asset('assets/apotek/js/customer.js') }}"></script>
-@endpush
+    <script src="<?php echo e(asset('assets/apotek/js/notification.js')); ?>"></script>
+    <script src="<?php echo e(asset('assets/apotek/js/customer.js')); ?>"></script>
+<?php $__env->stopPush(); ?>
+<?php echo $__env->make("layouts.master", \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\Users\Little Pro\Desktop\APOTEk\apotek_systems_pos\resources\views/sales/sale_quotes/index.blade.php ENDPATH**/ ?>
