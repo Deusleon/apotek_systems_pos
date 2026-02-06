@@ -220,9 +220,8 @@
     @include('sales.customers.create')
 @endsection
 
-@include('partials.notification')
-
 @push('page_scripts')
+@include('partials.notification')
     <script type="text/javascript">
         // Clear invalid localStorage entries immediately
         (function () {

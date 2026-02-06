@@ -492,35 +492,45 @@
 
     <script>
         $('#rtn_qty_to_show').on('keyup', function () {
-            var newValue = document.getElementById('rtn_qty_to_show').value;
-            if (newValue !== '') {
-                document.getElementById('rtn_qty_to_show').value =
-                    numberWithCommas(parseFloat(newValue.replace(/\,/g, ''), 10));
-                document.getElementById('rtn_qty').value = parseFloat(newValue.replace(/\,/g, ''), 10);
+            let newValue = document.getElementById('rtn_qty_to_show').value;
+
+            let cleanValue = newValue.replace(/,/g, '');
+
+            if (cleanValue.slice(-1) === '.' && cleanValue.split('.').length - 1 === 1) {
+                document.getElementById('rtn_qty').value = cleanValue;
+                return;
+            }
+
+            if (!isNaN(cleanValue) && cleanValue !== '') {
+                let formatted = numberWithCommas(cleanValue.toString());
+                document.getElementById('rtn_qty_to_show').value = formatted;
+
+                document.getElementById('rtn_qty').value = cleanValue;
             } else {
                 document.getElementById('rtn_qty_to_show').value = '';
                 document.getElementById('rtn_qty').value = '';
             }
         });
 
+
         $(document).ready(function () {
             // Listen for the click event on the Transfer History tab
             $('#sales-history-tablist').on('click', function (e) {
-                e.preventDefault(); // Prevent default tab switching behavior
-                var redirectUrl = $(this).attr('href'); // Get the URL from the href attribute
-                window.location.href = redirectUrl; // Redirect to the URL
+                e.preventDefault(); 
+                var redirectUrl = $(this).attr('href'); 
+                window.location.href = redirectUrl; 
             });
 
             $('#sales-return-tablist').on('click', function (e) {
-                e.preventDefault(); // Prevent default tab switching behavior
-                var redirectUrl = $(this).attr('href'); // Get the URL from the href attribute
-                window.location.href = redirectUrl; // Redirect to the URL
+                e.preventDefault(); 
+                var redirectUrl = $(this).attr('href'); 
+                window.location.href = redirectUrl; 
             });
 
             $('#sales-approval-tablist').on('click', function (e) {
-                e.preventDefault(); // Prevent default tab switching behavior
-                var redirectUrl = $(this).attr('href'); // Get the URL from the href attribute
-                window.location.href = redirectUrl; // Redirect to the URL
+                e.preventDefault(); 
+                var redirectUrl = $(this).attr('href'); 
+                window.location.href = redirectUrl; 
             });
         });
     </script>

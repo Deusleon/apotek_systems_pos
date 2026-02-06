@@ -219,9 +219,8 @@
     <?php echo $__env->make('sales.customers.create', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 <?php $__env->stopSection(); ?>
 
-<?php echo $__env->make('partials.notification', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
-
 <?php $__env->startPush('page_scripts'); ?>
+<?php echo $__env->make('partials.notification', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
     <script type="text/javascript">
         // Clear invalid localStorage entries immediately
         (function () {

@@ -1017,6 +1017,7 @@
                 var customer_id = $('#customer_id').val();
                 var price_category = $('#price_category').val();
                 var remark = $('#remark').val();
+                var ref_no = $('#ref_no').val();
 
                 if (!customer_id) {
                     if (typeof notify === 'function') {
@@ -1074,6 +1075,7 @@
 
                 var formData = {
                     customer_id: customer_id,
+                    ref_no: ref_no,
                     price_category_id: price_category,
                     cart: JSON.stringify(order_cart),
                     discount_amount: parseFloat(sale_discount) || 0,
@@ -1101,9 +1103,15 @@
 
                         // Clear form
                         deselectQuote();
+                        if (response && response.redirect_to){
+                            printReceipt(response.redirect_to);
+                        }
                         $('#customer_id').val(null).trigger('change.select2');
                         $('#price_category').prop('disabled', false);
                         $('#remark').val('');
+                        $('#ref_no').val('');
+                        $('#sale_discount').val('0.00');
+                        $('#total').val('0.00');
                         $('#total_vat').val('0.00');
 
                         // Re-enable save button
@@ -1124,6 +1132,10 @@
                         $("#loading").hide();
                     }
                 });
+            }
+            function printReceipt(redirectUrl) {
+                var printWindow = window.open(redirectUrl, '_blank');
+                printWindow.focus();
             }
 
             // Make discount function available globally for the onchange event

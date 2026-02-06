@@ -252,7 +252,6 @@ $store_id = Auth::user()->store_id;
                 <li><a href="#!" class="full-screen" onclick="toggleFullScreen()"><i
                             class="feather icon-maximize"></i></a>
                 </li>
-
             </ul>
             <ul class="navbar-nav ml-auto">
                 @php

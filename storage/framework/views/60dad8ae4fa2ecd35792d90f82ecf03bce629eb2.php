@@ -482,17 +482,45 @@
     </script>
 
     <script>
+        // $('#rtn_qty_to_show').on('keyup', function () {
+        //     var newValue = document.getElementById('rtn_qty_to_show').value;
+        //     if (newValue !== '') {
+        //         document.getElementById('rtn_qty_to_show').value =
+        //             numberWithCommas(parseFloat(newValue.replace(/\,/g, ''), 10));
+        //         document.getElementById('rtn_qty').value = parseFloat(newValue.replace(/\,/g, ''), 10);
+        //     } else {
+        //         document.getElementById('rtn_qty_to_show').value = '';
+        //         document.getElementById('rtn_qty').value = '';
+        //     }
+        // });
         $('#rtn_qty_to_show').on('keyup', function () {
-            var newValue = document.getElementById('rtn_qty_to_show').value;
-            if (newValue !== '') {
-                document.getElementById('rtn_qty_to_show').value =
-                    numberWithCommas(parseFloat(newValue.replace(/\,/g, ''), 10));
-                document.getElementById('rtn_qty').value = parseFloat(newValue.replace(/\,/g, ''), 10);
+            let newValue = document.getElementById('rtn_qty_to_show').value;
+
+            // Ondoa commas ili tupate namba halisi
+            let cleanValue = newValue.replace(/,/g, '');
+
+            // Kama user ameacha decimal point tu kama "12."
+            if (cleanValue.slice(-1) === '.' && cleanValue.split('.').length - 1 === 1) {
+                // Usifanye formatting bado
+                document.getElementById('rtn_qty').value = cleanValue;
+                return;
+            }
+
+            // Ruhusu decimals halisi
+            if (!isNaN(cleanValue) && cleanValue !== '') {
+                // Format number (preserve decimals)
+                let formatted = numberWithCommas(cleanValue.toString());
+                document.getElementById('rtn_qty_to_show').value = formatted;
+
+                // Set actual numeric value
+                document.getElementById('rtn_qty').value = cleanValue;
             } else {
+                // On empty string
                 document.getElementById('rtn_qty_to_show').value = '';
                 document.getElementById('rtn_qty').value = '';
             }
         });
+
 
         $(document).ready(function () {
             // Listen for the click event on the Transfer History tab
