@@ -780,46 +780,55 @@ class SaleController extends Controller
             $sales = array();
             $grouped_sales = array();
             $sn = 0;
-            foreach ($sale_detail as $item) {
-                $amount = $item->amount - $item->discount;
-                if (intVal($item->vat) === 0) {
-                    $vat_percent = 0;
-                } else {
-                    $vat_percent = $item->vat / $item->price;
-                }
-                $sub_total = ($amount + $item->discount - ($item->vat));
-                $vat = $item->vat;
-                $sn++;
-                array_push($sales, array(
-                    'receipt_number' => $item->sale['receipt_number'],
-                    'ref_no' => $item->sale['ref_no'],
-                    'payment_type' => $item->sale['paymentType']['name'] ?? '',
-                    'name' => $item->currentStock['product']['name'],
-                    'brand' => $item->currentStock['product']['brand'],
-                    'pack_size' => $item->currentStock['product']['pack_size'],
-                    'sales_uom' => $item->currentStock['product']['sales_uom'],
-                    'sn' => $sn,
-                    'quantity' => $item->quantity,
-                    'vat' => $vat,
-                    'discount' => $item->discount,
-                    'discount_total' => $item->sale['cost']['discount'],
-                    'price' => $item->price,
-                    'amount' => $amount,
-                    'sub_total' => $sub_total,
-                    'grand_total' => ($item->sale['cost']['amount']) - ($item->sale['cost']['discount']),
-                    'total_vat' => ($item->sale['cost']['vat']),
-                    'sold_by' => $item->sale['user']['name'],
-                    'customer' => $item->sale['customer']['name'],
-                    'customer_tin' => $item->sale['customer']['tin'],
-                    'customer_phone' => $item->sale['customer']['phone'],
-                    'customer_address' => $item->sale['customer']['address'],
-                    'paid' => $paid,
-                    'balance' => $balance,
-                    'remark' => $remark,
-                    'created_at' => date('Y/m/d', strtotime($item->sale['date']))
-                ));
-            }
 
+            // Group by product name, sum quantities and amounts
+            $productMap = [];
+            foreach ($sale_detail as $item) {
+                $name = $item->currentStock['product']['name'].' '.$item->currentStock['product']['brand'].' '.$item->currentStock['product']['pack_size'].$item->currentStock['product']['sales_uom'];
+                $key = $name;
+
+                if (!isset($productMap[$key])) {
+                    $productMap[$key] = [
+                        'receipt_number' => $item->sale['receipt_number'],
+                        'ref_no' => $item->sale['ref_no'],
+                        'payment_type' => $item->sale['paymentType']['name'] ?? '',
+                        'name' => $item->currentStock['product']['name'],
+                        'brand' => $item->currentStock['product']['brand'],
+                        'pack_size' => $item->currentStock['product']['pack_size'],
+                        'sales_uom' => $item->currentStock['product']['sales_uom'],
+                        'quantity' => 0,
+                        'vat' => 0,
+                        'discount' => 0,
+                        'discount_total' => $item->sale['cost']['discount'],
+                        'price' => $item->price,
+                        'amount' => 0,
+                        'sub_total' => 0,
+                        'grand_total' => ($item->sale['cost']['amount']) - ($item->sale['cost']['discount']),
+                        'total_vat' => ($item->sale['cost']['vat']),
+                        'sold_by' => $item->sale['user']['name'],
+                        'customer' => $item->sale['customer']['name'],
+                        'customer_tin' => $item->sale['customer']['tin'],
+                        'customer_phone' => $item->sale['customer']['phone'],
+                        'customer_address' => $item->sale['customer']['address'],
+                        'paid' => $paid,
+                        'balance' => $balance,
+                        'remark' => $remark,
+                        'created_at' => $item->sale['date'],
+                    ];
+                }
+                $productMap[$key]['quantity'] += $item->quantity;
+                $productMap[$key]['vat'] += $item->vat;
+                $productMap[$key]['discount'] += $item->discount;
+                $productMap[$key]['amount'] += $item->amount - $item->discount;
+                $productMap[$key]['sub_total'] += $item->amount + $item->discount - $item->vat;
+            }
+            
+            $sn = 0;
+            foreach ($productMap as $row) {
+                $sn++;
+                $row['sn'] = $sn;
+                $sales[] = $row;
+            }
 
             foreach ($sales as $val) {
                 if (array_key_exists('receipt_number', $val)) {
@@ -1137,50 +1146,55 @@ class SaleController extends Controller
         $sales = array();
         $grouped_sales = array();
         $sn = 0;
+        
+        // Group by product name, sum quantities and amounts
+        $productMap = [];
         foreach ($sale_detail as $item) {
-            $receipt_no = $item->sale['receipt_number'];
-            $amount = $item->amount - $item->discount;
-            if (intVal($item->vat) === 0) {
-                $vat_percent = 0;
-            } else {
-                $vat_percent = $item->vat / $item->price;
-            }
-            $sub_total = ($amount + $item->discount - ($item->vat));
-            $vat = $item->vat;
-            $sn++;
-            // dd($item->sale['customer']);
-            array_push($sales, array(
-                'receipt_number' => $item->sale['receipt_number'],
-                'ref_no' => $item->sale['ref_no'],
-                'payment_type' => $item->sale['paymentType']['name'] ?? '',
-                'grace_period' => $grace_period ?? '',
-                'name' => $item->currentStock['product']['name'],
-                'brand' => $item->currentStock['product']['brand'],
-                'pack_size' => $item->currentStock['product']['pack_size'],
-                'sales_uom' => $item->currentStock['product']['sales_uom'],
-                'sn' => $sn,
-                'quantity' => $item->quantity,
-                'vat' => $vat,
-                'discount' => $item->discount,
-                'discount_total' => $item->sale['cost']['discount'],
-                'price' => $item->price,
-                'amount' => $amount,
-                'sub_total' => $sub_total,
-                'grand_total' => ($item->sale['cost']['amount']) - ($item->sale['cost']['discount']),
-                'total_vat' => ($item->sale['cost']['vat']),
-                'sold_by' => $item->sale['user']['name'],
-                'customer' => $item->sale['customer']['name'],
-                'customer_tin' => $item->sale['customer']['tin'],
-                'customer_phone' => $item->sale['customer']['phone'],
-                'customer_address' => $item->sale['customer']['address'],
-                'paid' => $paid,
-                'balance' => $balance,
-                'remark' => $remark,
-                'created_at' => $item->sale['date']
-            ));
-        }
-        Log::info('Details', $sales);
+            $name = $item->currentStock['product']['name'].' '.$item->currentStock['product']['brand'].' '.$item->currentStock['product']['pack_size'].$item->currentStock['product']['sales_uom'];
+            $key = $name;
 
+            if (!isset($productMap[$key])) {
+                $productMap[$key] = [
+                    'receipt_number' => $item->sale['receipt_number'],
+                    'ref_no' => $item->sale['ref_no'],
+                    'payment_type' => $item->sale['paymentType']['name'] ?? '',
+                    'name' => $item->currentStock['product']['name'],
+                    'brand' => $item->currentStock['product']['brand'],
+                    'pack_size' => $item->currentStock['product']['pack_size'],
+                    'sales_uom' => $item->currentStock['product']['sales_uom'],
+                    'quantity' => 0,
+                    'vat' => 0,
+                    'discount' => 0,
+                    'discount_total' => $item->sale['cost']['discount'],
+                    'price' => $item->price,
+                    'amount' => 0,
+                    'sub_total' => 0,
+                    'grand_total' => ($item->sale['cost']['amount']) - ($item->sale['cost']['discount']),
+                    'total_vat' => ($item->sale['cost']['vat']),
+                    'sold_by' => $item->sale['user']['name'],
+                    'customer' => $item->sale['customer']['name'],
+                    'customer_tin' => $item->sale['customer']['tin'],
+                    'customer_phone' => $item->sale['customer']['phone'],
+                    'customer_address' => $item->sale['customer']['address'],
+                    'paid' => $paid,
+                    'balance' => $balance,
+                    'remark' => $remark,
+                    'created_at' => $item->sale['date'],
+                ];
+            }
+            $productMap[$key]['quantity'] += $item->quantity;
+            $productMap[$key]['vat'] += $item->vat;
+            $productMap[$key]['discount'] += $item->discount;
+            $productMap[$key]['amount'] += $item->amount - $item->discount;
+            $productMap[$key]['sub_total'] += $item->amount + $item->discount - $item->vat;
+        }
+        
+        $sn = 0;
+        foreach ($productMap as $row) {
+            $sn++;
+            $row['sn'] = $sn;
+            $sales[] = $row;
+        }
 
         foreach ($sales as $val) {
             if (array_key_exists('receipt_number', $val)) {
@@ -1270,39 +1284,55 @@ class SaleController extends Controller
         $sales = array();
         $grouped_sales = array();
         $sn = 0;
+                
+        // Group by product name, sum quantities and amounts
+        $productMap = [];
         foreach ($sale_detail as $item) {
+            $name = $item->currentStock['product']['name'].' '.$item->currentStock['product']['brand'].' '.$item->currentStock['product']['pack_size'].$item->currentStock['product']['sales_uom'];
+            $key = $name;
 
-            $amount = $item->amount - $item->discount;
-            $vat_percent = $item->vat / $item->price;
-            $sub_total = ($amount / (1 + $vat_percent));
-            $vat = $amount - $sub_total;
-            $sn++;
-            array_push($sales, array(
-                'receipt_number' => $item->sale['receipt_number'],
-                'ref_no' => $item->sale['ref_no'],
-                'payment_type' => $item->sale['paymentType']['name'] ?? '',
-                'name' => $item->currentStock['product']['name'],
-                'paid' => $item->paid_amount,
-                'balance' => $item->balance,
-                'sn' => $sn,
-                'quantity' => $item->quantity,
-                'vat' => $vat,
-                'discount' => $item->discount,
-                'price' => $item->price,
-                'amount' => $amount,
-                'sub_total' => $sub_total,
-                'total_discount' => $item->sale['cost']['discount'],
-                'grand_total' => ($item->sale['cost']['amount']) - ($item->sale['cost']['discount']),
-                'total_vat' => ($item->sale['cost']['vat']),
-                'sold_by' => $item->sale['user']['name'],
-                'customer' => $item->sale['customer']['name'],
-                'customer_tin' => $item->sale['customer']['tin'],
-                'phone_number' => $item->sale['customer']['phone_number'],
-                'address' => $item->sale['customer']['address'],
-                'created_at' => date('Y/m/d', strtotime($item->sale['date']))
-            ));
+            if (!isset($productMap[$key])) {
+                $productMap[$key] = [
+                    'receipt_number' => $item->sale['receipt_number'],
+                    'ref_no' => $item->sale['ref_no'],
+                    'payment_type' => $item->sale['paymentType']['name'] ?? '',
+                    'name' => $item->currentStock['product']['name'],
+                    'brand' => $item->currentStock['product']['brand'],
+                    'pack_size' => $item->currentStock['product']['pack_size'],
+                    'sales_uom' => $item->currentStock['product']['sales_uom'],
+                    'quantity' => 0,
+                    'vat' => 0,
+                    'discount' => 0,
+                    'discount_total' => $item->sale['cost']['discount'],
+                    'price' => $item->price,
+                    'amount' => 0,
+                    'sub_total' => 0,
+                    'grand_total' => ($item->sale['cost']['amount']) - ($item->sale['cost']['discount']),
+                    'total_vat' => ($item->sale['cost']['vat']),
+                    'sold_by' => $item->sale['user']['name'],
+                    'customer' => $item->sale['customer']['name'],
+                    'customer_tin' => $item->sale['customer']['tin'],
+                    'customer_phone' => $item->sale['customer']['phone'],
+                    'customer_address' => $item->sale['customer']['address'],
+                    'paid' => $paid,
+                    'balance' => $balance,
+                    'remark' => $remark,
+                    'created_at' => $item->sale['date'],
+                ];
+            }
+            $productMap[$key]['quantity'] += $item->quantity;
+            $productMap[$key]['vat'] += $item->vat;
+            $productMap[$key]['discount'] += $item->discount;
+            $productMap[$key]['amount'] += $item->amount - $item->discount;
+            $productMap[$key]['sub_total'] += $item->amount + $item->discount - $item->vat;
         }
-
+        
+        $sn = 0;
+        foreach ($productMap as $row) {
+            $sn++;
+            $row['sn'] = $sn;
+            $sales[] = $row;
+        }
 
         foreach ($sales as $val) {
             if (array_key_exists('receipt_number', $val)) {
