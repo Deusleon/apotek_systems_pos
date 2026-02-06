@@ -11,8 +11,8 @@ class DeliveryNoteController extends Controller
     //index function to show delivery note page
     public function index()
     {
-        $enableReceiptPrinting = Setting::where('id', 117)->value('value') ?? 'YES';
-        return view('sales.delivery_notes.index', compact('enableReceiptPrinting'));
+        //$enableReceiptPrinting = Setting::where('id', 117)->value('value') ?? 'YES';
+        return view('sales.delivery_notes.index');
     }
 
 }

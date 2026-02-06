@@ -1,14 +1,12 @@
-@extends("layouts.master")
-
-@section('content-title')
+<?php $__env->startSection('content-title'); ?>
     Delivery Notes
-@endsection
-@section('content-sub-title')
-    <li class="breadcrumb-item"><a href="{{route('home')}}"><i class="feather icon-home"></i></a></li>
+<?php $__env->stopSection(); ?>
+<?php $__env->startSection('content-sub-title'); ?>
+    <li class="breadcrumb-item"><a href="<?php echo e(route('home')); ?>"><i class="feather icon-home"></i></a></li>
     <li class="breadcrumb-item"><a href="#">Sales / Delivery Note / Delivery List</a></li>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section("content")
+<?php $__env->startSection("content"); ?>
 
 <style>
     #loading {
@@ -39,9 +37,9 @@
                 <label class="mr-2" for="">Date:</label>
                 <input type="text" id="daterange" class="form-control w-auto">
             </div>
-            <form id="delivery_note_reprint_form" action="{{route('sale-reprint-receipt')}}" method="post"
+            <form id="delivery_note_reprint_form" action="<?php echo e(route('sale-reprint-receipt')); ?>" method="post"
                 enctype="multipart/form-data" target="_blank">
-                @csrf()
+                <?php echo csrf_field(); ?>
 
                 <div class="table-responsive" id="sales">
                     <table id="sale_history_dataTable"
@@ -66,7 +64,7 @@
 
                 <!-- ajax loading gif -->
                 <div id="loading">
-                    <image id="loading-image" src="{{asset('assets/images/spinner.gif')}}"></image>
+                    <image id="loading-image" src="<?php echo e(asset('assets/images/spinner.gif')); ?>"></image>
                 </div>
 
                 <input type="hidden" value="" id="category">
@@ -79,29 +77,29 @@
     </div>    
 </div>
 
-@include('sales.delivery_notes.details')
-@endsection
+<?php echo $__env->make('sales.delivery_notes.details', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+<?php $__env->stopSection(); ?>
 
-@push("page_scripts")
-    {{-- Show Delivery Notes in details --}}
+<?php $__env->startPush("page_scripts"); ?>
+    
     <script>
         //Functionalities Below will be able to show Delivery Note Product List
         //Endpoints
         var config = {
-            token: '{{ csrf_token() }}',
+            token: '<?php echo e(csrf_token()); ?>',
             routes: {
-                salesDetails: '{{route('sale_detail')}}',
-                getSalesHistory: '{{route('getSalesHistory')}}',
-                getSalesHistoryData: '{{ route('getSalesHistoryData') }}',
-                receiptBaseUrl: "{{ route('sale-reprint-receipt-get', ['receipt' => ':receipt']) }}",
-                deliveryNoteUrl: "{{ route('delivery-note-pdf', ':receipt') }}"
+                salesDetails: '<?php echo e(route('sale_detail')); ?>',
+                getSalesHistory: '<?php echo e(route('getSalesHistory')); ?>',
+                getSalesHistoryData: '<?php echo e(route('getSalesHistoryData')); ?>',
+                receiptBaseUrl: "<?php echo e(route('sale-reprint-receipt-get', ['receipt' => ':receipt'])); ?>",
+                deliveryNoteUrl: "<?php echo e(route('delivery-note-pdf', ':receipt')); ?>"
             }
         };
-        var canPrintSalesHistory = {{ auth()->user()->checkPermission('Print Sales History') ? 'true' : 'false' }};
+        var canPrintSalesHistory = <?php echo e(auth()->user()->checkPermission('Print Sales History') ? 'true' : 'false'); ?>;
 
     </script>
 
-    <script src="{{asset("assets/apotek/js/delivery_notes.js")}}"></script>
+    <script src="<?php echo e(asset("assets/apotek/js/delivery_notes.js")); ?>"></script>
     <script type="text/javascript">
 
         $.ajaxSetup({
@@ -145,4 +143,5 @@
 
     </script>
 
-@endpush
+<?php $__env->stopPush(); ?>
+<?php echo $__env->make("layouts.master", \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH D:\MY DOCUMENTS\PROJECTS\LARAVEL\APOTEk\Repo-project\apotek_systems_pos\resources\views/sales/delivery_notes/index.blade.php ENDPATH**/ ?>

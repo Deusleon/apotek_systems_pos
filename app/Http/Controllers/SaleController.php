@@ -1204,6 +1204,9 @@ class SaleController extends Controller
 
         $data = $grouped_sales;
 
+        // Get the receipt number from the sale data
+        $receipt_no = !empty($data) ? array_key_first($data) : 'receipt';
+
         if ($receipt_size === '58mm Thermal Paper') {
             if ($page === "-1" || $page == -1) {
                 $pdf = PDF::loadView('sales.cash_sales.credit_receipt_thermal',

@@ -102,6 +102,7 @@ var order_details_table = $("#order_details_table").DataTable({
         },
     ],
 });
+order_details_table.columns([4]).visible(false);
 
 $(function () {
     var start = moment().subtract(6, "days");

@@ -86,8 +86,7 @@ function populateTable(data) {
 
         if (
             typeof canPrintSalesHistory !== "undefined" &&
-            canPrintSalesHistory &&
-            enableReceiptPrinting !== "NO"
+            canPrintSalesHistory !== "NO"
         ) {
             let delivery_note_url = config.routes.deliveryNoteUrl.replace(
                 ":receipt",
