@@ -1,0 +1,759 @@
+<?php $__env->startSection('page_css'); ?>
+    <style>
+
+
+    </style>
+<?php $__env->stopSection(); ?>
+
+<?php $__env->startSection('content-title'); ?>
+    Inventory Reports
+<?php $__env->stopSection(); ?>
+
+<?php $__env->startSection('content-sub-title'); ?>
+    <li class="breadcrumb-item"><a href="<?php echo e(route('home')); ?>"><i class="feather icon-home"></i></a></li>
+    <li class="breadcrumb-item"><a href="#"> Reports / Inventory Reports </a></li>
+<?php $__env->stopSection(); ?>
+
+<?php $__env->startSection("content"); ?>
+
+    <style>
+        .datepicker>.datepicker-days {
+            display: block;
+        }
+
+        ol.linenums {
+            margin: 0 0 0 -8px;
+        }
+
+        #select1 {
+            z-index: 10050;
+        }
+
+        #loading {
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            position: fixed;
+            display: none;
+            opacity: 0.7;
+            background-color: #fff;
+            z-index: 99;
+            text-align: center;
+        }
+
+        #loading-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            z-index: 100;
+        }
+
+        input[type=button]:focus {
+            background-color: #748892;
+            border-color: #748892;
+            color: white;
+        }
+    </style>
+
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-body">
+                <form id="inventory_report_form" action="<?php echo e(route('inventory-report-filter')); ?>" method="get" target="_blank">
+                    <?php echo csrf_field(); ?>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <div class="form-group">
+                                    <label for="report_option">Select Inventory Report</label>
+                                    <div id="border" style="border: 2px solid white; border-radius: 6px;">
+                                        <select id="report_option" name="report_option" onchange="reportOption()"
+                                            class="js-example-basic-single form-control drop">
+                                            <option selected="true" value="0" disabled="disabled">Select report</option>
+                                            <?php if(auth()->user()->checkPermission('Current Stock Summary Report')): ?>
+                                                <option value="1">Current Stock Summary Report</option>
+                                            <?php endif; ?>
+                                            <?php if(auth()->user()->checkPermission('Current Stock Detailed Report')): ?>
+                                                <option value="12">Current Stock Detailed Report</option>
+                                            <?php endif; ?>
+                                            <?php if(auth()->user()->checkPermission('Product Details Report')): ?>
+                                                <option value="2">Product Details Report</option>
+                                            <?php endif; ?>
+                                            <?php if(auth()->user()->checkPermission('Product Ledger Summary Report')): ?>
+                                                <option value="3">Product Ledger Summary Report</option>
+                                            <?php endif; ?>
+                                            <?php if(auth()->user()->checkPermission('Product Ledger Detailed Report')): ?>
+                                                <option value="17">Product Ledger Detailed Report</option>
+                                            <?php endif; ?>
+                                            <?php if($expireEnabled): ?>
+                                                <?php if(auth()->user()->checkPermission('Expired Products Report')): ?>
+                                                    <option value="4">Expired Products Report</option>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+                                            <?php if($expireEnabled): ?>
+                                                <?php if(auth()->user()->checkPermission('Products Expiry Date Report')): ?>
+                                                    <option value="13">Products Expiry Date Report</option>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+                                            <?php if(auth()->user()->checkPermission('Out Of Stock Report')): ?>
+                                                <option value="5">Out Of Stock Report</option>
+                                            <?php endif; ?>
+                                            <?php if(auth()->user()->checkPermission('Outgoing Stock Summary Report')): ?>
+                                                <option value="14">Outgoing Stock Summary Report</option>
+                                            <?php endif; ?>
+                                            <?php if(auth()->user()->checkPermission('Outgoing Stock Detailed Report')): ?>
+                                                <option value="6">Outgoing Stock Detailed Report</option>
+                                            <?php endif; ?>
+                                            <?php if(auth()->user()->checkPermission('Fast Moving Products Report')): ?>
+                                                <option value="15">Fast Moving Products Report</option>
+                                            <?php endif; ?>
+                                            <?php if(auth()->user()->checkPermission('Dead Stock Report')): ?>
+                                                <option value="16">Dead Stock Report</option>
+                                            <?php endif; ?>
+                                            <?php if(auth()->user()->checkPermission('Stock Adjustment Report')): ?>
+                                                <option value="7">Stock Adjustment Report</option>
+                                            <?php endif; ?>
+                                            <?php if(auth()->user()->checkPermission('Stock Requisition Report')): ?>
+                                                <option value="18">Stock Requisition Report</option>
+                                            <?php endif; ?>
+                                            <?php if(auth()->user()->checkPermission('Stock Issue Report')): ?>
+                                                <option value="8">Stock Issue Report</option>
+                                            <?php endif; ?>
+                                            <?php if(auth()->user()->checkPermission('Stock Transfer Report')): ?>
+                                                <option value="9">Stock Transfer Report</option>
+                                            <?php endif; ?>
+                                            <?php if(auth()->user()->checkPermission('Stock Above Max. Level')): ?>
+                                                <option value="10">Stock Above Maximum Level Report</option>
+                                            <?php endif; ?>
+                                            <?php if(auth()->user()->checkPermission('Stock Below Min. Level')): ?>
+                                                <option value="11">Stock Below Minimum Level Report</option>
+                                            <?php endif; ?>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2"></div>
+                        <div class="col-md-2">
+
+                        </div>
+                    </div>
+                    
+                    <div class="row" id="product_ledger" style="display: none">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <div class="form-group">
+                                    <label for="product">Products<font color="red">*</font></label>
+                                    <select id="product" name="product" onchange=""
+                                        class="js-example-basic-single form-control drop" required>
+                                        <option value="0" selected="true" disabled="disabled">Select product</option>
+                                        <?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($product->product_id); ?>">
+                                                <?php echo e($product->product_name . ' ' ?? ''); ?><?php echo e($product->brand . ' ' ?? ''); ?><?php echo e($product->pack_size ?? ''); ?><?php echo e($product->sales_uom ?? ''); ?>
+
+                                            </option>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                    </select>
+                                    <span id="warning" style="color: #ff0000; display: none">Please select a product</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="current-stock" style="display: none">
+                        <div class="row">
+                            <?php if(is_all_store()): ?>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="store">Branch<font color="red">*</font></label>
+                                        <select id="store_name" name="store_name" onchange=""
+                                            class="js-example-basic-single form-control drop">
+                                            <option value="0" selected="true" disabled="disabled">Select Branch</option>
+                                            <?php $__currentLoopData = $stores; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $store): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <option value="<?php echo e($store->id); ?>">
+                                                    <?php echo e($store->name); ?>
+
+                                                </option>
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                        </select>
+                                        <span id="warning-store" style="color: #ff0000; display: none">Please select a
+                                            Branch</span>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="category">Product Category</label>
+                                    <select id="category-name" name="category_name" onchange=""
+                                        class="js-example-basic-single form-control drop">
+                                        <option value="0" selected="true" disabled="disabled">Select category</option>
+                                        <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($category->id); ?>">
+                                                <?php echo e($category->name); ?>
+
+                                            </option>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row" id="product-detail" style="display: none">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="category-detail">Product Category</label>
+                                <select id="category-name-detail" name="category_name_detail" onchange=""
+                                    class="js-example-basic-single form-control drop">
+                                    <option value="0" selected="true" disabled="disabled">Select category</option>
+                                    <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <option value="<?php echo e($category->id); ?>">
+                                            <?php echo e($category->name); ?>
+
+                                        </option>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                </select>
+                                <span id="warning-detail" style="color: #ff0000; display: none">Please select a
+                                    category</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="stock-issue" style="display: none">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="stock-issue-date">Date<font color="red">*</font></label>
+                                    <div id="issue_date" style="border: 2px solid white; border-radius: 6px;">
+                                        <input type="text" name="issue_date" class="form-control" id="d_auto_912"
+                                            autocomplete="off" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="stock-issue">Status</label>
+                                    <select id="stock-issues" name="stock_issue" onchange=""
+                                        class="js-example-basic-single form-control drop">
+                                        <option value="0" selected="true">All</option>
+                                        <option value="1">Issued</option>
+                                        <option value="2">Pending</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="stock-requisition" style="display: none">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="requisition-date">Date<font color="red">*</font></label>
+                                    <div id="requisition_date" style="border: 2px solid white; border-radius: 6px;">
+                                        <input type="text" name="requisition_date" class="form-control" id="d_auto_913"
+                                            autocomplete="off" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="requisition-status">Status</label>
+                                    <select id="requisition-status" name="requisition_status" onchange=""
+                                        class="js-example-basic-single form-control drop">
+                                        <option value="" selected="true">All</option>
+                                        <option value="0">Pending</option>
+                                        <option value="1">Issued</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="outgoing-stock" style="display: none">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="outgoing-date">Date<font color="red">*</font></label>
+                                    <div id="out_date" style="border: 2px solid white; border-radius: 6px;">
+                                        <input type="text" name="out_dates" class="form-control" id="d_auto_91211"
+                                            autocomplete="off" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="stock-transfer" style="display: none">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="stock-transfer-date">Date<font color="red">*</font></label>
+                                    <div id="transfer_date" style="border: 2px solid white; border-radius: 6px;">
+                                        <input type="text" name="transfer_date" class="form-control" id="d_auto_9121"
+                                            autocomplete="off" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="stock-transfer">Status</label>
+                                    <select id="stock-transfers" name="stock_transfer" onchange=""
+                                        class="js-example-basic-single form-control drop">
+                                        <option value="0" selected="true" disabled="disabled">Select status</option>
+                                        <option value="2">Completed</option>
+                                        <option value="1">Pending</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="stock-adjustment" style="display: none">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="stock-adjustment-date">Date<font color="red">*</font></label>
+                                    <div id="date" style="border: 2px solid white; border-radius: 6px;">
+                                        <input type="text" name="adjustment_date" class="form-control" id="d_auto_91"
+                                            autocomplete="off" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="stock-adjustment">Adjustment Type</label>
+                                    <select id="stock-adjustments" name="stock_adjustment" onchange=""
+                                        class="js-example-basic-single form-control drop">
+                                        <option value="0" selected="true" disabled="disabled">Select type</option>
+                                        <option value="">All</option>
+                                        <option value="decrease">Negative</option>
+                                        <option value="increase">Positive</option>
+                                    </select>
+                                    <span id="warning-details" style="color: #ff0000; display: none">Please select a
+                                        type</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="stock-adjustment-reason">Adjustment Reason</label>
+                                    <select id="stock-adjustments-reason" name="stock_adjustment_reason" onchange=""
+                                        class="js-example-basic-single form-control drop">
+                                        <option value="0" selected="true" disabled="disabled">Select reason</option>
+                                        <?php $__currentLoopData = $reasons; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $reason): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($reason->reason); ?>"><?php echo e($reason->reason); ?></option>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-5">
+
+                        </div>
+                        <div class="col-md-2">
+                            
+                                <button class="btn btn-secondary" style="width: 100%">
+                                    Show
+                                </button>
+                                
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ajax loading image -->
+        <div id="loading">
+            <image id="loading-image" src="<?php echo e(asset('assets/images/spinner.gif')); ?>"></image>
+        </div>
+
+
+    </div>
+    </div>
+    </div>
+    </div>
+
+<?php $__env->stopSection(); ?>
+
+
+<?php $__env->startPush("page_scripts"); ?>
+    <script src="<?php echo e(asset("assets/plugins/bootstrap-datetimepicker/js/bootstrap-datepicker.min.js")); ?>"></script>
+    <script src="<?php echo e(asset("assets/js/pages/ac-datepicker.js")); ?>"></script>
+
+    <?php echo $__env->make('partials.notification', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+
+    <script>
+
+        $(function () {
+            var start = moment();
+            var end = moment();
+
+            $('#d_auto_91').daterangepicker({
+                showDropdowns: true,
+                maxDate: end,
+                autoUpdateInput: true,
+                startDate: moment().startOf('month'),
+                endDate: moment().endOf('month'),
+                locale: {
+                    format: 'YYYY/MM/DD'
+                },
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                    'This Year': [moment().startOf('year'), moment()]
+                }
+            });
+        });
+
+        $('input[name="adjustment_date"]').on('apply.daterangepicker', function (ev, picker) {
+            $(this).val(picker.startDate.format('YYYY/MM/DD') + ' - ' + picker.endDate.format('YYYY/MM/DD'));
+        });
+
+        $(function () {
+            var start = moment();
+            var end = moment();
+
+            $('#d_auto_912').daterangepicker({
+                showDropdowns: true,
+                maxDate: end,
+                autoUpdateInput: true,
+                startDate: moment().startOf('month'),
+                endDate: moment().endOf('month'),
+                locale: {
+                    format: 'YYYY/MM/DD'
+                },
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                    'This Year': [moment().startOf('year'), moment()]
+                }
+            });
+        });
+
+        $('input[name="issue_date"]').on('apply.daterangepicker', function (ev, picker) {
+            $(this).val(picker.startDate.format('YYYY/MM/DD') + ' - ' + picker.endDate.format('YYYY/MM/DD'));
+        });
+
+        // Stock Requisition Date Picker
+        $(function () {
+            var start = moment();
+            var end = moment();
+
+            $('#d_auto_913').daterangepicker({
+                showDropdowns: true,
+                maxDate: end,
+                autoUpdateInput: true,
+                startDate: moment().startOf('month'),
+                endDate: moment().endOf('month'),
+                locale: {
+                    format: 'YYYY/MM/DD'
+                },
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                    'This Year': [moment().startOf('year'), moment()]
+                }
+            });
+        });
+
+        $('input[name="requisition_date"]').on('apply.daterangepicker', function (ev, picker) {
+            $(this).val(picker.startDate.format('YYYY/MM/DD') + ' - ' + picker.endDate.format('YYYY/MM/DD'));
+        });
+
+        $(function () {
+            var start = moment();
+            var end = moment();
+
+            $('#d_auto_9121').daterangepicker({
+                showDropdowns: true,
+                maxDate: end,
+                autoUpdateInput: true,
+                startDate: moment().startOf('month'),
+                endDate: moment().endOf('month'),
+                locale: {
+                    format: 'YYYY/MM/DD'
+                },
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                    'This Year': [moment().startOf('year'), moment()]
+                }
+            });
+        });
+        
+        $(function () {
+            var start = moment();
+            var end = moment();
+
+            $('#d_auto_91211').daterangepicker({
+                showDropdowns: true,
+                maxDate: end,
+                autoUpdateInput: true,
+                startDate: moment().startOf('month'),
+                endDate: moment().endOf('month'),
+                locale: {
+                    format: 'YYYY/MM/DD'
+                },
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                    'This Year': [moment().startOf('year'), moment()]
+                }
+            });
+        });
+
+        $('input[name="transfer_date"]').on('apply.daterangepicker', function (ev, picker) {
+            $(this).val(picker.startDate.format('YYYY/MM/DD') + ' - ' + picker.endDate.format('YYYY/MM/DD'));
+        });
+
+        function reportOption() {
+            var report_option = document.getElementById("report_option");
+            var report_option_index = report_option.options[report_option.selectedIndex].value;
+
+            if (Number(report_option_index) !== 0) {
+                document.getElementById('border').style.borderColor = 'white';
+            }
+
+            // product ledger
+            let ledgerDiv = document.getElementById('product_ledger');
+            let warning = document.getElementById('warning');
+            if (Number(report_option_index) === 3 || Number(report_option_index) === 17) {
+                if (ledgerDiv) ledgerDiv.style.display = 'block';
+            } else {
+                if (ledgerDiv) ledgerDiv.style.display = 'none';
+                if (warning) warning.style.display = 'none';
+            }
+
+            // current stock
+            let stockDiv = document.getElementById('current-stock');
+            let warningStore = document.getElementById('warning-store');
+            if (Number(report_option_index) === 1 || Number(report_option_index) === 12) {
+                if (stockDiv) stockDiv.style.display = 'block';
+            } else {
+                if (stockDiv) stockDiv.style.display = 'none';
+                if (warningStore) warningStore.style.display = 'none';
+            }
+
+            // product detail
+            let detailDiv = document.getElementById('product-detail');
+            let warningDetail = document.getElementById('warning-detail');
+            if (Number(report_option_index) === 2) {
+                if (detailDiv) detailDiv.style.display = 'block';
+            } else {
+                if (detailDiv) detailDiv.style.display = 'none';
+                if (warningDetail) warningDetail.style.display = 'none';
+            }
+
+            // stock issue
+            let issueDiv = document.getElementById('stock-issue');
+            if (Number(report_option_index) === 8) {
+                if (issueDiv) issueDiv.style.display = 'block';
+            } else {
+                if (issueDiv) issueDiv.style.display = 'none';
+            }
+
+            // stock requisition
+            let requisitionDiv = document.getElementById('stock-requisition');
+            if (Number(report_option_index) === 18) {
+                if (requisitionDiv) requisitionDiv.style.display = 'block';
+            } else {
+                if (requisitionDiv) requisitionDiv.style.display = 'none';
+            }
+
+            // stock transfer
+            let transferDiv = document.getElementById('stock-transfer');
+            if (Number(report_option_index) === 9) {
+                if (transferDiv) transferDiv.style.display = 'block';
+            } else {
+                if (transferDiv) transferDiv.style.display = 'none';
+            }
+            
+            // outgoing stock
+            let outgoingDiv = document.getElementById('outgoing-stock');
+            if (Number(report_option_index) === 6 || Number(report_option_index) === 14) {
+                if (outgoingDiv) outgoingDiv.style.display = 'block';
+            } else {
+                if (outgoingDiv) outgoingDiv.style.display = 'none';
+            }
+
+            // stock adjustment
+            let adjustDiv = document.getElementById('stock-adjustment');
+            if (Number(report_option_index) === 7) {
+                if (adjustDiv) adjustDiv.style.display = 'block';
+            } else {
+                if (adjustDiv) adjustDiv.style.display = 'none';
+            }
+        }
+
+        $('#inventory_report_form').on('submit', function () {
+            var report_option = document.getElementById("report_option");
+            var report_option_index = report_option.options[report_option.selectedIndex].value;
+
+            /*product ledger*/
+            var product_option = document.getElementById("product");
+            var product_option_index = product_option.options[product_option.selectedIndex].value;
+
+            /*current stock*/
+            var store_option = document.getElementById("store_name");
+            var store_option_index = store_option ? Number(store_option.value || 0) : 0;
+
+            /*product detail*/
+            var category_option = document.getElementById("category-name-detail");
+            var category_option_index = category_option.options[category_option.selectedIndex].value;
+
+            /*stock issue*/
+            var issue_option = document.getElementById("stock-issues");
+            var issue_option_index = issue_option.options[issue_option.selectedIndex].value;
+
+            /*stock transfer*/
+            var transfer_option = document.getElementById("stock-transfers");
+            var transfer_option_index = transfer_option.options[transfer_option.selectedIndex].value;
+            
+            /*stock adjustment*/
+            var adj_option = document.getElementById("stock-adjustments");
+            var adj_option_index = adj_option.options[adj_option.selectedIndex].value;
+
+            if (Number(report_option_index) === Number(0)) {
+                document.getElementById('border').style.borderColor = 'red';
+                return false;
+            }
+
+            document.getElementById('border').style.borderColor = 'white';
+
+            /*if product ledger*/
+            if (Number(report_option_index) === Number(3) && Number(product_option_index) !== Number(0)) {
+                document.getElementById('warning').style.display = 'none';
+                //make request
+                return true;
+            } else if (Number(report_option_index) === Number(3) && Number(product_option_index) === Number(0)) {
+                document.getElementById('warning').style.display = 'block';
+                return false;
+            }
+
+            /*if current stock*/
+            if (Number(report_option_index) === Number(1) && Number(store_option_index) !== Number(0)) {
+                document.getElementById('warning-store').style.display = 'none';
+                //make request
+                return true;
+
+            } else if (Number(report_option_index) === Number(1) && Number(store_option_index) === Number(0)) {
+                document.getElementById('warning-store').style.display = 'block';
+                return false;
+            }
+
+            /*if current stock*/
+            if (Number(report_option_index) === Number(12) && Number(store_option_index) !== Number(0)) {
+                document.getElementById('warning-store').style.display = 'none';
+                //make request
+                return true;
+
+            } else if (Number(report_option_index) === Number(12) && Number(store_option_index) === Number(0)) {
+                document.getElementById('warning-store').style.display = 'block';
+                return false;
+            }
+
+            /*if product detail*/
+            if (Number(report_option_index) === Number(2) && Number(category_option_index) !== Number(0)) {
+                document.getElementById('warning-detail').style.display = 'none';
+                //make request
+                return true;
+
+            } else if (Number(report_option_index) === Number(2) && Number(category_option_index) === Number(0)) {
+                // document.getElementById('warning-detail').style.display = 'block';
+                // return false;
+            }
+
+            /*if stock issue*/
+            var issue_date = document.getElementById('d_auto_912').value;
+            if (Number(report_option_index) === Number(8) && Number(issue_option_index) === Number(0)) {
+                //make request
+                if (issue_date === '') {
+                    document.getElementById('issue_date').style.borderColor = 'red';
+                    return false;
+                }
+                document.getElementById('issue_date').style.borderColor = 'white';
+                return true;
+            }
+
+            /*if stock requisition*/
+            var requisition_date = document.getElementById('d_auto_913').value;
+            if (Number(report_option_index) === Number(18)) {
+                //make request
+                if (requisition_date === '') {
+                    document.getElementById('requisition_date').style.borderColor = 'red';
+                    return false;
+                }
+                document.getElementById('requisition_date').style.borderColor = 'white';
+                return true;
+            }
+
+            /*if stock transfer*/
+            var transfer_date = document.getElementById('d_auto_9121').value;
+            if (Number(report_option_index) === Number(9) && Number(transfer_option_index) === Number(0)) {
+                //make request
+                console.log(transfer_date);
+                if (transfer_date === '') {
+                    document.getElementById('transfer_date').style.borderColor = 'red';
+                    return false;
+                }
+                document.getElementById('transfer_date').style.borderColor = 'white';
+                return true;
+
+            }
+            
+            /*if outgoing stock*/
+            var date = document.getElementById('d_auto_91211').value;
+
+            if (Number(report_option_index) === Number(6) || Number(report_option_index) !== Number(13)) {
+                document.getElementById('warning-details').style.display = 'none';
+                //make request
+                if (date === '') {
+                    document.getElementById('date').style.borderColor = 'red';
+                    return false;
+                }
+                return true;
+            }
+
+            /*if stock adjustment*/
+            var date = document.getElementById('d_auto_91').value;
+
+            if (Number(report_option_index) === Number(7) && Number(adj_option_index) !== Number(0)) {
+                // document.getElementById('date').style.borderColor = 'red';
+                document.getElementById('warning-details').style.display = 'none';
+                //make request
+                if (date === '') {
+                    document.getElementById('date').style.borderColor = 'red';
+                    return false;
+                }
+                return true;
+            }
+
+
+        });
+
+    </script>
+<?php $__env->stopPush(); ?>
+<?php echo $__env->make("layouts.master", \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\Users\Little Pro\Desktop\APOTEk\apotek_systems_pos\resources\views/inventory_reports/index.blade.php ENDPATH**/ ?>

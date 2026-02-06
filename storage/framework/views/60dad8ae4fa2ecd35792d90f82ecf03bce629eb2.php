@@ -1,0 +1,521 @@
+<?php $__env->startSection('content-title'); ?>
+    Sales History
+<?php $__env->stopSection(); ?>
+<?php $__env->startSection('content-sub-title'); ?>
+    <li class="breadcrumb-item"><a href="<?php echo e(route('home')); ?>"><i class="feather icon-home"></i></a></li>
+    <li class="breadcrumb-item"><a href="#">Sales / Sales History / Returns</a></li>
+<?php $__env->stopSection(); ?>
+<?php $__env->startSection("content"); ?>
+
+    <style>
+        #loading {
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            position: fixed;
+            display: none;
+            opacity: 0.7;
+            background-color: #fff;
+            z-index: 99;
+            text-align: center;
+        }
+
+        #loading-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            z-index: 100;
+        }
+    </style>
+
+    <div class="col-sm-12">
+        <ul class="nav nav-pills mb-3" id="myTab" role="tablist">
+            <?php if(Auth::user()->checkPermission('View Sales History')): ?>
+                <li class="nav-item">
+                    <a class="nav-link text-uppercase" id="sales-history-tablist" data-toggle="pill"
+                        href="<?php echo e(route('sale-histories.SalesHistory')); ?>" role="tab" aria-controls="sales_history"
+                        aria-selected="true">Sales History</a>
+                </li>
+            <?php endif; ?>
+            <?php if(Auth::user()->checkPermission('View Sales Returns')): ?>
+                <li class="nav-item">
+                    <a class="nav-link active text-uppercase" id="sales-return-tablist" data-toggle="pill"
+                        href="<?php echo e(route('sale-returns.index')); ?>" role="tab" aria-controls="sales_returns"
+                        aria-selected="false">Returns
+                    </a>
+                </li>
+            <?php endif; ?>
+            <?php if(Auth::user()->checkPermission('View Sales Returns Approvals')): ?>
+                <li class="nav-item">
+                    <a class="nav-link text-uppercase" id="sales-approval-tablist" data-toggle="pill"
+                        href="<?php echo e(route('sale-returns-approval.getSalesReturn')); ?>" role="tab" aria-controls="sales_returns"
+                        aria-selected="false">Approvals
+                    </a>
+                </li>
+            <?php endif; ?>
+        </ul>
+        <div class="card-block">
+            <?php if(Auth::user()->checkPermission('View Sales Returns')): ?>
+                <div class="tab-content" id="myTabContent">
+                    
+                    <div class="tab-pane fade show active" id="sales-return" role="tabpanel" aria-labelledby="sales_return-tab">
+                        <input type="hidden" value="<?php echo e($vat); ?>" id="vat">
+                        <div class="table-responsive" id="items" style="display: none;">
+                            
+                            <table id="items_table" class="table nowrap table-striped table-hover" width="100%"></table>
+                            <div class="btn-group" style="float: right; margin-right: 4%; margin-top: 2%">
+                                <button class="btn btn-sm btn-rounded btn-danger" onclick="return false" id="cancel">Back
+                                </button>
+                            </div>
+                        </div>
+                        <input type="hidden" name="" value="<?php echo e($enable_discount); ?>" id="discount_enabled">
+                        <div id="sales">
+                            <div class="d-flex justify-content-end mb-3 align-items-center">
+                                <label class="mr-2" for="">Date:</label>
+                                <input type="text" id="sold_date" onchange="getSales()" class="form-control w-auto">
+                            </div>
+                            <div class="table-responsive">
+                                <table id="sale_list_return_table" class="display table nowrap table-striped table-hover"
+                                    style="width:100%">
+                                    <thead>
+                                        <tr>
+                                            <th>Receipt #</th>
+                                            <th>Customer</th>
+                                            <th>Date</th>
+                                            <th>Sub Total</th>
+                                            <th>VAT</th>
+                                            <?php if($enable_discount === 'YES'): ?>
+                                                <th>Discount</th>
+                                            <?php endif; ?>
+                                            <th>Amount</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- ajax loading gif -->
+                        
+
+                    </div>
+                    
+
+                    
+                    <div class="tab-pane fade" id="sales-return-approval" role="tabpanel"
+                        aria-labelledby="sales_return_approval-tab">
+                        <div class="form-group row">
+                            <div class="col-md-6">
+
+                            </div>
+                            <div class="col-md-3" style="margin-left: 2.5%">
+                                <label style="margin-left: 74%" for="" class="col-form-label text-md-right">Status:</label>
+                            </div>
+                            <div class="col-md-3" style="margin-left: -3.2%;">
+                                <select id="retun_status" class="js-example-basic-single form-control"
+                                    onchange="getRetunedProducts()">
+                                    <option value="2">Pending</option>
+                                    <option value="3">Approved</option>
+                                    <option value="4">Rejected</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-6">
+
+                            </div>
+                            <div class="col-md-3" style="margin-left: 2.5%">
+                                <label style="margin-left: 78%" for="" class="col-form-label text-md-right">Date:</label>
+                            </div>
+                            <div class="col-md-3" style="margin-left: -3.4%;">
+                                <input style="width: 104%;" type="text" class="form-control" id="returned_date"
+                                    onchange="getRetunedProducts()">
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="return_table" class="display table nowrap table-striped table-hover" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>Product Name</th>
+                                        <th>Buy Date</th>
+                                        <th>Qty Bought</th>
+                                        <th>Return Date</th>
+                                        <th>Qty Returned</th>
+                                        <th>Refund</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                </tbody>
+
+                            </table>
+
+                            <!-- ajax loading gif -->
+                            <div id="loading">
+                                <image id="loading-image" src="<?php echo e(asset('assets/images/spinner.gif')); ?>"></image>
+                            </div>
+
+                            <input type="hidden" value="" id="category">
+                            <input type="hidden" value="" id="customers">
+                            <input type="hidden" value="" id="print">
+                            <input type="hidden" value="" id="fixed_price">
+
+                        </div>
+                    </div>
+                    
+
+                </div>
+            <?php endif; ?>
+
+            <?php if(!Auth::user()->checkPermission('View Sales Returns')): ?>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="form-group row">
+
+                            <p>You do not have permission to View Sale Return</p>
+
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+        </div>
+
+
+    </div>
+    </div>
+    <?php echo $__env->make('sales.sale_returns.return', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+
+<?php $__env->stopSection(); ?>
+<?php $__env->startPush("page_scripts"); ?>
+    
+    <?php echo $__env->make('partials.notification', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+    <script src="<?php echo e(asset("assets/plugins/bootstrap-datetimepicker/js/bootstrap-datepicker.min.js")); ?>"></script>
+    <script src="<?php echo e(asset("assets/js/pages/ac-datepicker.js")); ?>"></script>
+    <script src="<?php echo e(asset("assets/apotek/js/sales.js")); ?>"></script>
+
+    <script type="text/javascript">
+
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
+        $(function () {
+
+            var start = moment();
+            var end = moment();
+
+            function cb(start, end) {
+                $('#sold_date span').html(start.format('YYYY/MM/DD') + ' - ' + end.format('YYYY/MM/DD'));
+            }
+
+            $('#sold_date').daterangepicker({
+                startDate: moment().startOf('month'),
+                endDate: moment().endOf('month'),
+                autoUpdateInput: true,
+                locale: {
+                    format: 'YYYY/MM/DD'
+                },
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    // 'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                    'This Year': [moment().startOf('year'), moment()]
+                }
+            }, cb);
+
+            cb(start, end);
+
+
+        });
+
+        $('#return-form').on('submit', function (e) {
+            // Disable all buttons in the form
+            $('#save_btn').prop('disabled', true);
+
+            $('#save_btn').text('Saving...');
+
+        });
+
+    </script>
+
+    <script type="text/javascript">
+        function getSales() {
+            var range = document.getElementById('sold_date').value;
+            range = range.split('-');
+
+            $("#sale_list_return_table").dataTable().fnDestroy();
+
+            var discountEnabled = $('#discount_enabled').val() === 'YES';
+
+            var columns = [
+                { 'data': 'receipt_number' },
+                {
+                    'data': 'customer', render: function (customer) {
+                        if (customer) {
+                            return customer.name
+                        }
+                        return '';
+                    }
+                },
+                {
+                    'data': 'date', render: function (date) {
+                        return moment(date).format('YYYY-MM-DD');
+                    }
+                },
+                {
+                    'data': 'cost', render: function (cost) {
+                        if (cost) {
+                            return formatMoney(cost.vat);
+                        }
+                        return '';
+                    }
+                },
+                {
+                    'data': 'cost', render: function (cost) {
+                        if (cost) {
+                            return formatMoney(cost.vat);
+                        }
+                        return '';
+                    }
+                }
+            ];
+
+            if (discountEnabled) {
+                columns.push({
+                    'data': 'cost.discount', render: function (discount) {
+                        return formatMoney(discount);
+                    }
+                });
+            }
+
+            columns.push({
+                'data': 'cost', render: function (cost) {
+                    if (cost) {
+                        return formatMoney(((cost.amount - cost.discount)));
+                    }
+                    return '';
+                }
+            });
+
+            columns.push({
+                'data': "action",
+                defaultContent: "<button type='button' id='open_btn' class='btn btn-sm btn-rounded btn-success'>Open</button>"
+            });
+
+            var nonOrderableTargets = [];
+            for (var i = 3; i < columns.length; i++) {
+                nonOrderableTargets.push(i);
+            }
+
+            $('#sale_list_return_table').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "ajax": {
+                    "url": '<?php echo e(route('getSales')); ?>',
+                    "dataType": "json",
+                    "type": "post",
+                    "cache": false,
+                    "data": {
+                        _token: "<?php echo e(csrf_token()); ?>",
+                        range: range
+                    }
+                },
+                "columns": columns,
+                aaSorting: [[1, 'desc']],
+                "columnDefs": [
+                    { "orderable": false, "targets": nonOrderableTargets }
+                ]
+
+            });
+
+
+        }
+
+        $('#sale_list_return_table tbody').on('click', '#open_btn', function () {
+            var row_data = $('#sale_list_return_table').DataTable().row($(this).parents('tr')).data();
+            saleReturn(row_data.details);
+        });
+
+    </script>
+
+
+    
+    <script type="text/javascript">
+
+        $(function () {
+            var start = moment();
+            var end = moment();
+
+            function cb(start, end) {
+                $('#returned_date span').html(start.format('YYYY/MM/DD') + ' - ' + end.format('YYYY/MM/DD'));
+            }
+
+            $('#returned_date').daterangepicker({
+                startDate: moment().startOf('month'),
+                endDate: end,
+                autoUpdateInput: true,
+                locale: {
+                    format: 'YYYY/MM/DD'
+                },
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                    'This Year': [moment().startOf('year'), moment()]
+                }
+            }, cb);
+
+            cb(start, end);
+
+
+        });
+
+
+        $('#return_table tbody').on('click', '#approve', function () {
+            var product = return_table.row($(this).parents('tr')).data();
+            getRetunedProducts('approve', product.item_returned)
+        });
+
+        $('#return_table tbody').on('click', '#reject', function () {
+            var product = return_table.row($(this).parents('tr')).data();
+            getRetunedProducts('reject', product.item_returned)
+        });
+
+
+        function getRetunedProducts(action, product) {
+            var status = document.getElementById("retun_status").value;
+            var range = document.getElementById("returned_date").value;
+            var date = range.split('-');
+            if (date) {
+                $('#loading').show();
+                $.ajax({
+                    url: '<?php echo e(route('getRetunedProducts')); ?>',
+                    data: {
+                        "_token": '<?php echo e(csrf_token()); ?>',
+                        "date": date,
+                        "status": status,
+                        "action": action,
+                        "product": product
+                    },
+                    type: 'get',
+                    dataType: 'json',
+                    cache: false,
+                    success: function (data) {
+                        if (status == 3) {
+
+                            return_table.column(6).visible(false);
+                            data.forEach(function (data) {
+                                if (data.status == 5) {
+                                    data.item_returned.remained_qty += Number(data.item_returned.rtn_qty);
+                                    data.item_returned.amount = (data.item_returned.amount / data.item_returned.rtn_qty) * data.item_returned.remained_qty;
+                                }
+
+                            });
+                        } else if (status == 4) {
+                            return_table.column(6).visible(false);
+                        } else {
+                            return_table.column(6).visible(true);
+                        }
+                        return_table.clear();
+                        return_table.rows.add(data);
+                        return_table.draw();
+
+                    },
+                    complete: function () {
+                        $('#loading').hide();
+                    }
+                });
+            }
+        }
+
+        var return_table = $('#return_table').DataTable({
+            bPaginate: true,
+            bInfo: true,
+            // dom: 't',
+            columns: [
+                { data: 'item_returned.name' },
+                {
+                    data: 'item_returned.b_date', render: function (date) {
+                        return moment(date).format('YYYY-MM-DD');
+                    }
+                },
+                { data: 'item_returned.remained_qty' },
+                {
+                    data: 'date', render: function (date) {
+                        return moment(date).format('YYYY-MM-DD');
+                    }
+                },
+                { data: 'item_returned.rtn_qty' },
+                {
+                    data: 'item_returned', render: function (item_returned) {
+                        return formatMoney((item_returned.rtn_qty / item_returned.remained_qty) * (item_returned.amount - item_returned.discount));
+                    }
+                },
+                {
+                    data: "action",
+                    defaultContent: "<button type='button' id='approve' class='btn btn-sm btn-rounded btn-primary'>Approve</button><button type='button' id='reject' class='btn btn-sm btn-rounded btn-danger'>Reject</button>"
+                }
+
+            ], aaSorting: [[1, "desc"]]
+        });
+
+        $('#searching_returns').on('keyup', function () {
+            return_table.search(this.value).draw();
+        });
+
+
+    </script>
+
+    <script>
+        $('#rtn_qty_to_show').on('keyup', function () {
+            var newValue = document.getElementById('rtn_qty_to_show').value;
+            if (newValue !== '') {
+                document.getElementById('rtn_qty_to_show').value =
+                    numberWithCommas(parseFloat(newValue.replace(/\,/g, ''), 10));
+                document.getElementById('rtn_qty').value = parseFloat(newValue.replace(/\,/g, ''), 10);
+            } else {
+                document.getElementById('rtn_qty_to_show').value = '';
+                document.getElementById('rtn_qty').value = '';
+            }
+        });
+
+        $(document).ready(function () {
+            // Listen for the click event on the Transfer History tab
+            $('#sales-history-tablist').on('click', function (e) {
+                e.preventDefault(); // Prevent default tab switching behavior
+                var redirectUrl = $(this).attr('href'); // Get the URL from the href attribute
+                window.location.href = redirectUrl; // Redirect to the URL
+            });
+
+            $('#sales-return-tablist').on('click', function (e) {
+                e.preventDefault(); // Prevent default tab switching behavior
+                var redirectUrl = $(this).attr('href'); // Get the URL from the href attribute
+                window.location.href = redirectUrl; // Redirect to the URL
+            });
+
+            $('#sales-approval-tablist').on('click', function (e) {
+                e.preventDefault(); // Prevent default tab switching behavior
+                var redirectUrl = $(this).attr('href'); // Get the URL from the href attribute
+                window.location.href = redirectUrl; // Redirect to the URL
+            });
+        });
+    </script>
+
+
+<?php $__env->stopPush(); ?>
+<?php echo $__env->make("layouts.master", \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\Users\Little Pro\Desktop\APOTEk\apotek_systems_pos\resources\views/sales/sale_returns/index.blade.php ENDPATH**/ ?>
