@@ -343,6 +343,7 @@ class SaleQuoteController extends Controller {
 
     //Store sales order data
     public function store( Request $request ) {
+        Log::info( 'Storing sales quote', [ 'request' => $request->all() ] );
         $store_id = current_store_id();
         date_default_timezone_set( 'Africa/Nairobi' );
         
@@ -841,7 +842,6 @@ class SaleQuoteController extends Controller {
                 'customer_tin' => $item->quote['customer']['tin'],
                 'customer_phone' => $item->quote['customer']['phone'],
                 'customer_address' => $item->quote['customer']['address'],
-                'ref_no' => $item->quote['ref_no'],
                 'created_at' => date( 'Y-m-d', strtotime( $item->quote[ 'date' ] ) )
             ) );
         }
@@ -929,7 +929,6 @@ class SaleQuoteController extends Controller {
                     'customer_tin' => $item->quote[ 'customer' ][ 'tin' ] ?? '',
                     'customer_phone' => $item->quote['customer']['phone'],
                     'customer_address' => $item->quote['customer']['address'],
-                    'ref_no' => $item->quote['ref_no'],
                     'created_at' => date( 'Y-m-d', strtotime( $item->quote[ 'date' ] ) )
                 ) );
             }
