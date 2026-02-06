@@ -26,7 +26,7 @@ var cart_table = $("#cart_table").DataTable({
         },
     ],
 });
-cart_table.columns([5, 6]).visible(false);
+cart_table.columns([5, 3, 6]).visible(false);
 
 $("#cart_table tbody").on("click", "#edit_btn", function () {
     var quantity;
