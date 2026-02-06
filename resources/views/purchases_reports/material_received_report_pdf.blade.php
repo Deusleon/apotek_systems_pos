@@ -178,7 +178,7 @@
                         @if($store_id == 1)
                         <td align="left">{{$item->branch_name}}</td>
                         @endif
-                        <td align="center">{{number_format($item->quantity,0)}}</td>
+                        <td align="center">{{$item->quantity}}</td>
                         <td align="right">{{number_format($item->unit_cost,2)}}</td>
                         <td align="right">{{number_format($item->sell_price,2)}}</td>
                         <td align="center">{{number_format($item->item_profit,2)}}</td>
