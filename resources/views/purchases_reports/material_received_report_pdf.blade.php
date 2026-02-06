@@ -10,7 +10,7 @@
 
         body {
             font-size: 13px;
-        }
+        }""
 
         * {
             font-family: Verdana, Arial, sans-serif;
