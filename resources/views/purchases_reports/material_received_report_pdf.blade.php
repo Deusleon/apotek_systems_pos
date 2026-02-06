@@ -157,13 +157,16 @@
                 <thead>
                 <tr style="background: #1f273b; color: white;">
                     <th align="left" style="width: 1%;">#</th>
-                    <th align="left" style="width: 35%;">Product Name</th>
-                    <th align="center" style="width: 10%;">Quantity</th>
-                    <th align="right" style="width: 10%;">Buy Price</th>
-                    <th align="right" style="width: 10%;">Sell Price</th>
-                    <th align="center" style="width: 10%;">Profit</th>
-                    <th align="center" style="width: 15%;">Receive Date</th>
-                    <th align="left" style="width: 15%;">Received By</th>
+                    <th align="left" style="width: 25%;">Product Name</th>
+                    @if($store_id == 1)
+                    <th align="left" style="width: 10%;">Branch</th>
+                    @endif
+                    <th align="center" style="width: 8%;">Quantity</th>
+                    <th align="right" style="width: 8%;">Buy Price</th>
+                    <th align="right" style="width: 8%;">Sell Price</th>
+                    <th align="center" style="width: 8%;">Profit</th>
+                    <th align="center" style="width: 12%;">Receive Date</th>
+                    <th align="left" style="width: 12%;">Received By</th>
                 </tr>
                 </thead>
                 @foreach($data as $item)
@@ -172,6 +175,9 @@
                         <td align="left">
                             {{$item->product['name'].' '.$item->product['brand'].' '.$item->product['pack_size'].$item->product['sales_uom']}}
                         </td>
+                        @if($store_id == 1)
+                        <td align="left">{{$item->branch_name}}</td>
+                        @endif
                         <td align="center">{{number_format($item->quantity,0)}}</td>
                         <td align="right">{{number_format($item->unit_cost,2)}}</td>
                         <td align="right">{{number_format($item->sell_price,2)}}</td>

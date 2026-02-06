@@ -90,7 +90,7 @@ class PurchaseReportController extends Controller
                         return response()->view('error_pages.pdf_zero_data');
                     }
                 $pdf = PDF::loadView( 'purchases_reports.material_received_report_pdf',
-                compact( 'data', 'pharmacy', 'branch_name') )
+                compact( 'data', 'pharmacy', 'branch_name', 'store_id') )
                 ->setPaper( 'a4', '' );
                 return $pdf->stream( 'material_received_report.pdf' );
                 } else {
@@ -99,7 +99,7 @@ class PurchaseReportController extends Controller
                     }
 
                     $pdf = PDF::loadView('purchases_reports.material_received_all_supplier_report_pdf',
-                        compact('data', 'pharmacy', 'branch_name'));
+                        compact('data', 'pharmacy', 'branch_name', 'store_id'));
                     return $pdf->stream('material_received_all_supplier.pdf');
                 }
 
@@ -220,6 +220,15 @@ class PurchaseReportController extends Controller
         }
 
         foreach ($datas as $d) {
+            // Get branch name for this item
+            $branch_name = 'ALL';
+            if ($d->store_id != null) {
+                $store = DB::table('inv_stores')->where('id', $d->store_id)->value('name');
+                if ($store) {
+                    $branch_name = $store;
+                }
+            }
+            $d->branch_name = $branch_name;
             $d->total_bp = $datas->sum('total_cost');
             $d->total_sp = $datas->sum('total_sell');
             $d->total_p = $datas->sum('item_profit');
@@ -230,12 +239,22 @@ class PurchaseReportController extends Controller
         /*push them in an array*/
         $raw_data = array();
         foreach ($datas as $datum) {
+            // Get branch name for this item
+            $branch_name = 'ALL';
+            if ($datum->store_id != null) {
+                $store = DB::table('inv_stores')->where('id', $datum->store_id)->value('name');
+                if ($store) {
+                    $branch_name = $store;
+                }
+            }
+            
             array_push($raw_data, array(
                 'code' => $datum->product_id,
                 'product_name' => $datum->product['name'] . ' ' .
                           $datum->product['brand'] . ' ' .
                           $datum->product['pack_size'] .
                           $datum->product['sales_uom'],
+                'branch' => $branch_name,
                 'quantity' => $datum->quantity,
                 'unit_cost' => $datum->unit_cost,
                 'sell_price' => $datum->sell_price,
