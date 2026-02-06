@@ -49,7 +49,7 @@ class SupplierController extends Controller
         $supplier->email = $request->email;
         try {
             $supplier->save();
-            session()->flash("alert-success", "Supplier Added Successfully!");
+            session()->flash("alert-success", "Supplier added successfully!");
             return back();
         } catch (Exception $exception) {
             session()->flash("alert-danger", "Error adding supplier!");
@@ -74,7 +74,7 @@ class SupplierController extends Controller
 
         try {
             $supplier->save();
-            session()->flash("alert-success", "Supplier updated Successfully!");
+            session()->flash("alert-success", "Supplier updated successfully!");
             return back();
         } catch (Exception $exception) {
             session()->flash("alert-danger", "Error updating supplier!");
@@ -96,7 +96,7 @@ class SupplierController extends Controller
             }
 
             Supplier::destroy($request->id);
-            session()->flash("alert-success", "Supplier Deleted Successfully!");
+            session()->flash("alert-success", "Supplier deleted successfully!");
             return back();
         } catch (Exception $exception) {
             session()->flash("alert-danger", "Supplier In Use!");
