@@ -94,7 +94,7 @@
         <div>
 
         </div>
-            <h3 align="center" style="font-weight: bold; margin-top: -2%">Stock Issue Report ({{ current_store()->name }})</h3>
+            <h3 align="center" style="font-weight: bold; margin-top: -2%">Stock Issue Report {{ $isMultiStore ? '(' . current_store()->name . ')' : '' }}</h3>
             <h4 align="center" style="margin-top: -1%">From: {{date('d-m-Y',strtotime($data[0]['dates'][0]))}} To: {{date('d-m-Y',strtotime($data[0]['dates'][1]))}} </h4>
             <h4 align="center" style="margin-top: -1.5%">Printed On: {{now()->format('Y-m-d H:i:s')}}</h4>
         </div>

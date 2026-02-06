@@ -97,7 +97,7 @@
             {{$pharmacy['email'] . ' | ' . $pharmacy['website']}}
         </div><br>
         <div>
-            <h3 align="center" style="font-weight: bold; margin-top: -1%">Stock Adjustment Report ({{ current_store()->name }})</h3>
+            <h3 align="center" style="font-weight: bold; margin-top: -1%">Stock Adjustment Report {{ $isMultiStore ? '(' . current_store()->name . ')' : '' }}</h3>
             @if ($type)
                 <h4 align="center" style="margin-top: -1%">
                     @if ($data[0]['type'] == 'increase') Positive @else Negative

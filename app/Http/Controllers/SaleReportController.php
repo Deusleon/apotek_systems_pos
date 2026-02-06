@@ -55,6 +55,7 @@ class SaleReportController extends Controller {
         $pharmacy[ 'tin_number' ] = Setting::where( 'id', 102 )->value( 'value' );
         $pharmacy[ 'from_date' ] = date( 'Y-m-d', strtotime( $from ) );
         $pharmacy[ 'to_date' ] = date( 'Y-m-d', strtotime( $to ) );
+        $isMultiStore = Setting::where('id', 121)->value('value') === 'YES';
 
         switch ( $request->report_option ) {
             case 1:
@@ -63,7 +64,7 @@ class SaleReportController extends Controller {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
             $pdf = PDF::loadView( 'sale_reports.cash_sale_detail_report1_pdf',
-            compact( 'data', 'pharmacy', 'enable_discount' ) )
+            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
             ->setPaper( 'a4', 'landscape' );
             return $pdf->stream( 'Cash_sale_detail_report.pdf' );
 
@@ -73,7 +74,7 @@ class SaleReportController extends Controller {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
             $pdf = PDF::loadView( 'sale_reports.cash_sale_summary_report_pdf',
-            compact( 'data', 'pharmacy', 'enable_discount' ) )
+            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
             ->setPaper( 'a4', 'landscape' );
             return $pdf->stream( 'Cash_sale_summary_report.pdf' );
 
@@ -83,7 +84,7 @@ class SaleReportController extends Controller {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
             $pdf = PDF::loadView( 'sale_reports.credit_sale_detail_report_pdf',
-            compact( 'data', 'pharmacy', 'enable_discount' ) )
+            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
             ->setPaper( 'a4', 'landscape' );
             return $pdf->stream( 'Credit_sale_detail_report.pdf' );
 
@@ -93,7 +94,7 @@ class SaleReportController extends Controller {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
             $pdf = PDF::loadView( 'sale_reports.credit_sale_summary_report_pdf',
-            compact( 'data', 'pharmacy' ) )
+            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
             ->setPaper( 'a4', 'landscape' );
             return $pdf->stream( 'Credit_sale_summary_report.pdf' );
 
@@ -103,7 +104,7 @@ class SaleReportController extends Controller {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
             $pdf = PDF::loadView( 'sale_reports.credit_payment_report_pdf',
-            compact( 'data', 'pharmacy' ) );
+            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) );
             return $pdf->stream( 'Credit_payment_report.pdf' );
 
             case 6:
@@ -116,7 +117,7 @@ class SaleReportController extends Controller {
             }
             $customer = Customer::where( 'id', $request->customer_id )->value( 'name' );
             $pdf = PDF::loadView( 'sale_reports.customer_payment_statement_pdf',
-            compact( 'data', 'pharmacy', 'customer' ) );
+            compact( 'data', 'pharmacy', 'customer', 'enable_discount', 'isMultiStore' ) );
             return $pdf->stream( 'Customer_payment_statement.pdf' );
             
             case 7:
@@ -125,7 +126,7 @@ class SaleReportController extends Controller {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
             $pdf = PDF::loadView( 'sale_reports.sales_total_report_pdf',
-            compact( 'data', 'pharmacy', 'enable_discount' ) )
+            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
             ->setPaper( 'a4', '' );
             return $pdf->stream( 'Sales_total_report.pdf' );
 
@@ -144,7 +145,7 @@ class SaleReportController extends Controller {
                     return response()->view('error_pages.pdf_zero_data');
                 }
                 $pdf = Pdf::loadView('sale_reports.price_list_report_pdf', 
-                compact( 'data', 'pharmacy', 'type' ) );
+                compact( 'data', 'pharmacy', 'type', 'isMultiStore' ) );
                 return $pdf->stream('Price_list_report.pdf');
             }
             
@@ -154,7 +155,7 @@ class SaleReportController extends Controller {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
             $pdf = PDF::loadView( 'sale_reports.sale_detail_report_pdf',
-            compact( 'data', 'pharmacy', 'enable_discount' ) )
+            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
             ->setPaper( 'a4', 'landscape' );
             return $pdf->stream( 'Sales_detail_Report.pdf' );
             
@@ -164,7 +165,7 @@ class SaleReportController extends Controller {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
             $pdf = PDF::loadView( 'sale_reports.sale_summary_report_pdf',
-            compact( 'data', 'pharmacy', 'enable_discount' ) )
+            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
             ->setPaper( 'a4', 'landscape' );
             return $pdf->stream( 'Sale_summary_report.pdf' );
 
@@ -174,7 +175,7 @@ class SaleReportController extends Controller {
                 return response()->view('error_pages.pdf_zero_data');
             }
             $pdf = PDF::loadView( 'sale_reports.sale_return_report_pdf',
-            compact( 'data', 'pharmacy' ) )
+            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
             ->setPaper( 'a4', 'landscape' );
             return $pdf->stream( 'Sale_return_report.pdf' );
 
@@ -184,7 +185,7 @@ class SaleReportController extends Controller {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
             $pdf = PDF::loadView( 'sale_reports.sales_comparison_report_pdf',
-            compact( 'data', 'pharmacy' ) )
+            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
             ->setPaper( 'a4', 'landscape' );
             return $pdf->stream( 'Sales_comparison_report.pdf' );
             
@@ -194,7 +195,7 @@ class SaleReportController extends Controller {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
             $pdf = PDF::loadView( 'sale_reports.cash_sales_total_report_pdf',
-            compact( 'data', 'pharmacy', 'enable_discount' ) )
+            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
             ->setPaper( 'a4', '' );
             return $pdf->stream( 'Cash_sales_total_report.pdf' );
             
@@ -204,7 +205,7 @@ class SaleReportController extends Controller {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
             $pdf = PDF::loadView( 'sale_reports.credit_sales_total_report_pdf',
-            compact( 'data', 'pharmacy', 'enable_discount' ) )
+            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
             ->setPaper( 'a4', '' );
             return $pdf->stream( 'Credit_sales_total_report.pdf' );
 
@@ -214,7 +215,7 @@ class SaleReportController extends Controller {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
             $pdf = PDF::loadView( 'sale_reports.discount_report_pdf',
-            compact( 'data', 'pharmacy') )
+            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
             ->setPaper( 'a4', '' );
             return $pdf->stream( 'Discount_report.pdf' );
 
@@ -224,7 +225,7 @@ class SaleReportController extends Controller {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
             $pdf = PDF::loadView( 'sale_reports.waste_collection_report_pdf',
-            compact( 'data', 'pharmacy' ) )
+            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
             ->setPaper( 'a4', 'landscape' );
             return $pdf->stream( 'Waste_collection_report.pdf' );
 

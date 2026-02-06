@@ -78,7 +78,7 @@ class ConfigurationsController extends Controller
                 'store' => $defaultStore->name
             ] );
 
-            return redirect()->back()->with( 'alert-success', "Default Branch is {$defaultStore->name}" );
+            // return redirect()->back()->with( 'alert-success', "Default Branch is {$defaultStore->name}" );
         }
 
         if ( $request->setting_id == 122 ) {
@@ -103,7 +103,7 @@ class ConfigurationsController extends Controller
                 'store' => $storeName
             ] );
 
-            return redirect()->back()->with( 'success', "Branch changed to {$storeName}" );
+            // return redirect()->back()->with( 'success', "Branch changed to {$storeName}" );
         }
 
         $setting->updated_by = Auth::user()->id;

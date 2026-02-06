@@ -52,6 +52,7 @@ var items_table = $("#items_table").DataTable({
             render: function (vat) {
                 return formatMoney(vat);
             },
+            visible: false,
         },
         {
             title: "Discount",
@@ -340,6 +341,9 @@ function applyCartEdit() {
     var vat;
     var unit_total;
     var vat_money;
+    console.log("TAX VALUE RAW =", document.getElementById("vat").value);
+console.log("TAX PARSED =", tax);
+
 
     if (fixed_price === "NO") {
         vat = Number(

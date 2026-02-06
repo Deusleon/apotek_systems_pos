@@ -1021,10 +1021,36 @@ class SaleController extends Controller
         $salesDetails->where('inv_current_stock.store_id', $storeId);
         }
 
-        $results = $salesDetails->select('sales_details.*', 'inv_products.name', 'inv_products.brand', 'inv_products.pack_size', 'inv_products.sales_uom')->get();
+        $results = $salesDetails->select('sales_details.*', 'inv_products.name', 'inv_products.brand', 'inv_products.pack_size', 'inv_products.sales_uom')
+        ->orderBy('id', 'asc')
+        ->get();
+        
+        $groupedData = [];
+        foreach ($results as $item) {
+            $productName = $item->name.' '.($item->brand ?? '').' '.$item->pack_size.$item->sales_uom;
+            $key = $productName;
+            if (!isset($groupedData[$key])) {
+                $groupedData[$key] = [
+                    'name' => $item->name,
+                    'brand' => $item->brand,
+                    'pack_size' => $item->pack_size,
+                    'sales_uom' => $item->sales_uom,
+                    'quantity' => 0,
+                    'price' => $item->price,
+                    'vat' => 0,
+                    'amount' => 0,
+                ];
+            }
+            $groupedData[$key]['quantity'] += $item->quantity;
+            $groupedData[$key]['amount'] += $item->amount;
+            $groupedData[$key]['vat'] += $item->vat;
+        }
+
+        $finalResults = array_values($groupedData);
+
             
         return response()->json([
-            "data" => $results
+            "data" => $finalResults
         ]);
     } 
     public function salesDetailsData(Request $request)

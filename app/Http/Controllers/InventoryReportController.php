@@ -77,6 +77,7 @@ class InventoryReportController extends Controller
     $pharmacy['website'] = Setting::where('id', 109)->value('value');
     $pharmacy['logo'] = Setting::where('id', 105)->value('value');
     $pharmacy['tin_number'] = Setting::where('id', 102)->value('value');
+    $isMultiStore = Setting::where('id', 121)->value('value') === 'YES';
 
         switch ($request->report_option) {
             case 1:
@@ -91,7 +92,7 @@ class InventoryReportController extends Controller
                         return response()->view('error_pages.pdf_zero_data');
                     }
                     $pdf = PDF::loadView( 'inventory_reports.current_stock_by_store_report_pdf',
-                    compact( 'data', 'store', 'pharmacy' ) )
+                    compact( 'data', 'store', 'pharmacy', 'isMultiStore' ) )
                     ->setPaper( 'a4', '' );
                     return $pdf->stream( 'current_stock_by_store_report.pdf' );
                 } else {
@@ -103,7 +104,7 @@ class InventoryReportController extends Controller
                         return response()->view('error_pages.pdf_zero_data');
                     }
                     $pdf = PDF::loadView( 'inventory_reports.current_stock_report_pdf',
-                    compact( 'data', 'store', 'category', 'pharmacy' ) )
+                    compact( 'data', 'store', 'category', 'pharmacy', 'isMultiStore' ) )
                     ->setPaper( 'a4', '' );
                     return $pdf->stream( 'current_stock_report.pdf' );
                 }
@@ -119,7 +120,7 @@ class InventoryReportController extends Controller
                         return response()->view('error_pages.pdf_zero_data');
                     }
                     $pdf = PDF::loadView( 'inventory_reports.current_stock_by_store_detailed_report_pdf',
-                    compact( 'data', 'store', 'pharmacy' ) )
+                    compact( 'data', 'store', 'pharmacy', 'isMultiStore' ) )
                     ->setPaper( 'a4', '' );
                     return $pdf->stream( 'current_stock_by_store_detailed_report.pdf' );
                 } else {
@@ -131,7 +132,7 @@ class InventoryReportController extends Controller
                         return response()->view('error_pages.pdf_zero_data');
                     }
                     $pdf = PDF::loadView( 'inventory_reports.current_stock_detailed_report_pdf',
-                    compact( 'data', 'store', 'category', 'pharmacy' ) )
+                    compact( 'data', 'store', 'category', 'pharmacy', 'isMultiStore' ) )
                     ->setPaper( 'a4', '' );
                     return $pdf->stream( 'current_stock_detailed_report.pdf' );
                 }
@@ -142,44 +143,44 @@ class InventoryReportController extends Controller
                 }
                 if ($request->category_name_detail != null) {
                     $pdf = PDF::loadView( 'inventory_reports.product_detail_report_pdf',
-                    compact( 'data',  'pharmacy' ) )
+                    compact( 'data',  'pharmacy', 'isMultiStore' ) )
                     ->setPaper( 'a4', '' );
                     return $pdf->stream( 'product_details_report.pdf' );
                 } else {
                     $pdf = PDF::loadView( 'inventory_reports.product_detail1_report_pdf',
-                    compact( 'data',  'pharmacy' ) )
+                    compact( 'data',  'pharmacy', 'isMultiStore' ) )
                     ->setPaper( 'a4', '' );
                     return $pdf->stream( 'product_details_report.pdf' );
                 }
             case 3:
-// Force cleanup before processing
-if (function_exists('gc_collect_cycles')) {
-    gc_collect_cycles();
-}
+                // Force cleanup before processing
+                if (function_exists('gc_collect_cycles')) {
+                    gc_collect_cycles();
+                }
 
-//product ledger
-$data = $this->productLedgerReport($request->product);
-if (empty($data)) {
-    return response()->view('error_pages.pdf_zero_data');
-}
+                //product ledger
+                $data = $this->productLedgerReport($request->product);
+                if (empty($data)) {
+                    return response()->view('error_pages.pdf_zero_data');
+                }
 
-// Temporarily increase limits for this report
-$oldMemoryLimit = ini_get('memory_limit');
-$oldTimeLimit = ini_get('max_execution_time');
+                // Temporarily increase limits for this report
+                $oldMemoryLimit = ini_get('memory_limit');
+                $oldTimeLimit = ini_get('max_execution_time');
 
-ini_set('memory_limit', '3072M');
-set_time_limit(1800);
+                ini_set('memory_limit', '3072M');
+                set_time_limit(1800);
 
-try {
-    $pdf = PDF::loadView( 'inventory_reports.product_ledger_report_pdf',
-    compact( 'data',  'pharmacy' ) )
-    ->setPaper( 'a4', '' );
-    return $pdf->stream( 'product_ledger_report.pdf' );
-} finally {
-    // Restore original limits
-    ini_set('memory_limit', $oldMemoryLimit);
-    set_time_limit($oldTimeLimit);
-}
+                try {
+                    $pdf = PDF::loadView( 'inventory_reports.product_ledger_report_pdf',
+                    compact( 'data',  'pharmacy', 'isMultiStore' ) )
+                    ->setPaper( 'a4', '' );
+                    return $pdf->stream( 'product_ledger_report.pdf' );
+                } finally {
+                    // Restore original limits
+                    ini_set('memory_limit', $oldMemoryLimit);
+                    set_time_limit($oldTimeLimit);
+                }
             case 17:
                 //product ledger
                 $data = $this->productLedgerDetailedReport($request->product);
@@ -187,7 +188,7 @@ try {
                     return response()->view('error_pages.pdf_zero_data');
                 }
                 $pdf = PDF::loadView( 'inventory_reports.product_ledger_detailed_report_pdf',
-                compact( 'data',  'pharmacy' ) )
+                compact( 'data',  'pharmacy', 'isMultiStore' ) )
                 ->setPaper( 'a4', '' );
                 return $pdf->stream( 'product_ledger_detailed_report.pdf' );
             case 4:
@@ -197,7 +198,7 @@ try {
                     return response()->view('error_pages.pdf_zero_data');
                 }
                 $pdf = PDF::loadView( 'inventory_reports.expiry_product_report_pdf',
-                compact( 'data',  'pharmacy' ) )
+                compact( 'data',  'pharmacy', 'isMultiStore' ) )
                 ->setPaper( 'a4', '' );
                 return $pdf->stream( 'expiry_product_report.pdf' );
             case 13:
@@ -207,7 +208,7 @@ try {
                     return response()->view('error_pages.pdf_zero_data');
                 }
                 $pdf = PDF::loadView( 'inventory_reports.product_expire_date_report_pdf',
-                compact( 'data',  'pharmacy' ) )
+                compact( 'data',  'pharmacy', 'isMultiStore' ) )
                 ->setPaper( 'a4', '' );
                 return $pdf->stream( 'products_expire_date_report.pdf' );
             case 5:
@@ -217,7 +218,7 @@ try {
                     return response()->view('error_pages.pdf_zero_data');
                 }
                 $pdf = PDF::loadView( 'inventory_reports.outofstock_report_pdf',
-                compact( 'data',  'pharmacy' ) )
+                compact( 'data',  'pharmacy', 'isMultiStore' ) )
                 ->setPaper( 'a4', '' );
                 return $pdf->stream( 'outofstock_report.pdf' );
             case 6:
@@ -230,7 +231,7 @@ try {
                     return response()->view('error_pages.pdf_zero_data');
                 }
                 $pdf = PDF::loadView( 'inventory_reports.outgoing_stocktracking_report_pdf',
-                compact( 'data', 'date1', 'date2', 'pharmacy' ) )
+                compact( 'data', 'date1', 'date2', 'pharmacy', 'isMultiStore' ) )
                 ->setPaper( 'a4', '' );
                 return $pdf->stream( 'outgoing_stocktracking_report.pdf' );
             case 14:
@@ -243,7 +244,7 @@ try {
                     return response()->view('error_pages.pdf_zero_data');
                 }
                 $pdf = PDF::loadView( 'inventory_reports.outgoing_stocktracking_summary_report_pdf',
-                compact( 'data', 'date1', 'date2',  'pharmacy' ) )
+                compact( 'data', 'date1', 'date2',  'pharmacy', 'isMultiStore' ) )
                 ->setPaper( 'a4', '' );
                 return $pdf->stream( 'outgoing_stocktracking_summary_report.pdf' );
             case 15:
@@ -257,7 +258,7 @@ try {
                     return response()->view('error_pages.pdf_zero_data');
                 }
                 $pdf = PDF::loadView( 'inventory_reports.fast_moving_report_pdf',
-                compact( 'data', 'store', 'pharmacy' ) )
+                compact( 'data', 'store', 'pharmacy', 'isMultiStore' ) )
                 ->setPaper( 'a4', '' );
                 return $pdf->stream( 'fast_moving_report.pdf' );
             case 16:
@@ -271,7 +272,7 @@ try {
                     return response()->view('error_pages.pdf_zero_data');
                 }
                 $pdf = PDF::loadView( 'inventory_reports.dead_stock_report_pdf',
-                compact( 'data', 'store', 'pharmacy' ) )
+                compact( 'data', 'store', 'pharmacy', 'isMultiStore' ) )
                 ->setPaper( 'a4', '' );
                 return $pdf->stream( 'dead_stock_report.pdf' );
             case 7:
@@ -284,12 +285,12 @@ try {
                 }
                 if ($request->stock_adjustment_reason != null) {
                 $pdf = PDF::loadView( 'inventory_reports.stock_adjustment_reason_report_pdf',
-                compact( 'data',  'type', 'pharmacy' ) )
+                compact( 'data',  'type', 'pharmacy', 'isMultiStore' ) )
                 ->setPaper( 'a4', '' );
                 return $pdf->stream( 'stock_adjustment_reason_report.pdf' );
                 } else {
                 $pdf = PDF::loadView( 'inventory_reports.stock_adjustment_report_pdf',
-                compact( 'data', 'type', 'pharmacy' ) )
+                compact( 'data', 'type', 'pharmacy', 'isMultiStore' ) )
                 ->setPaper( 'a4', '' );
                 return $pdf->stream( 'stock_adjustment_report.pdf' );
                 }
@@ -303,7 +304,7 @@ try {
                         return response()->view('error_pages.pdf_zero_data');
                     }
                 $pdf = PDF::loadView( 'inventory_reports.stock_issue_report_pdf',
-                compact( 'data', 'pharmacy' ) )
+                compact( 'data', 'pharmacy', 'isMultiStore' ) )
                 ->setPaper( 'a4', '' );
                 return $pdf->stream( 'stock_issue_report.pdf' );
                 } elseif ($request->stock_issue == '1') {
@@ -313,7 +314,7 @@ try {
                         return response()->view('error_pages.pdf_zero_data');
                     }
                 $pdf = PDF::loadView( 'inventory_reports.stock_issue_report_pdf',
-                compact( 'data', 'pharmacy' ) )
+                compact( 'data', 'pharmacy', 'isMultiStore' ) )
                 ->setPaper( 'a4', '' );
                 return $pdf->stream( 'stock_issue_report.pdf' );
                 } elseif ($request->stock_issue == '2') {
@@ -323,7 +324,7 @@ try {
                         return response()->view('error_pages.pdf_zero_data');
                     }
                 $pdf = PDF::loadView( 'inventory_reports.stock_issue_report_pdf',
-                compact( 'data', 'pharmacy' ) )
+                compact( 'data', 'pharmacy', 'isMultiStore' ) )
                 ->setPaper( 'a4', '' );
                 return $pdf->stream( 'stock_issue_report.pdf' );
                 }
@@ -336,7 +337,7 @@ try {
                         return response()->view('error_pages.pdf_zero_data');
                     }
                     $pdf = PDF::loadView( 'inventory_reports.stock_transfer_report_pdf',
-                    compact( 'data', 'pharmacy' ) )
+                    compact( 'data', 'pharmacy', 'isMultiStore' ) )
                     ->setPaper( 'a4', 'landscape' );
                     return $pdf->stream( 'stock_transfer_report.pdf' );
                 } else {
@@ -345,7 +346,7 @@ try {
                         return response()->view('error_pages.pdf_zero_data');
                     }
                     $pdf = PDF::loadView( 'inventory_reports.stock_transfer_status_report_pdf',
-                    compact( 'data', 'pharmacy' ) )
+                    compact( 'data', 'pharmacy', 'isMultiStore' ) )
                     ->setPaper( 'a4', 'landscape' );
                     return $pdf->stream( 'stock_transfer_status_report.pdf' );
                 }
@@ -355,7 +356,7 @@ try {
                     return response()->view('error_pages.pdf_zero_data');
                 }
                     $pdf = PDF::loadView( 'inventory_reports.stock_max_level_pdf',
-                    compact( 'data', 'pharmacy' ) )
+                    compact( 'data', 'pharmacy', 'isMultiStore' ) )
                     ->setPaper( 'a4', '' );
                     return $pdf->stream( 'stock_max_level.pdf' );
             case 11:
@@ -364,7 +365,7 @@ try {
                     return response()->view('error_pages.pdf_zero_data');
                 }
                     $pdf = PDF::loadView( 'inventory_reports.stock_min_level_pdf',
-                    compact( 'data', 'pharmacy' ) )
+                    compact( 'data', 'pharmacy', 'isMultiStore' ) )
                     ->setPaper( 'a4', '' );
                     return $pdf->stream( 'stock_min_level.pdf' );
             case 18:
@@ -376,7 +377,7 @@ try {
                     return response()->view('error_pages.pdf_zero_data');
                 }
                 $pdf = PDF::loadView( 'inventory_reports.stock_requisition_report_pdf',
-                compact( 'data', 'pharmacy' ) )
+                compact( 'data', 'pharmacy', 'isMultiStore' ) )
                 ->setPaper( 'a4', 'landscape' );
                 return $pdf->stream( 'stock_requisition_report.pdf' );
             default:

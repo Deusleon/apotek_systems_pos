@@ -97,7 +97,7 @@
             {{$pharmacy['email'] . ' | ' . $pharmacy['website']}}
         </div><br>
         <div>
-            <h3 align="center" style="font-weight: bold; margin-top: -1%">Product Ledger Detailed Report ({{ current_store()->name }})</h3>
+            <h3 align="center" style="font-weight: bold; margin-top: -1%">Product Ledger Detailed Report {{ $isMultiStore ? '(' . current_store()->name . ')' : '' }}</h3>
             <h4 align="center" style="margin-top: -1%">Printed On: {{now()->format('Y-m-d H:i:s')}}</h4>
             <h4 align="center" style="margin-top: -1%">Product Name: {{$data[0]['name']}}</h4>
         </div>
