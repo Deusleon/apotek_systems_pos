@@ -1357,7 +1357,8 @@ class SaleController extends Controller
     public function mobilePOS()
     {
         try {
-            if (!Auth()->user()->checkPermission('View Cash Sales')) {
+            // Allow access if user has "View Cash Sales" OR "View Waste Collection" permission
+            if (!Auth()->user()->checkPermission('View Cash Sales') && !Auth()->user()->checkPermission('View Waste Collection')) {
                 abort(403, 'Access Denied');
             }
 

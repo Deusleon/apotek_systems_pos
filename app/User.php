@@ -105,6 +105,22 @@ class User extends Authenticatable
         }
     }
 
+    /**
+     * Get all distinct permission names assigned to this user via their roles.
+     * Used to determine login redirect logic.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getUserPermissionNames()
+    {
+        return DB::table('role_has_permissions')
+            ->join('model_has_roles', 'model_has_roles.role_id', '=', 'role_has_permissions.role_id')
+            ->join('permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')
+            ->where('model_has_roles.model_id', $this->id)
+            ->distinct()
+            ->pluck('permissions.name');
+    }
+
     public function isAdmin($role_name)
     {
 

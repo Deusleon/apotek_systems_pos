@@ -110,11 +110,19 @@ class LoginController extends Controller {
         // Force session save
         session()->save();
 
-        // Redirect users with "View Waste Collection" permission to mobile-pos
-        if ($user->checkPermission('View Waste Collection')) {
+        /**
+         * Login Redirect Logic:
+         * - If the user has ONLY the "View Waste Collection" permission,
+         *   redirect them to the Mobile POS (waste collection) page.
+         * - If the user has any other permissions, redirect to the standard dashboard.
+         */
+        $userPermissions = $user->getUserPermissionNames();
+
+        if ($userPermissions->count() === 1 && $userPermissions->first() === 'View Waste Collection') {
             return redirect()->route('mobile-pos.index');
         }
 
+        // Default: redirect to dashboard (handled by $redirectTo = '/home')
         return null;
     }
     /**
