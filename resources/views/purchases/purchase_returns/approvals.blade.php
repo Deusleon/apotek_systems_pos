@@ -219,9 +219,9 @@
 
             // Populate modal fields
             $("#return_modal_description").val((rowData.goods_receiving.product.name || '') + ' ' + (rowData.goods_receiving.product.brand || '') + ' ' + (rowData.goods_receiving.product.pack_size || '') + (rowData.goods_receiving.product.sales_uom || ''));
-            $("#return_modal_qty_received").val(numberWithCommas(rowData.goods_receiving.quantity));
+            $("#return_modal_qty_received").val(formatQuantity(rowData.goods_receiving.quantity));
             $("#return_modal_receive_date").val(moment(rowData.goods_receiving.created_at).format('YYYY-MM-DD'));
-            $("#return_modal_qty_return").val(numberWithCommas(rowData.quantity));
+            $("#return_modal_qty_return").val(formatQuantity(rowData.quantity));
             $("#return_modal_refund_amount").val(formatMoney(rowData.goods_receiving.unit_cost * rowData.quantity));
             $("#return_modal_returned_by").val(rowData.creator ? rowData.creator.name : 'N/A');
 
@@ -272,8 +272,8 @@
                 {
                     data: 'goods_receiving',
                     render: function (item) {
-                        // Show the current remaining quantity after any approved returns
-                        return numberWithCommas(Math.floor(item.quantity || 0));
+                        // Show the current remaining quantity after any approved returns (preserve decimals)
+                        return formatQuantity(item.quantity);
                     },
                     className: "text-center"
                 },
@@ -284,8 +284,8 @@
                 {
                     data: 'quantity',
                     render: function (data, type, row) {
-                        // Show the exact quantity entered in the return modal
-                        return numberWithCommas(Math.floor(data));
+                        // Show the exact quantity entered in the return modal (preserve decimals)
+                        return formatQuantity(data);
                     },
                     className: "text-center"
                 },
@@ -402,7 +402,21 @@
         }
 
         function numberWithCommas(digit) {
-            return String(parseFloat(digit)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            if (isNaN(parseFloat(digit))) return '';
+            var num = parseFloat(digit);
+            // Split into integer and decimal parts
+            var parts = num.toString().split('.');
+            var integerPart = parts[0];
+            var decimalPart = parts.length > 1 ? '.' + parts[1] : '';
+            // Add commas to integer part
+            integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return integerPart + decimalPart;
+        }
+
+        function formatQuantity(qty) {
+            // Format quantity with commas for thousands, preserve decimals
+            if (isNaN(parseFloat(qty))) return '';
+            return numberWithCommas(qty);
         }
 
         // Tab redirects
