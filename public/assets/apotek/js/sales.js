@@ -344,7 +344,6 @@ function applyCartEdit() {
     console.log("TAX VALUE RAW =", document.getElementById("vat").value);
 console.log("TAX PARSED =", tax);
 
-
     if (fixed_price === "NO") {
         vat = Number(
             (parseFloat(editPrice.value.replace(/\,/g, ""), 10) * tax).toFixed(

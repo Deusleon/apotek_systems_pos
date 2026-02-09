@@ -733,3 +733,26 @@ Route::delete('/documents/{document}', 'DocumentController@destroy')->name('docu
 Route::get('/transport-reports', 'TransportReportController@index')->name('transport-reports.index');
 Route::post('/transport-reports/generate', 'TransportReportController@generateReport')->name('transport-reports.generate');
 Route::get('/inventory-notifications', 'HomeController@getInventoryNotifications')->name('inventory.notifications')->middleware('auth');
+
+// Production Routes
+Route::get('production', 'ProductionController@index')->name('production.index');
+Route::post('production/store', 'ProductionController@store')->name('production.store');
+Route::get('production/data', 'ProductionController@data')->name('production.data');
+Route::get('production/{id}', 'ProductionController@show')->name('production.show');
+Route::put('production/{id}', 'ProductionController@update')->name('production.update');
+Route::delete('production/{id}', 'ProductionController@destroy')->name('production.destroy');
+Route::get('production/{id}/distributions', 'ProductionController@getDistributions')->name('production.distributions');
+Route::post('production/{id}/distributions', 'ProductionController@storeDistributions')->name('production.storeDistributions');
+Route::get('stores/list', 'ProductionController@getStores')->name('stores.list');
+
+// Distributions Report Routes
+Route::get('distributions', 'ProductionController@distributionsReport')->name('distributions.index');
+Route::get('distributions/data', 'ProductionController@distributionsData')->name('distributions.data');
+Route::delete('distributions/{id}', 'ProductionController@deleteDistribution')->name('distributions.destroy');
+Route::post('distributions/bulk-delete', 'ProductionController@bulkDeleteDistributions')->name('distributions.bulk-delete');
+
+// Production & Distribution Reports (Combined Page)
+Route::get('production-reports', 'ProductionReportController@index')->name('production-reports.index');
+Route::get('production-reports/filter', 'ProductionReportController@filter')->name('production-report-filter');
+Route::get('distribution-reports', 'ProductionReportController@index')->name('distribution-reports.index');
+Route::get('distribution-reports/filter', 'DistributionReportController@filter')->name('distribution-report-filter');
