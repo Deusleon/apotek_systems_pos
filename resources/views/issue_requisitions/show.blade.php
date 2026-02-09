@@ -98,14 +98,14 @@
                                                 <td style="display: none"><input type="text" name="product_id[]"
                                                         value="{{ $item->products_->id }}"></td>
                                                 <td class="border-0">{{ $item->products_->full_product_name ?? $item->products_->name }}</td>
-                                                <td class="text-center border-0 qoh-cell" data-qoh="{{ $item->qty_oh }}">{{ number_format($item->qty_oh) }}</td>
+                                                <td class="text-center border-0 qoh-cell" data-qoh="{{ $item->qty_oh }}">{{ $item->qty_oh !== null ? rtrim(rtrim(number_format($item->qty_oh, 2, '.', ''), '0'), '.') : '0' }}</td>
                                                 <td class="text-center border-0">
                                                     <input class="form-control text-center" style="display: none" type="text" name="qty_req[]"
-                                                        value="{{ $item->quantity }}">{{ number_format($item->quantity) }}
+                                                        value="{{ $item->quantity }}">{{ $item->quantity !== null ? rtrim(rtrim(number_format($item->quantity, 2, '.', ''), '0'), '.') : '0' }}
                                                 </td>
                                                 <td class="text-center border-0 qty-issued-cell" data-index="{{ $index }}">
                                                     <!-- Display as text initially -->
-                                                    <span class="qty-text">{{ number_format($item->quantity_given ?? $item->quantity) }}</span>
+                                                    <span class="qty-text">{{ $item->quantity_given ?? $item->quantity !== null ? rtrim(rtrim(number_format($item->quantity_given ?? $item->quantity, 2, '.', ''), '0'), '.') : '0' }}</span>
                                                     <!-- Input field (hidden initially) -->
                                                     <input class="form-control text-center qty-input" type="text" name="qty[]"
                                                         value="{{ $item->quantity_given ?? $item->quantity }}"
