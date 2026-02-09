@@ -528,6 +528,7 @@ class SaleController extends Controller
         if (!Auth()->user()->checkPermission('View Cash Sales')) {
             abort(403, 'Access Denied');
         }
+        Log::info('Initiating cash sale store', ['user_id' => Auth::id(), 'request_data' => $request->all()]);
 
         if ($request->ajax()) {
             $this->store($request);
@@ -1203,6 +1204,8 @@ class SaleController extends Controller
         }
 
         $data = $grouped_sales;
+
+        Log::info('Data'.json_encode($data));
 
         // Get the receipt number from the sale data
         $receipt_no = !empty($data) ? array_key_first($data) : 'receipt';

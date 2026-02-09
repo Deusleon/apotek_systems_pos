@@ -29,7 +29,23 @@
         </ul>
     @endif
 </li>
-
+{{-- @if (current_store_id() === 1 || current_store_id() === 2)
+    <li class="nav-item pcoded-hasmenu">
+        @if(auth()->user()->checkPermission('View Production'))
+            <a href="#!" class="nav-link"><span class="pcoded-micon"><i class="fas fa-industry"></i></span>
+                <span class="pcoded-mtext">Productions</span>
+            </a>
+            <ul class="pcoded-submenu">
+                @if(auth()->user()->checkPermission('View Production'))
+                    <li class=""><a href="{{ route('production.index') }}" class="">Productions</a>
+                    </li>
+                    <li class=""><a href="{{route('distributions.index')}}" class="">Distributions</a>
+                    </li>
+                @endif
+            </ul>
+        @endif
+    </li>
+@endif --}}
 <li class="nav-item pcoded-hasmenu">
     @if(auth()->user()->checkPermission('View Purchasing'))
         <a href="#!" class="nav-link"><span class="pcoded-micon"><i class="fas fa-shopping-cart"></i></span>
@@ -141,13 +157,6 @@
             @if(auth()->user()->checkPermission('View Invoices'))
                 <li class=""><a href="{{route('invoice-management.index')}}" class="">Invoices</a></li>
             @endif
-            {{-- @if(auth()->user()->checkPermission('View Assets'))
-            <li class=""><a href="#" class="">Assets</a></li>
-            @endif
-            @if(auth()->user()->checkPermission('View Cash Flow'))
-            <li class=""><a href="#" class="">Cash Flow</a></li>
-            @endif
-            --}}
         </ul>
 
 
@@ -163,6 +172,12 @@
             @if(auth()->user()->checkPermission('View Sales Reports'))
                 <li class=""><a href="{{route('sale-report-index')}}" class="">Sales Reports</a></li>
             @endif
+            {{-- @if (current_store_id() === 1 || current_store_id() === 2)
+                @if(auth()->user()->checkPermission('View Production Report'))
+                    <li class=""><a href="{{route('production-reports.index')}}" class="">Production Reports</a>
+                    </li>
+                @endif
+            @endif --}}
             @if(auth()->user()->checkPermission('View Purchasing Reports'))
                 <li class=""><a href="{{route('purchase-report-index')}}" class="">Purchasing Reports</a>
                 </li>
@@ -244,16 +259,6 @@
                     </ul>
                 </li>
             @endif
-            {{-- @if(auth()->user()->checkPermission('View Alerts'))
-            <li>
-                <a href="#">Alerts</a>
-                <ul class="pcoded-submenu">
-                    <li class=""><a href="#" class="">Alerts</a></li>
-                    <li class=""><a href="#" class="">Alerts Details</a></li>
-                    <li class=""><a href="#" class="">Min/Max Levels</a></li>
-                </ul>
-            </li>
-            @endif --}}
             @if(auth()->user()->checkPermission('View Tools'))
                 <li>
                     <a href="#">Tools</a>
@@ -288,8 +293,8 @@
     <label>HELP</label>
 </li> --}}
 
-<li class="nav-item"><a href="{{ route('mobile-pos.index') }}" class="nav-link"><span class="pcoded-micon"><i
-                class="fas fa-tablet"></i></span><span class="pcoded-mtext">Waste Collection</span></a></li>
+{{-- <li class="nav-item"><a href="{{ route('mobile-pos.index') }}" class="nav-link"><span class="pcoded-micon"><i
+                class="fas fa-tablet"></i></span><span class="pcoded-mtext">Waste Collection</span></a></li> --}}
 <li class="nav-item"><a href="{{ route('support.index') }}" class="nav-link"><span class="pcoded-micon"><i
                 class="fas fa-question"></i></span><span class="pcoded-mtext">Support</span></a>
 </li>
