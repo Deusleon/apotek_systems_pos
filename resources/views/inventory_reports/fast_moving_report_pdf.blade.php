@@ -1,3 +1,27 @@
+@php
+    function smartFormat($num)
+    {
+        $str = (string) $num;
+
+        if (strpos($str, '.') !== false) {
+
+            list($whole, $decimal) = explode('.', $str);
+
+            $decimal = rtrim($decimal, '0');
+
+            if ($decimal === '') {
+                return number_format((int) $whole);
+            }
+
+            $wholeFormatted = number_format((int) $whole);
+
+            return $wholeFormatted . '.' . $decimal;
+
+        } else {
+            return number_format((int) $str);
+        }
+    }
+@endphp
 <!DOCTYPE html>
 <html>
 
@@ -127,9 +151,9 @@
                             {{-- <td align="">{{$item['category']}}</td> --}}
                             <td align="center">{{number_format($item['no_of_sales'])}}</td>
                             <td align="center">
-                                {{number_format($item['quantity'], 0)}}
+                                {{ smartFormat($item['quantity']) }}
                             </td>
-                            <td align="center">{{number_format($item['qoh'])}}</td>
+                            <td align="center">{{ smartFormat($item['qoh']) }}</td>
                         </tr>
                     @endforeach
                     {{-- @endforeach--}}

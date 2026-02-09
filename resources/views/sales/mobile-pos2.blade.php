@@ -159,12 +159,13 @@
             }
         }
 
-        /* Receipt Print Styles */
+        <!-- Receipt Print Styles -->
         @media print {
             body * {
                 visibility: hidden;
             }
 
+            #receipt-preview-container,
             #receipt-print,
             #receipt-print * {
                 visibility: visible !important;
@@ -185,8 +186,8 @@
 
         #receipt-print {
             font-family: Arial, Helvetica, sans-serif;
-            width: 80mm;
-            padding: 10mm;
+            width: 100%;
+            padding: 10px;
             background: white;
         }
 
@@ -304,6 +305,99 @@
                 display: none !important;
             }
         }
+
+        /**
+         * Sidebar height fix:
+         * The pcoded sidebar layout normally depends on pcoded.min.js for height
+         * calculations. Without it (commented out on this page), the sidebar
+         * can break the layout when it has few menu items. These overrides
+         * ensure the sidebar and main container render correctly regardless
+         * of menu item count or JS initialization state.
+         */
+        .pcoded-navbar {
+            min-height: 100vh;
+            position: fixed;
+            z-index: 1029;
+        }
+
+        .pcoded-navbar .navbar-content {
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+
+        .pcoded-main-container {
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /**
+         * Receipt preview styles:
+         * The receipt needs to be visible on-screen at a readable size
+         * inside its container, but must still print at 80mm thermal width.
+         * We use a wrapper with overflow and scaling for screen display.
+         */
+        #receipt-preview-container {
+            max-width: 480px;
+            margin: 15px auto;
+            padding: 10px;
+            background: #f9f9f9;
+            border: 1px dashed #ccc;
+            border-radius: 8px;
+            overflow: auto;
+            max-height: 60vh;
+        }
+
+        #receipt-preview-container #receipt-print {
+            display: block;
+            visibility: visible;
+            width: 100%;
+            max-width: 100%;
+            padding: 15px;
+            margin: 0 auto;
+            font-size: 14px;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* Print styles: override preview container, show receipt at 80mm */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #receipt-preview-container,
+            #receipt-print,
+            #receipt-print * {
+                visibility: visible !important;
+            }
+
+            #receipt-preview-container {
+                border: none !important;
+                background: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                max-height: none !important;
+                overflow: visible !important;
+                box-shadow: none !important;
+            }
+
+            #receipt-print {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 80mm;
+                max-width: 80mm;
+                padding: 10mm;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+            }
+
+            @page {
+                size: 80mm auto;
+                margin: 0;
+            }
+        }
     </style>
 </head>
 
@@ -394,39 +488,41 @@
             </div>
         </div>
 
-        <!-- Receipt Print Template -->
-        <div id="receipt-print" style="display:block; visibility:hidden;">
-            <div class="receipt-header">
-                <div class="receipt-title">RECEIPT</div>
-                <div class="receipt-info" id="companyName"></div>
-                <div class="receipt-info" id="companyAddress"></div>
-                <div class="receipt-info" id="companyPhone"></div>
-                <div class="receipt-info" id="companyTin"></div>
-                <div class="receipt-info2" id="receiptNumber">Receipt #: #000000</div>
-                <div class="receipt-info2" id="receiptDate">Date: {{ date('Y-m-d H:i:s') }}</div>
-                <div class="receipt-info2" id="customerName"></div>
-                <div class="receipt-info2">Payment: CASH</div>
-            </div>
-
-            <div class="receipt-items-header">
-                <div style="width: 40%; text-align: left;">Description</div>
-                <div style="width: 20%; text-align: center; margin-left: 10px;">Weight</div>
-                <div style="width: 40%; text-align: right;">Amount</div>
-            </div>
-            <div class="receipt-items" id="receiptItems">
-                <!-- Items will be inserted here -->
-            </div>
-
-            <div class="receipt-summary">
-                <div class="receipt-total">
-                    <span>TOTAL:</span>
-                    <span id="receiptTotal">0.00</span>
+        <!-- Receipt Print Template (wrapped in preview container for on-screen display) -->
+        <div id="receipt-preview-container" style="display: none;">
+            <div id="receipt-print">
+                <div class="receipt-header">
+                    <div class="receipt-title">RECEIPT</div>
+                    <div class="receipt-info" id="companyName"></div>
+                    <div class="receipt-info" id="companyAddress"></div>
+                    <div class="receipt-info" id="companyPhone"></div>
+                    <div class="receipt-info" id="companyTin"></div>
+                    <div class="receipt-info2" id="receiptNumber">Receipt #: #000000</div>
+                    <div class="receipt-info2" id="receiptDate">Date: {{ date('Y-m-d H:i:s') }}</div>
+                    <div class="receipt-info2" id="customerName"></div>
+                    <div class="receipt-info2">Payment: CASH</div>
                 </div>
-            </div>
 
-            <div class="receipt-footer">
-                <div class="receipt-info">Issued By: {{ Auth::user()->name }}</div>
-                <div style="margin-top: 1px;" id="companySlogan">Thank you for your business!</div>
+                <div class="receipt-items-header">
+                    <div style="width: 40%; text-align: left;">Description</div>
+                    <div style="width: 20%; text-align: center; margin-left: 10px;">Weight</div>
+                    <div style="width: 40%; text-align: right;">Amount</div>
+                </div>
+                <div class="receipt-items" id="receiptItems">
+                    <!-- Items will be inserted here -->
+                </div>
+
+                <div class="receipt-summary">
+                    <div class="receipt-total">
+                        <span>TOTAL:</span>
+                        <span id="receiptTotal">0.00</span>
+                    </div>
+                </div>
+
+                <div class="receipt-footer">
+                    <div class="receipt-info">Issued By: {{ Auth::user()->name }}</div>
+                    <div style="margin-top: 1px;" id="companySlogan">Thank you for your business!</div>
+                </div>
             </div>
         </div>
     </div>
@@ -528,7 +624,7 @@
                 });
         }
 
-        // Print receipt
+        // Print receipt and show preview
         function printReceipt(data, saleData) {
             console.log('Printing receipt for:', data);
             document.getElementById('receiptNumber').textContent = `Receipt #: ${data.receipt_number}`;
@@ -549,7 +645,10 @@
             document.getElementById('receiptItems').innerHTML = receiptItemsHtml;
             document.getElementById('receiptTotal').textContent = formatMoney(saleData.price.toFixed(2));
 
-            // Small delay for DOM update
+            // Show the receipt preview container so user can see the receipt on screen
+            // document.getElementById('receipt-preview-container').style.display = 'block';
+
+            // Small delay for DOM update, then trigger print
             setTimeout(() => {
                 window.print();
             }, 400);

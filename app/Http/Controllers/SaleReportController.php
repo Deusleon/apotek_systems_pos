@@ -137,7 +137,7 @@ class SaleReportController extends Controller {
                     return response()->view('error_pages.pdf_zero_data');
                 }
                 $pdf = Pdf::loadView('sale_reports.price_list_all_categories_report_pdf', 
-                compact( 'data', 'pharmacy', 'type' ) );
+                compact( 'data', 'pharmacy', 'type', 'isMultiStore' ) );
                 return $pdf->stream('Price_list_all_categories_report_pdf.pdf');
             }else{
                 $data = $this->priceListReport($request->category);

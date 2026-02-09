@@ -1,3 +1,27 @@
+@php
+    function smartFormat($num)
+    {
+        $str = (string) $num;
+
+        if (strpos($str, '.') !== false) {
+
+            list($whole, $decimal) = explode('.', $str);
+
+            $decimal = rtrim($decimal, '0');
+
+            if ($decimal === '') {
+                return number_format((int) $whole);
+            }
+
+            $wholeFormatted = number_format((int) $whole);
+
+            return $wholeFormatted . '.' . $decimal;
+
+        } else {
+            return number_format((int) $str);
+        }
+    }
+@endphp
 <!DOCTYPE html>
 <html>
 
@@ -123,13 +147,13 @@
                             <td style="text-align: left">{{($item['date'] ?? '')}}</td>
                             <td style="text-align: left">{{$item['method']}}</td>
                             <td style="text-align: center;">
-                                {{ is_numeric($item['received']) ? number_format((float) $item['received'], 0) : '' }}
+                                {{ is_numeric($item['received']) ? smartFormat($item['received']) : '' }}
                             </td>
                             <td style="text-align: center;">
-                                {{ is_numeric($item['outgoing']) ? number_format((float) $item['outgoing'], 0) : '' }}
+                                {{ is_numeric($item['outgoing']) ? smartFormat($item['outgoing']) : '' }}
                             </td>
                             <td style="text-align: center;">
-                                {{ is_numeric($item['balance']) ? number_format((float) $item['balance'], 0) : '' }}
+                                {{ is_numeric($item['balance']) ? smartFormat($item['balance']) : '' }}
                             </td>
                             <td style="text-align: left">{{$item['created_by']}}</td>
                         </tr>

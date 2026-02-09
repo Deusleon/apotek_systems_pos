@@ -1,3 +1,27 @@
+@php
+    function smartFormat($num)
+    {
+        $str = (string) $num;
+
+        if (strpos($str, '.') !== false) {
+
+            list($whole, $decimal) = explode('.', $str);
+
+            $decimal = rtrim($decimal, '0');
+
+            if ($decimal === '') {
+                return number_format((int) $whole);
+            }
+
+            $wholeFormatted = number_format((int) $whole);
+
+            return $wholeFormatted . '.' . $decimal;
+
+        } else {
+            return number_format((int) $str);
+        }
+    }
+@endphp
 <!DOCTYPE html>
 <html>
 
@@ -105,7 +129,7 @@
                         <tr>
                             <td align="left">{{$loop->iteration}}</td>
                             <td align="left">{{$item['name']}}</td>
-                            <td align="right">{{number_format($item['quantity'], 0)}}</td>
+                            <td align="right">{{smartFormat($item['quantity'])}}</td>
                             <td align="right">{{number_format($item['price'] / $item['quantity'], 2)}}</td>
                             <td align="right">{{number_format($item['sub_total'], 2)}}</td>
                             <td align="right">{{number_format($item['discount'], 2)}}</td>
@@ -133,7 +157,8 @@
                 <div class="full-row">
                     <div class="col-50" align="left"><b>Sub Total: </b></div>
                     <div class="col-50" align="right">
-                        {{number_format(max(array_column($data[0][1], 'sub_total_total')), 2)}}</div>
+                        {{number_format(max(array_column($data[0][1], 'sub_total_total')), 2)}}
+                    </div>
                 </div>
             </div>
         </div>
@@ -151,7 +176,8 @@
                 <div class="full-row">
                     <div class="col-50" align="left"><b>Discount: </b></div>
                     <div class="col-50" align="right">
-                        {{number_format(max(array_column($data[0][1], 'total_discount')), 2)}}</div>
+                        {{number_format(max(array_column($data[0][1], 'total_discount')), 2)}}
+                    </div>
                 </div>
             </div>
         </div>
@@ -184,7 +210,8 @@
             <div class="col-25">
                 <div class="full-row">
                     <div class="col-50" align="left"><b>Total:</b></div>
-                    <div class="col-50" align="right">{{number_format(max(array_column($data[0][1], 'grand_total')), 2)}}
+                    <div class="col-50" align="right">
+                        {{number_format(max(array_column($data[0][1], 'grand_total')), 2)}}
                     </div>
                 </div>
             </div>

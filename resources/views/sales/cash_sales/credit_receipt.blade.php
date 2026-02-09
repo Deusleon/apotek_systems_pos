@@ -280,7 +280,7 @@ function customRound($num) {
                 <table class="summary-table" style="margin-bottom: 50px;">
                     <tr>
                         <td align="right" style="width: 47.5%; font-weight: bold; padding-right: 5px;">Sub Total : </td>
-                        <td align="right" style="padding-right: 3px;">{{customRound($subTotal)}}</td>
+                        <td align="right" style="padding-right: 3px;">{{customRound($dat[0]['grand_total'] - $dat[0]['total_vat'] + $dat[0]['discount_total'])}}</td>
                     </tr>
                     @if($dat[0]['discount_total'] > 0)
                         <tr>
@@ -294,7 +294,7 @@ function customRound($num) {
                     </tr>
                     <tr>
                         <td align="right" style="width: 47.5%; font-weight: bold; padding-right: 5px;">Total : </td>
-                        <td align="right" style="padding-right: 3px;">{{customRound($grandTotal)}}</td>
+                        <td align="right" style="padding-right: 3px;">{{customRound($dat[0]['grand_total'])}}</td>
                     </tr>
                     @if($page == -1)
                         <tr>

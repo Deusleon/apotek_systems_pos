@@ -1,3 +1,27 @@
+@php
+    function smartFormat($num)
+    {
+        $str = (string) $num;
+
+        if (strpos($str, '.') !== false) {
+
+            list($whole, $decimal) = explode('.', $str);
+
+            $decimal = rtrim($decimal, '0');
+
+            if ($decimal === '') {
+                return number_format((int) $whole);
+            }
+
+            $wholeFormatted = number_format((int) $whole);
+
+            return $wholeFormatted . '.' . $decimal;
+
+        } else {
+            return number_format((int) $str);
+        }
+    }
+@endphp
 <!DOCTYPE html>
 <html>
 
@@ -141,7 +165,7 @@
                                     @endif
                                 </td>
                             @endif
-                            <td align="center">{{number_format($item['quantity'])}}</td>
+                            <td align="center">{{smartFormat($item['quantity'])}}</td>
                             {{-- <td align="" style="font-size: 0.7em">{{$item['reason']}}</td>--}}
                             <td align="left">{{$item['adjusted_by']}}</td>
                         </tr>

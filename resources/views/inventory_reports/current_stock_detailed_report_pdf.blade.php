@@ -1,3 +1,27 @@
+@php
+    function smartFormat($num)
+    {
+        $str = (string) $num;
+
+        if (strpos($str, '.') !== false) {
+
+            list($whole, $decimal) = explode('.', $str);
+
+            $decimal = rtrim($decimal, '0');
+
+            if ($decimal === '') {
+                return number_format((int) $whole);
+            }
+
+            $wholeFormatted = number_format((int) $whole);
+
+            return $wholeFormatted . '.' . $decimal;
+
+        } else {
+            return number_format((int) $str);
+        }
+    }
+@endphp
 <!DOCTYPE html>
 <html>
 
@@ -131,7 +155,7 @@
                             <td align="center">{{date('Y-m-d', strtotime($item['expiry_date']))}}</td>
                             @endif --}}
                             <td align="center" style="text-align: center;">
-                                <div>{{number_format($item['quantity'])}}</div>
+                                <div>{{ smartFormat($item['quantity']) }}</div>
                             </td>
                         </tr>
                     @endforeach
