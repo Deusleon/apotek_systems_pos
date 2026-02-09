@@ -219,7 +219,7 @@
                     <tr>
                         <td style="width: 5%; text-align: center;">{{$loop->iteration}}.</td>
                         <td style="width: 65%; text-align: left; padding-left: 7px;">{{$name}}</td>
-                        <td style="width: 10%; text-align: center;">{{number_format($item['quantity'], 0)}}</td>
+                        <td style="width: 10%; text-align: center;">{{ is_numeric($item['quantity']) ? (strpos($item['quantity'], '.') !== false ? rtrim(rtrim($item['quantity'], '0'), '.') : $item['quantity']) : $item['quantity'] }}</td>
                         <td style="width: 10%; text-align: center;">Good</td>
                         <td style="width: 10%; text-align: center;"></td>
                     </tr>

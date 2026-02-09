@@ -169,7 +169,7 @@ function populateHistoryTable(data) {
 
         saleHistoryDataTable.row.add([
             productName, // Product column
-            numberWithCommas(Number(item.quantity).toFixed(0)), // Quantity column
+            formatQuantity(item.quantity), // Quantity column
         ]);
     });
 
@@ -178,9 +178,21 @@ function populateHistoryTable(data) {
 }
 
 function numberWithCommas(digit) {
-    return String(parseFloat(digit))
-        .toString()
-        .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    if (isNaN(parseFloat(digit))) return '';
+    var num = parseFloat(digit);
+    // Split into integer and decimal parts
+    var parts = num.toString().split('.');
+    var integerPart = parts[0];
+    var decimalPart = parts.length > 1 ? '.' + parts[1] : '';
+    // Add commas to integer part
+    integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return integerPart + decimalPart;
+}
+
+function formatQuantity(qty) {
+    // Format quantity with commas for thousands, preserve decimals
+    if (isNaN(parseFloat(qty))) return '';
+    return numberWithCommas(qty);
 }
 
 function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
