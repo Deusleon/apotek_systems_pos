@@ -29,10 +29,10 @@
                         <label for="edit_quantity" class="col-md-4 col-form-label text-md-right">Quantity</label>
                         <div class="col-md-8">
                             <input type="hidden" class="form-control"
-                                   name="quantity" value="" min="1" step="1" id="edit_rtn_qty"
+                                   name="quantity" value="" id="edit_rtn_qty"
                                    placeholder="">
                             <input type="text" class="form-control"
-                                   name="quantity_to_show" value="" min="1" step="1" id="edit_rtn_qty_to_show"
+                                   name="quantity_to_show" value="" id="edit_rtn_qty_to_show"
                                    placeholder="Enter quantity" required>
                             <div class="text text-danger" id="edit_qty_error"></div>
                         </div>

@@ -31,11 +31,12 @@
                                 color="red">*</font></label>
                         <div class="col-md-8">
                             <input type="hidden" class="form-control"
-                                   name="quantity" value="" min="1" step="1" id="rtn_qty"
+                                   name="quantity" value="" id="rtn_qty"
                                    placeholder="">
                             <input type="text" class="form-control"
-                                   name="quantity_to_show" value="" min="1" step="1" id="rtn_qty_to_show"
-                                   placeholder="Enter quantity" required>
+                                   name="quantity_to_show" value="" id="rtn_qty_to_show"
+                                   placeholder="Enter quantity" required
+                                   oninput="validateDecimal(this)">
                             <div class="text text-danger" id="qty_error"></div>
                         </div>
                     </div>

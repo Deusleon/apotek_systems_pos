@@ -599,7 +599,7 @@ var currentStoreId = @json(session('current_store_id', auth()->user()->store_id)
             $("#purchase-return").on("input", "#rtn_qty_to_show", function () {
                 var inputValue = document.getElementById("rtn_qty_to_show").value.replace(/\,/g, '');
                 var quantity = parseFloat(inputValue) || 0;
-                if (quantity > row_data.quantity || quantity <= 0) {
+                if (quantity > parseFloat(row_data.quantity) || quantity <= 0) {
                     document.getElementById("save_btn").disabled = true;
                     document.getElementById("qty_error").style.display = "block";
                     if (quantity <= 0) {
@@ -643,9 +643,10 @@ var currentStoreId = @json(session('current_store_id', auth()->user()->store_id)
         $('#rtn_qty_to_show').on('keyup', function () {
             var newValue = document.getElementById('rtn_qty_to_show').value;
             if (newValue !== '') {
-                document.getElementById('rtn_qty_to_show').value =
-                    numberWithCommas(parseFloat(newValue.replace(/\,/g, ''), 10));
-                document.getElementById('rtn_qty').value = parseFloat(newValue.replace(/\,/g, ''), 10);
+                // Allow decimal values - just clean commas and preserve the value
+                var cleanValue = newValue.replace(/\,/g, '');
+                // Update hidden field with the raw float value
+                document.getElementById('rtn_qty').value = cleanValue;
             } else {
                 document.getElementById('rtn_qty_to_show').value = '';
                 document.getElementById('rtn_qty').value = '';
@@ -655,9 +656,10 @@ var currentStoreId = @json(session('current_store_id', auth()->user()->store_id)
         $('#edit_rtn_qty_to_show').on('keyup', function () {
             var newValue = document.getElementById('edit_rtn_qty_to_show').value;
             if (newValue !== '') {
-                document.getElementById('edit_rtn_qty_to_show').value =
-                    numberWithCommas(parseFloat(newValue.replace(/\,/g, ''), 10));
-                document.getElementById('edit_rtn_qty').value = parseFloat(newValue.replace(/\,/g, ''), 10);
+                // Allow decimal values - just clean commas and preserve the value
+                var cleanValue = newValue.replace(/\,/g, '');
+                // Update hidden field with the raw value
+                document.getElementById('edit_rtn_qty').value = cleanValue;
             } else {
                 document.getElementById('edit_rtn_qty_to_show').value = '';
                 document.getElementById('edit_rtn_qty').value = '';
@@ -681,7 +683,15 @@ var currentStoreId = @json(session('current_store_id', auth()->user()->store_id)
         }
 
         function numberWithCommas(digit) {
-            return String(parseFloat(digit)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            if (isNaN(parseFloat(digit))) return '';
+            var num = parseFloat(digit);
+            // Split into integer and decimal parts
+            var parts = num.toString().split('.');
+            var integerPart = parts[0];
+            var decimalPart = parts.length > 1 ? '.' + parts[1] : '';
+            // Add commas to integer part
+            integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return integerPart + decimalPart;
         }
 
         function isNumberKey(evt, obj) {
