@@ -207,8 +207,8 @@
                                 {{ $item->products_->pack_size }}{{ $item->products_->sales_uom }}
                             @endif
                         </td>
-                        <td class="text-center">{{ number_format($item->quantity, 0) }}</td>
-                        <td class="text-center">{{ number_format($item->quantity_given, 0) }}</td>
+                        <td class="text-center">{{ $item->quantity !== null ? rtrim(rtrim(number_format($item->quantity, 2, '.', ''), '0'), '.') : '0' }}</td>
+                        <td class="text-center">{{ $item->quantity_given !== null ? rtrim(rtrim(number_format($item->quantity_given, 2, '.', ''), '0'), '.') : '0' }}</td>
                     </tr>
                 @endforeach
             </tbody>
