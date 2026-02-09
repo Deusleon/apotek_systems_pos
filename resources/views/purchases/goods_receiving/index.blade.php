@@ -171,7 +171,7 @@
                                     <select name="price_category" class="form-control" id="invoiceprice_category"
                                         required="true" onchange="priceByCategory()">
                                         @foreach($price_categories as $price_category)
-                                            <option value="{{$price_category->id}}">{{$price_category->name}}</option>
+                                            <option value="{{$price_category->id}}" {{ strtoupper($price_category->name) == 'WHOLESALE' ? 'selected' : '' }}>{{$price_category->name}}</option>
                                         @endforeach
                                     </select>
                                 </div>
