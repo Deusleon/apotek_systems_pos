@@ -1,3 +1,27 @@
+@php
+    function smartFormat($num)
+    {
+        $str = (string) $num;
+
+        if (strpos($str, '.') !== false) {
+
+            list($whole, $decimal) = explode('.', $str);
+
+            $decimal = rtrim($decimal, '0');
+
+            if ($decimal === '') {
+                return number_format((int) $whole);
+            }
+
+            $wholeFormatted = number_format((int) $whole);
+
+            return $wholeFormatted . '.' . $decimal;
+
+        } else {
+            return number_format((int) $str);
+        }
+    }
+@endphp
 <!DOCTYPE html>
 <html>
 
@@ -137,14 +161,14 @@
                                                 <td align="center">{{date('Y-m-d', strtotime($datas['item_returned']['b_date']))}}</td>
                                                 {{-- @if($datas['status'] == 5) --}}
                                                 <td align="center">
-                                                    {{number_format(($datas['item_returned']['remained_qty'] + $datas['item_returned']['rtn_qty']), 0)}}
+                                                    {{ smartFormat($datas['item_returned']['remained_qty'] + $datas['item_returned']['rtn_qty']) }}
                                                 </td>
                                                 {{-- @else
-                                                <td align="center">{{number_format($datas['item_returned']['remained_qty'], 0)}}</td>
+                                                <td align="center">{{smartFormat($datas['item_returned']['remained_qty'])}}</td>
                                                 @endif --}}
 
                                                 <td align="center">{{date('Y-m-d', strtotime($datas['date']))}}</td>
-                                                <td align="center">{{number_format($datas['item_returned']['rtn_qty'], 0)}}</td>
+                                                <td align="center">{{smartFormat($datas['item_returned']['rtn_qty'])}}</td>
                                                 <td align="left" style="padding-left: 10px;">{{$datas['reason']}}</td>
                                                 <td align="right">{{number_format((($datas['item_returned']['rtn_qty']) /
                             ($datas['item_returned']['remained_qty'])) * ($datas['item_returned']['amount']

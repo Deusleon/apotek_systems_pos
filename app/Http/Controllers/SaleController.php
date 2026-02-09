@@ -1358,18 +1358,10 @@ class SaleController extends Controller
     {
         try {
             // Allow access if user has "View Cash Sales" OR "View Waste Collection" permission
-            if (!Auth()->user()->checkPermission('View Cash Sales') && !Auth()->user()->checkPermission('View Waste Collection')) {
+            if (!Auth()->user()->checkPermission('View Waste Collection')) {
                 abort(403, 'Access Denied');
             }
-
-            $vat = Setting::where('id', 120)->value('value') / 100;
-            $default_customer = Customer::where('name', 'CASH')->first();
-            
-            if (!$default_customer) {
-                return back()->with('error', 'Default CASH customer not found. Please create a customer named "CASH".');
-            }
-
-            return view('sales.mobile-pos', compact('vat', 'default_customer'));
+            return view('sales.mobile-pos');
         } catch (\Exception $e) {
             Log::error('Error in mobilePOS method: ' . $e->getMessage());
             return back()->with('error', 'An error occurred while loading the mobile POS page.');
@@ -1418,7 +1410,7 @@ class SaleController extends Controller
     public function storeMobileSale(Request $request)
     {
         try {
-            if (!Auth()->user()->checkPermission('View Cash Sales')) {
+            if (!Auth()->user()->checkPermission('View Waste Collection')) {
                 return response()->json(['success' => false, 'message' => 'Access denied'], 403);
             }
 

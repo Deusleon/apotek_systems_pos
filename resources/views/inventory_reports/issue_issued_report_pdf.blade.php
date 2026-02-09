@@ -1,3 +1,27 @@
+@php
+    function smartFormat($num)
+    {
+        $str = (string) $num;
+
+        if (strpos($str, '.') !== false) {
+
+            list($whole, $decimal) = explode('.', $str);
+
+            $decimal = rtrim($decimal, '0');
+
+            if ($decimal === '') {
+                return number_format((int) $whole);
+            }
+
+            $wholeFormatted = number_format((int) $whole);
+
+            return $wholeFormatted . '.' . $decimal;
+
+        } else {
+            return number_format((int) $str);
+        }
+    }
+@endphp
 <!DOCTYPE html>
 <html>
 <head>
@@ -108,7 +132,7 @@
                         <td align="left">{{$loop->iteration}}.</td>
                         <td align="left">{{$item['product_id']}}</td>
                         <td align="left">{{$item['name']}}</td>
-                        <td align="center">{{number_format($item['issue_qty'],0)}}</td>
+                        <td align="center">{{ smartFormat($item['issue_qty']) }}</td>
                         <td align="left">{{$item['issue_no']}}</td>
                         <td align="left">{{$item['issued_by']}}</td>
                         <td align="left">{{$item['issued_date']}}</td>

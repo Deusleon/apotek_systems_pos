@@ -1,3 +1,27 @@
+@php
+    function smartFormat($num)
+    {
+        $str = (string) $num;
+
+        if (strpos($str, '.') !== false) {
+
+            list($whole, $decimal) = explode('.', $str);
+
+            $decimal = rtrim($decimal, '0');
+
+            if ($decimal === '') {
+                return number_format((int) $whole);
+            }
+
+            $wholeFormatted = number_format((int) $whole);
+
+            return $wholeFormatted . '.' . $decimal;
+
+        } else {
+            return number_format((int) $str);
+        }
+    }
+@endphp
 <!DOCTYPE html>
 <html>
 
@@ -118,7 +142,7 @@
                         {{-- <th align="left" style="width: 120px;">Item Name</th> --}}
                         <th align="left" style="width: 200px;">Customer Name</th>
                         <th align="left" style="width: 200px">Collected By</th>
-                        <th align="right">Weight (kg)</th>
+                        <th align="center">Weight (kg)</th>
                         <th align="right">Amount</th>
                     </tr>
                 </thead>
@@ -133,7 +157,7 @@
                             {{-- <td align="left">{{ $item['item_name'] }}</td> --}}
                             <td align="left">{{ $item['customer_name'] }}</td>
                             <td align="left">{{ $item['collected_by'] }}</td>
-                            <td align="right">{{ number_format($item['weight'], 2) }}</td>
+                            <td align="center">{{ smartFormat($item['weight']) }}</td>
                             <td align="right">{{ number_format($item['amount'], 2) }}</td>
                         </tr>
                         <?php $total_weight += $item['weight']; ?>
@@ -145,7 +169,7 @@
                 <tr>
                     <td colspan="7" align="right" style="padding-top: -3%; width: 85%;"><b>Total Weight (kg):</b></td>
                     <td align="right" style="padding-top: -3%;">
-                        {{ number_format($total_weight, 2) }}
+                        {{ smartFormat($total_weight) }}
                     </td>
                 </tr>
                 <tr>

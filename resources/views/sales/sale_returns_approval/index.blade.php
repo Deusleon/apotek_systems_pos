@@ -207,7 +207,7 @@
                 {
                     data: 'item_returned.remained_qty',
                     render: function (data) {
-                        return Math.floor(data);
+                        return numberWithCommas(data);
                     }
                 },
                 {
@@ -218,7 +218,7 @@
                 {
                     data: 'item_returned.rtn_qty',
                     render: function (data) {
-                        return Math.floor(data);
+                        return numberWithCommas(data);
                     }
                 },
                 {
@@ -237,7 +237,7 @@
                     }
                 },
                 @if(Auth::user()->checkPermission('Approve Sales Returns'))
-                                                                                                {
+                                                                                                        {
                         data: "action",
                         defaultContent: "<button type='button' id='approve' class='btn btn-sm btn-rounded btn-primary'>Approve</button><button type='button' id='reject' class='btn btn-sm btn-rounded btn-danger'>Reject</button>"
                     }
@@ -248,7 +248,7 @@
                         }
                     @endif
 
-                                                    ], aaSorting: [[1, "desc"]]
+                                                        ], aaSorting: [[1, "desc"]]
         });
 
         function getRetunedProducts(action, product) {
@@ -337,6 +337,26 @@
                 window.location.href = redirectUrl; // Redirect to the URL
             });
         });
+        function numberWithCommas(num) {
+            let str = String(num);
+
+            if (str.includes('.')) {
+                let [whole, decimal] = str.split('.');
+
+                decimal = decimal.replace(/0+$/, "");
+
+                if (decimal === "") {
+                    return Number(whole).toLocaleString();
+                }
+
+                let wholeFormatted = Number(whole).toLocaleString();
+
+                return wholeFormatted + "." + decimal;
+
+            } else {
+                return Number(str).toLocaleString();
+            }
+        }
     </script>
 
 @endpush

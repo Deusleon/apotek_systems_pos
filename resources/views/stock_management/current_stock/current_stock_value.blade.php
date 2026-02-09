@@ -108,7 +108,7 @@
                             @foreach ($stocks as $stock)
                                                     {{-- @if($stock->buying_price > 0) --}}
                                                     <tr>
-                                                        <td style="width: 40%; white-space: pre-line;" id="name_{{ $stock->product_id }}">
+                                                        <td style="width: 40%;" id="name_{{ $stock->product_id }}">
                                                             {{ trim(
                                     ($stock->name ?? '') .
                                     (!empty($stock->brand) ? ' ' . $stock->brand : '') .
