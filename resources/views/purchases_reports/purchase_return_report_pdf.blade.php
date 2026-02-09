@@ -164,9 +164,9 @@
                             {{$return->product_name ?? ''}} {{$return->product_brand ?? ''}} {{$return->product_pack_size ?? ''}}{{$return->product_sales_uom ?? ''}}
                         </td>
                         <td align="left">{{date('Y-m-d', strtotime($return->created_at ?? now()))}}</td>
-                        <td align="center">{{number_format($return->received_quantity ?? 0, 0)}}</td>
+                        <td align="center">{{ is_numeric($return->received_quantity ?? 0) ? (strpos(($return->received_quantity ?? '0'), '.') !== false ? rtrim(rtrim($return->received_quantity ?? '0', '0'), '.') : ($return->received_quantity ?? 0)) : ($return->received_quantity ?? 0) }}</td>
                         <td align="left">{{date('Y-m-d', strtotime($return->date ?? now()))}}</td>
-                        <td align="center">{{number_format($return->return_quantity ?? 0, 0)}}</td>
+                        <td align="center">{{ is_numeric($return->return_quantity ?? 0) ? (strpos(($return->return_quantity ?? '0'), '.') !== false ? rtrim(rtrim($return->return_quantity ?? '0', '0'), '.') : ($return->return_quantity ?? 0)) : ($return->return_quantity ?? 0) }}</td>
                         <td align="right">{{number_format(($return->unit_cost ?? 0 * $return->return_quantity ?? 0), 2)}}</td>
                     </tr>
                     @php $total_refund += ($return->unit_cost ?? 0 * $return->return_quantity ?? 0); @endphp

@@ -119,7 +119,7 @@
                     <tr>
                         <td align="left">{{$loop->iteration}}.</td>
                         <td align="left">{{$item->product_name}}</td>
-                        <td align="center">{{number_format($item->quantity,0)}}</td>
+                        <td align="center">{{ is_numeric($item->quantity) ? (strpos($item->quantity, '.') !== false ? rtrim(rtrim($item->quantity, '0'), '.') : $item->quantity) : $item->quantity }}</td>
                         <td align="right">{{number_format($item->unit_cost,2)}}</td>
                         <td align="right">{{number_format($item->sell_price,2)}}</td>
                         <td align="left">{{$item->expire_date}}</td>
