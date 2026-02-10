@@ -17,7 +17,8 @@ class Sale extends Model
             return $this->hasMany(SalesDetail::class, 'sale_id', 'id')
                 ->leftJoin('inv_current_stock', 'inv_current_stock.id', '=', 'sales_details.stock_id')
                 ->leftJoin('inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id')
-                ->select('sales_details.id as id', 'inv_products.name', 'inv_products.brand', 'inv_products.pack_size', 'inv_products.sales_uom', 'sales_details.quantity as quantity', 'sales_details.price', 'sales_details.vat', 'sales_details.discount', 'sales_details.amount', 'sales_details.status')
+                ->select('sales_details.id as id', 'inv_products.name', 'inv_products.brand', 'inv_products.pack_size', 'inv_products.sales_uom', 'sales_details.quantity as quantity', 'sales_details.price', 'sales_details.vat', 'sales_details.discount', 'sales_details.amount', 'sales_details.status',
+                    DB::raw('COALESCE((SELECT SUM(sr.quantity) FROM sales_returns sr WHERE sr.sale_detail_id = sales_details.id), 0) as returned_quantity'))
                 ->groupBy('sales_details.id', 'inv_products.name', 'inv_products.brand', 'inv_products.pack_size', 'inv_products.sales_uom', 'sales_details.quantity', 'sales_details.price', 'sales_details.vat', 'sales_details.discount', 'sales_details.amount', 'sales_details.status');
         } catch (\Exception $e) {
             Log::error('Error in Sale details relationship: ' . $e->getMessage());

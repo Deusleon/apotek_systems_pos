@@ -221,22 +221,6 @@
                         return numberWithCommas(data);
                     }
                 },
-                // {
-                //     data: 'item_returned',
-                //     render: function (item, type, row) {
-                //         console.log('item_returned', row);
-                //         const amount = parseFloat(row.amount) || 0;
-                //         const vat = parseFloat(row.vat) || 0;
-                //         const discount = parseFloat(row.discount) || 0;
-                //         const remained = Math.round(parseFloat(item.remained_qty) * 100) / 100 || 1;
-                //         const rtn = parseFloat(item.rtn_qty) || 0;
-
-                //         const total = (((amount - vat) + discount) / remained) * rtn
-                //             + ((vat / remained) * rtn);
-
-                //         return formatMoney(total);
-                //     }
-                // },
                 {
                     data: 'item_returned',
                     render: function (item, type, row) {

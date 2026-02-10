@@ -386,6 +386,10 @@ $("#credit_sale_date").on("blur", function () {
 });
 
 $("#sale_discount").on("blur", function () {
+    if (discount_enable === "YES") {
+        var n = Math.abs(parseFloat($(this).val().replace(/\,/g, ""), 10) || 0);
+        $(this).val(n.toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    }
     $("#credit_barcode_input").focus();
 });
 
@@ -930,7 +934,6 @@ function deselect1() {
     // document.getElementById("credit_sales_form").reset();
     // $('#price_category').val('').change();
     $("#customer_id").val("").change();
-    $("#grace_period").val("").change();
             try {
         document.getElementById("sale_paid").value = '0.00';
         document.getElementById("sale_discount").value = '0.00';
