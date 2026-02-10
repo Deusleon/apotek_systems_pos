@@ -294,7 +294,7 @@
                 <table class="summary-table" style="margin-bottom: 60px;">
                     <tr>
                         <td align="right" style="width: 50%; font-weight: bold; padding-right: 5px;">Sub Total : </td>
-                        <td align="right" style="padding-right: 3px;">{{customRound(($subTotal))}}</td>
+                        <td align="right" style="padding-right: 3px;">{{customRound($subTotal)}}</td>
                     </tr>
                     @if($dat[0]['discount_total'] > 0)
                         <tr>
