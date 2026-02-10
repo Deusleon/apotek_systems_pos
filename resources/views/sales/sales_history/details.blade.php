@@ -38,8 +38,10 @@
               <thead>
                 <tr>
                   <th>Product Name</th>
-                  <th>Price</th>
                   <th>Quantity</th>
+                  <th hidden>Returned Qty</th>
+                  <th>Price</th>
+                  <th hidden>Status</th>
                 </tr>
               </thead>
               <tbody>

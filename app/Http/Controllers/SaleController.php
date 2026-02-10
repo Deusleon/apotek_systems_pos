@@ -1049,11 +1049,20 @@ class SaleController extends Controller
                     'price' => $item->price,
                     'vat' => 0,
                     'amount' => 0,
+                    'status' => $item->status,
+                    'returned_quantity' => 0,
                 ];
             }
             $groupedData[$key]['quantity'] += $item->quantity;
             $groupedData[$key]['amount'] += $item->amount;
             $groupedData[$key]['vat'] += $item->vat;
+            // Track returned quantity from sales_returns
+            $returnedQty = \DB::table('sales_returns')->where('sale_detail_id', $item->id)->sum('quantity');
+            $groupedData[$key]['returned_quantity'] += $returnedQty;
+            // Use the worst status (highest number = most returned)
+            if ($item->status > $groupedData[$key]['status']) {
+                $groupedData[$key]['status'] = $item->status;
+            }
         }
 
         $finalResults = array_values($groupedData);
@@ -1157,7 +1166,7 @@ class SaleController extends Controller
             if (!isset($productMap[$key])) {
                 $productMap[$key] = [
                     'receipt_number' => $item->sale['receipt_number'],
-                    'ref_no' => $item->sale['ref_no'],
+                    'ref_no' => $item->sale['ref_no'] ?? '',
                     'payment_type' => $item->sale['paymentType']['name'] ?? '',
                     'name' => $item->currentStock['product']['name'],
                     'brand' => $item->currentStock['product']['brand'],

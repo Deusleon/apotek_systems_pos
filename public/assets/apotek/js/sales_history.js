@@ -69,7 +69,9 @@ if (!$.fn.DataTable.isDataTable("#sales_history_table")) {
         columns: [
             { title: "Product Name" },
             { title: "Quantity" },
+            { title: "Returned Qty", visible: false },
             { title: "Price" },
+            { title: "Status", visible: false },
         ],
     });
 } else {
@@ -171,6 +173,20 @@ function populateHistoryTable(data) {
 
     // Add new rows
     data.forEach(function (item) {
+        var statusLabel = '';
+        var returnedQty = Number(item.returned_quantity || 0);
+        var status = Number(item.status);
+        if (status === 3) {
+            statusLabel = "<span class='badge badge-success'>Returned</span>";
+        } else if (status === 5) {
+            statusLabel = "<span class='badge badge-info'>Partial Return</span>";
+        } else if (status === 2) {
+            statusLabel = "<span class='badge badge-warning'>Pending Return</span>";
+        } else if (status === 4) {
+            statusLabel = "<span class='badge badge-danger'>Return Rejected</span>";
+        } else {
+            statusLabel = "<span class='badge badge-secondary'>-</span>";
+        }
         saleHistoryDataTable.row.add([
             item.name +
                 " " +
@@ -178,7 +194,9 @@ function populateHistoryTable(data) {
                 (item.pack_size ? item.pack_size : "") +
                 (item.sales_uom ? item.sales_uom : ""),
             numberWithCommas(Number(item.quantity)),
+            numberWithCommas(returnedQty),
             numberWithCommas(Number(item.price).toFixed(2)),
+            statusLabel,
         ]);
     });
 

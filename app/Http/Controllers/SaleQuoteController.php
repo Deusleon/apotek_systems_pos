@@ -807,12 +807,12 @@ class SaleQuoteController extends Controller {
         foreach ( $sale_quote as $item ) {
             //            $receipt_no = $item->sale[ 'receipt_number' ];
             $amount = $item->amount - $item->discount;
-            if ( intVal( $item->vat ) === 0 ) {
+            if ( floatval( $item->vat ) === 0 ) {
                 $vat_percent = 0;
             } else {
                 $vat_percent = $item->vat / $item->price;
             }
-            $sub_total = intVal($item->price) * intVal($item->quantity);
+            $sub_total = floatval($item->price) * floatval($item->quantity);
             $grand_total = $item->amount - $item->discount + $item->vat;
             $vat = $item->vat * $item->quantity;
             $sn++;
@@ -895,12 +895,12 @@ class SaleQuoteController extends Controller {
             foreach ( $sale_quote as $item ) {
                 //            $receipt_no = $item->sale[ 'receipt_number' ];
                 $amount = $item->amount - $item->discount;
-                if ( intVal( $item->vat ) === 0 ) {
+                if ( floatval( $item->vat ) === 0 ) {
                     $vat_percent = 0;
                 } else {
                     $vat_percent = $item->vat / $item->price;
                 }
-                $sub_total = intVal($item->price) * intVal($item->quantity);
+                $sub_total = floatval($item->price) * floatval($item->quantity);
                 $grand_total = $item->amount - $item->discount + $item->vat;
                 $vat = $item->vat;
                 $sn++;
@@ -1195,7 +1195,7 @@ class SaleQuoteController extends Controller {
             foreach ( $sale_quote as $item ) {
                 //            $receipt_no = $item->sale[ 'receipt_number' ];
                 $amount = $item->amount - $item->discount;
-                if ( intVal( $item->vat ) === 0 ) {
+                if ( floatval( $item->vat ) === 0 ) {
                     $vat_percent = 0;
                 } else {
                     $vat_percent = $item->vat / $item->price;
@@ -1264,7 +1264,7 @@ class SaleQuoteController extends Controller {
             foreach ( $sale_quote as $item ) {
                 //            $receipt_no = $item->sale[ 'receipt_number' ];
                 $amount = $item->amount - $item->discount;
-                if ( intVal( $item->vat ) === 0 ) {
+                if ( floatval( $item->vat ) === 0 ) {
                     $vat_percent = 0;
                 } else {
                     $vat_percent = $item->vat / $item->price;
