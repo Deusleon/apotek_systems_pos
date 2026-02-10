@@ -96,6 +96,7 @@ class GoodsReceivingController extends Controller
 
         $back_date = Setting::where('id', 114)->value('value');
         $expire_date = Setting::where('id', 123)->value('value');
+        $default_price_category = Setting::where('id', 125)->value('value');
 
         // Get orders with their related details, products, and suppliers
         $ordersQuery = Order::with([
@@ -134,7 +135,8 @@ class GoodsReceivingController extends Controller
             'batch_setting',
             'invoice_setting',
             'back_date',
-            'expire_date'
+            'expire_date',
+            'default_price_category'
         ));
     }
     public function allProductToReceive()
@@ -419,6 +421,26 @@ class GoodsReceivingController extends Controller
             // Get the correct unit price from order details
             $unit_price = $order_detail->unit_price ?? 0;
 
+            // Get selling price - try to get latest from PriceList, or use default
+            // Use the price_category from the form request
+            $price_category_id = $request->price_category ?? Setting::where('id', 125)->value('value');
+            
+            // Log for debugging
+            \Log::info('Order Receive - Price Category ID: ' . $price_category_id);
+            \Log::info('Order Receive - Product ID: ' . $itemData['product_id']);
+            
+            $latest_selling_price = PriceList::where('price_category_id', $price_category_id)
+                ->whereHas('currentStock', function($q) use ($itemData) {
+                    $q->where('product_id', $itemData['product_id']);
+                })
+                ->orderBy('id', 'desc')
+                ->value('price');
+                
+            \Log::info('Order Receive - Latest Selling Price: ' . ($latest_selling_price ?? 'null'));
+            
+            $sell_price = $latest_selling_price ?? 0;
+            \Log::info('Order Receive - Using Sell Price: ' . $sell_price);
+
             // Save goods receiving
             $goods_receiving = new GoodsReceiving();
             $goods_receiving->product_id   = $itemData['product_id'];
@@ -429,21 +451,25 @@ class GoodsReceivingController extends Controller
             $goods_receiving->store_id     = $default_store_id;
             $goods_receiving->batch_number = $batch_number;
             $goods_receiving->expire_date  = $expiry_date_value;
+            $goods_receiving->sell_price   = $sell_price;
             $goods_receiving->created_by   = Auth::id();
             $goods_receiving->created_at   = now(); // Set created_at timestamp
             $goods_receiving->save();
 
             // Update or create stock with reference to incoming_stock
-            $stock = CurrentStock::firstOrNew([
-                'product_id'   => $itemData['product_id'],
-                'batch_number' => $batch_number,
-                'store_id'     => $default_store_id,
-            ]);
-            $stock->quantity           += $received_qty;
-            $stock->unit_cost           = $unit_price;
-            $stock->expiry_date         = $expiry_date_value;
-            $stock->incoming_stock_id   = $goods_receiving->id; // Add reference
+            // Create NEW CurrentStock record for each order receive (not firstOrNew)
+            // This ensures a new row is added to the price list table
+            $stock = new CurrentStock();
+            $stock->product_id     = $itemData['product_id'];
+            $stock->batch_number   = $batch_number;
+            $stock->expiry_date    = $expiry_date_value;
+            $stock->quantity       = $received_qty;
+            $stock->unit_cost      = $unit_price;
+            $stock->store_id       = $default_store_id;
+            $stock->incoming_stock_id = $goods_receiving->id;
+            $stock->created_at     = now();
             $stock->save();
+            $overal_stock_id = $stock->id;
 
             // Track stock movement
             StockTracking::create([
@@ -455,6 +481,22 @@ class GoodsReceivingController extends Controller
                 'out_mode'   => 'Goods Receiving (Order)',
                 'updated_at' => date('Y-m-d'),
                 'movement'   => 'IN',
+            ]);
+
+            // Create PriceList record for this stock with the selling price
+            \Log::info('Order Receive - Creating PriceList with:', [
+                'stock_id' => $stock->id,
+                'price' => $sell_price,
+                'price_category_id' => $price_category_id
+            ]);
+            
+            PriceList::create([
+                'stock_id'           => $stock->id,
+                'price'              => $sell_price,
+                'price_category_id' => $price_category_id,
+                'status'             => 1,
+                'created_at'         => now(),
+                'created_by'         => Auth::id(),
             ]);
         }
 
