@@ -171,7 +171,7 @@
                             <td align="center" style="width: 5%;">{{ $loop->index + 1 }}</td>
                             <td align="left" style="width: 30%;">{{$item['name']}}</td>
                             <td align="center" style="width: 14%;">
-                                <div>{{ number_format($item['quantity'], 0) }}</div>
+                                <div>{{ $item['quantity'] }}</div>
                             </td>
                             <td align="right" style="width: 14%;">{{number_format($item['buy_price'],2)}}</td>
                             <td align="right" style="width: 14%;">{{number_format($item['sell_price'],2)}}</td>
