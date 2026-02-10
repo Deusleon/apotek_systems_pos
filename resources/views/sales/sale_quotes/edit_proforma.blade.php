@@ -259,7 +259,7 @@
                 
                 cart.push([
                     name,                          // [0] Name #
-                    formatNumber(qty, 0),            // [2] Quantity
+                    formatNumber(qty),               // [2] Quantity (preserve decimals)
                     formatMoney(price),              // [3] Price
                     formatMoney(vatUnit * qty),      // [4] VAT
                     formatMoney(unitTotal * qty),    // [5] Amount
@@ -284,7 +284,7 @@
                 ordering: false,
                 data: cart,
                 columns: [
-                    { title: "Name" },
+                    { title: "Product Name" },
                     { title: "Quantity" },
                     { title: "Price" },
                     { title: "VAT", visible: false },
@@ -419,7 +419,7 @@
                 const unitTotal = Number(priceNum + vatUnit);
                 const qtyNum = Number(String(qtyRaw).replace(/,/g, '')) || 0;
                 
-                cart[index][1] = numberWithCommas(qtyNum);
+                cart[index][1] = formatNumber(qtyNum);
                 cart[index][2] = formatMoney(priceNum);
                 cart[index][3] = formatMoney(vatUnit * qtyNum);
                 cart[index][4] = formatMoney(unitTotal * qtyNum);

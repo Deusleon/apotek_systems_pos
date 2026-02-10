@@ -159,7 +159,7 @@
                                     @foreach($sales_details as $saleData)
                                         <tr data-id="{{ $saleData->id }}">
                                             <td>{{ $saleData->name.' '.$saleData->brand.' '.$saleData->pack_size.$saleData->sales_uom }}</td>
-                                            <td class="quantity">{{ number_format($saleData->quantity) }}</td>
+                                            <td class="quantity">{{ number_format($saleData->quantity, 2) }}</td>
                                             <td class="price">{{ number_format($saleData->price, 2) }}</td>
                                             <td class="vat">{{ number_format($saleData->vat, 2) }}</td>
                                             <td class="amount">{{ number_format($saleData->amount, 2) }}</td>
@@ -317,6 +317,27 @@
             return Number(num).toLocaleString(undefined, { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits });
         }
                 
+        function formatNumber(num) {
+            let str = String(num);
+
+            if (str.includes('.')) {
+                let [whole, decimal] = str.split('.');
+
+                decimal = decimal.replace(/0+$/, "");
+
+                if (decimal === "") {
+                    return Number(whole).toLocaleString();
+                }
+
+                let wholeFormatted = Number(whole).toLocaleString();
+
+                return wholeFormatted + "." + decimal;
+
+            } else {
+                return Number(str).toLocaleString();
+            }
+        }
+        
         $(document).ready(function() {
 
             // Toggle Edit Mode (Edit <-> Close)
@@ -331,8 +352,8 @@
                         var qVal = unformatNumber(qInput.val());
                         var pVal = unformatNumber(pInput.val());
 
-                        tr.find('td.quantity').text(formatNumber(qVal, 0));
-                        tr.find('td.price').text(formatNumber(pVal, 0));
+                        tr.find('td.quantity').text(formatNumber(qVal));
+                        tr.find('td.price').text(formatNumber(pVal));
                         var newAmount = qVal * pVal;
                         tr.find('td.amount').text(formatNumber(newAmount, 0));
                     }
@@ -358,7 +379,7 @@
                 var priceRaw = unformatNumber(priceText);
 
                 // Replace cells with inputs
-                tr.find('td.quantity').html('<input type="number" min="0" step="1" class="form-control input-quantity" value="' + quantityRaw + '" />');
+                tr.find('td.quantity').html('<input type="number" min="0" step="any" class="form-control input-quantity" value="' + quantityRaw + '" />');
                 tr.find('td.price').html('<input type="number" min="0" step="0.01" class="form-control input-price" value="' + priceRaw + '" />');
 
                 // focus on quantity
@@ -429,8 +450,8 @@
                             var qVal = unformatNumber(qInput.val());
                             var pVal = unformatNumber(pInput.val());
 
-                            tr.find('td.quantity').text(formatNumber(qVal, 0));
-                            tr.find('td.price').text(formatNumber(pVal, 0));
+                            tr.find('td.quantity').text(formatNumber(qVal));
+                            tr.find('td.price').text(formatNumber(pVal));
                             tr.find('td.vat').text(formatNumber((qVal *(vVal * pVal)), 0));
                             tr.find('td.amount').text(formatNumber(qVal * pVal, 0));
                         }
@@ -484,7 +505,7 @@
                         discount: discount
                     },
                     success: function(response) {
-    $("#quote_barcode_input").focus();
+                        $("#quote_barcode_input").focus();
                         // console.log('response', response);
                         if (response.status === 'success') {
                             notify(response.message, 'top', 'right', 'success');
@@ -495,7 +516,7 @@
                     },
                     error: function(xhr) {
                         notify('An error occured!', 'top', 'right', 'danger');
-    $("#quote_barcode_input").focus();
+                        $("#quote_barcode_input").focus();
                     }
                 });
             })

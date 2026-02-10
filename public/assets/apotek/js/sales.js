@@ -833,10 +833,6 @@ function saleReturn(items, sale_id) {
 
     items.forEach(function (item) {
         var item_data = [];
-        // Skip fully returned items (status 3)
-        if (item.status === 3 || item.status === "3") {
-            return; // Skip this item entirely
-        }
 
         item_data.push(item.id);
         item_data.push(
@@ -855,10 +851,15 @@ function saleReturn(items, sale_id) {
 
         // Determine button based on status
         // Status 2: Pending approval
-        // Status 3: Fully returned (skipped above)
+        // Status 3: Fully returned
         // Status 4: Rejected
         // Status 5: Partially returned
-        if (item.status === 5 || item.status === "5" || item.has_return) {
+        if (item.status === 3 || item.status === "3") {
+            // Fully returned - show as Returned, no action allowed
+            item_data.push(
+                " <button class='btn btn-sm btn-rounded btn-success' disabled>Returned</button>",
+            );
+        } else if (item.status === 5 || item.status === "5" || item.has_return) {
             // Already returned (partial or has any return) - no more returns allowed
             item_data.push(
                 " <button class='btn btn-sm btn-rounded btn-success' disabled>Returned</button>",

@@ -434,7 +434,7 @@ function refreshSalesTable(data) {
             <td>${item.name} ${item.brand ? item.brand + " " : ""} ${
             item.pack_size ?? ''
         } ${item.sales_uom ?? ''}</td>
-            <td class="quantity">${formatNumber(item.quantity, 0)}</td>
+            <td class="quantity">${formatNumber(item.quantity)}</td>
             <td class="price">${formatNumber(item.price, 0)}</td>
             <td>${formatNumber(item.vat, 0)}</td>
             <td class="amount">${formatNumber(item.amount, 0)}</td>
@@ -483,4 +483,25 @@ function isCartEmpty(value) {
         priceSelect.disabled = false;
     }
     $("#quote_barcode_input").focus();
+}
+
+function numberWithCommas(num) {
+    let str = String(num);
+
+    if (str.includes('.')) {
+        let [whole, decimal] = str.split('.');
+
+        decimal = decimal.replace(/0+$/, "");
+
+        if (decimal === "") {
+            return Number(whole).toLocaleString();
+        }
+
+        let wholeFormatted = Number(whole).toLocaleString();
+
+        return wholeFormatted + "." + decimal;
+
+    } else {
+        return Number(str).toLocaleString();
+    }
 }

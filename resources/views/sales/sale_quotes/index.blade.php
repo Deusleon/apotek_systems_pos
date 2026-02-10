@@ -1000,6 +1000,10 @@
             });
 
             $("#sale_discount").on("blur", function () {
+                if (discount_enable) {
+                    var n = Math.abs(parseFloat($(this).val().replace(/\,/g, ""), 10) || 0);
+                    $(this).val(n.toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+                }
                 $("#quote_barcode_input").focus();
             });
 
