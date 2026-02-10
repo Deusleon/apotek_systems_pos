@@ -241,8 +241,7 @@
                                                         <label>Grace Period (Days)<font color="red">*</font></label>
                                                         <select class="js-example-basic-single form-control" name="grace_period"
                                                             id="grace_period" required>
-                                                            <option value="">Select period
-                                                            </option>
+                                                            <option value="">Select period</option>
                                                             <option value="1">1</option>
                                                             <option value="7">7</option>
                                                             <option value="14">14</option>

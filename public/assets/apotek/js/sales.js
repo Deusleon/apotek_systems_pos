@@ -35,7 +35,14 @@ var items_table = $("#items_table").DataTable({
         { title: "ID" },
         { title: "Product Name" },
         {
-            title: "Quantity",
+            title: "Bought Qty",
+            render: function (data) {
+                return numberWithCommas(data);
+            },
+            style: "text-align:center;",
+        },
+        {
+            title: "Returned Qty",
             render: function (data) {
                 return numberWithCommas(data);
             },
@@ -233,6 +240,10 @@ $("#cash_sale_date").on("blur", function () {
 });
 
 $("#sale_discount").on("blur", function () {
+    if (discount_enable === "YES") {
+        var n = Math.abs(parseFloat($(this).val().replace(/\,/g, ""), 10) || 0);
+        $(this).val(n.toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    }
     $("#barcode_input").focus();
 });
 
@@ -836,6 +847,7 @@ function saleReturn(items, sale_id) {
                 (item.sales_uom ?? ""),
         );
         item_data.push(item.quantity);
+        item_data.push(item.returned_quantity || 0);
         item_data.push(item.price);
         item_data.push(item.vat);
         item_data.push(item.discount);
@@ -904,6 +916,7 @@ function quoteDetails(remark, items, data) {
                 (item.sales_uom ? item.sales_uom : ""),
         );
         item_data.push(item.quantity);
+        item_data.push(0);
         item_data.push(item.price);
         item_data.push(item.vat);
         item_data.push(item.discount);
@@ -913,7 +926,8 @@ function quoteDetails(remark, items, data) {
     });
     items_table.clear();
     items_table.rows.add(sale_items);
-    items_table.column(7).visible(false);
+    items_table.column(8).visible(false);
+    items_table.column(3).visible(false);
     items_table.column(0).visible(false);
     items_table.draw();
 }
@@ -925,6 +939,9 @@ $("#sale_quotes-Table tbody").on("click", "#quote_details", function () {
 $("#items_table tbody").on("click", "#rtn_btn", function () {
     var index = items_table.row($(this).parents("tr")).index();
     var data = items_table.row($(this).parents("tr")).data();
+    var boughtQty = Number(data[2]);
+    var returnedQty = Number(data[3]);
+    var maxReturnableQty = boughtQty - returnedQty;
     $("#sale-return").modal("show");
     $("#sale-return").find(".modal-body #id_of_item").val(data[0]);
     $("#sale-return").find(".modal-body #og_item_qty").val(data[2]);
@@ -932,12 +949,12 @@ $("#items_table tbody").on("click", "#rtn_btn", function () {
     document.getElementById("save_btn").style.display = "block";
     $("#sale-return").on("change", "#rtn_qty_to_show", function () {
         var quantity = document.getElementById("rtn_qty").value;
-        if (Number(quantity) > Number(data[2]) || Number(quantity) < 0) {
+        if (Number(quantity) > maxReturnableQty || Number(quantity) < 0) {
             document.getElementById("save_btn").disabled = "true";
             document.getElementById("qty_error").style.display = "block";
             $("#sale-return")
                 .find(".modal-body #qty_error")
-                .text("Maximum quantity is " + numberWithCommas(data[2]));
+                .text("Maximum quantity is " + numberWithCommas(maxReturnableQty));
         } else {
             document.getElementById("qty_error").style.display = "none";
             $("#save_btn").prop("disabled", false);
