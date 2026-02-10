@@ -709,18 +709,21 @@ function discount() {
             } else {
                 p = parseFloat(reducedCart[value[6]][2].replace(/\,/g, ""), 10);
 
-                reducedCart[value[6]][1] = reducedCart[value[6]][1].toString();
+                // --- Normalize existing qty to a number (remove commas and any "<Max" html)
+                let existingQtyRaw = String(reducedCart[value[6]][1] || "0").split("<")[0];
+                let existingQty = Number(existingQtyRaw.replace(/\,/g, "")) || 0;
 
-                reducedCart[value[6]][1] = reducedCart[value[6]][1].split("<");
+                // --- Normalize incoming qty to a number as well
+                let incomingQtyRaw = String(value[1] || "0").split("<")[0];
+                let incomingQty = Number(incomingQtyRaw.replace(/\,/g, "")) || 0;
 
-                reducedCart[value[6]][1] = Number(
-                    reducedCart[value[6]][1][0].toString().replace(",", "")
-                );
+                // Sum quantities (numeric addition, safe float rounding)
+                let newQty = Math.round((existingQty + incomingQty) * 100) / 100;
 
-                if (typeof reducedCart[value[6]][1] != "number") {
-                    reducedCart[value[6]][1] = reducedCart[value[6]][5]; //avoid Max string
+                if (typeof newQty != "number" || isNaN(newQty)) {
+                    newQty = reducedCart[value[6]][5]; //avoid Max string
                 }
-                reducedCart[value[6]][1] += value[1];
+                reducedCart[value[6]][1] = newQty;
                 dif = reducedCart[value[6]][5] - reducedCart[value[6]][1];
                 if ($("#quotes_page").length) {
                     //Qoutes has no maximum quantity
@@ -1194,7 +1197,7 @@ function valueCollection() {
             typeof row[1] === "number" ? row[1] : String(row[1]).split("<")[0];
         rawQty = Number(String(rawQty).replace(/,/g, "")) || 0;
 
-        let newQty = rawQty + 1;
+        let newQty = Math.round((rawQty + 1) * 100) / 100;
         if (newQty > available_quantity) {
             row[1] =
                 numberWithCommas(rawQty) +
@@ -1575,22 +1578,16 @@ function isNumberKey(evt, obj) {
 }
 
 function numberWithCommas(num) {
-    let str = String(num);
-
-    if (str.includes('.')) {
-        let [whole, decimal] = str.split('.');
-
-        decimal = decimal.replace(/0+$/, "");
-
-        if (decimal === "") {
-            return Number(whole).toLocaleString();
-        }
-
-        let wholeFormatted = Number(whole).toLocaleString();
-
-        return wholeFormatted + "." + decimal;
-
-    } else {
-        return Number(str).toLocaleString();
+    if (num === null || num === undefined || num === '') return '0';
+    var n = parseFloat(String(num).replace(/,/g, ''));
+    if (isNaN(n)) return '0';
+    // Round to 2 decimal places to avoid floating-point artifacts
+    n = Math.round(n * 100) / 100;
+    var parts = n.toString().split('.');
+    var intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    if (parts.length > 1) {
+        var decPart = parts[1].replace(/0+$/, '');
+        return decPart ? intPart + '.' + decPart : intPart;
     }
+    return intPart;
 }
