@@ -72,9 +72,9 @@ function calculateCart() {
                 reduced__obj_cart[c[0]] = c;
             } else {
                 reduced__obj_cart[c[0]][2] =
-                    Number(
-                        reduced__obj_cart[c[0]][2].toString().replace(",", "")
-                    ) + Number(c[2]);
+                    Math.round((Number(
+                        reduced__obj_cart[c[0]][2].toString().replace(/,/g, "")
+                    ) + Number(c[2])) * 100) / 100;
 
                 if (reduced__obj_cart[c[0]][2] > Number(c[1])) {
                     reduced__obj_cart[c[0]][2] = Number(c[1]);
@@ -673,24 +673,18 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
 }
 
 function numberWithCommas(num) {
-    let str = String(num);
-
-    if (str.includes('.')) {
-        let [whole, decimal] = str.split('.');
-
-        decimal = decimal.replace(/0+$/, "");
-
-        if (decimal === "") {
-            return Number(whole).toLocaleString();
-        }
-
-        let wholeFormatted = Number(whole).toLocaleString();
-
-        return wholeFormatted + "." + decimal;
-
-    } else {
-        return Number(str).toLocaleString();
+    if (num === null || num === undefined || num === '') return '0';
+    var n = parseFloat(String(num).replace(/,/g, ''));
+    if (isNaN(n)) return '0';
+    // Round to 2 decimal places to avoid floating-point artifacts
+    n = Math.round(n * 100) / 100;
+    var parts = n.toString().split('.');
+    var intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    if (parts.length > 1) {
+        var decPart = parts[1].replace(/0+$/, '');
+        return decPart ? intPart + '.' + decPart : intPart;
     }
+    return intPart;
 }
 
 function isNumberKey(evt, obj) {

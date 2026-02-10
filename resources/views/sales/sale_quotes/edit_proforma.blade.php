@@ -370,8 +370,18 @@
                 });
             }
 
-            function numberWithCommas(x) {
-                return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            function numberWithCommas(num) {
+                if (num === null || num === undefined || num === '') return '0';
+                var n = parseFloat(String(num).replace(/,/g, ''));
+                if (isNaN(n)) return '0';
+                n = Math.round(n * 100) / 100;
+                var parts = n.toString().split('.');
+                var intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                if (parts.length > 1) {
+                    var decPart = parts[1].replace(/0+$/, '');
+                    return decPart ? intPart + '.' + decPart : intPart;
+                }
+                return intPart;
             }
 
             function escapeHtml(text) {

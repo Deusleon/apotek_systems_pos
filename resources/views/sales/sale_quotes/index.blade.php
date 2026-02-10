@@ -411,8 +411,18 @@
             }
 
             // Number formatting function
-            function numberWithCommas(x) {
-                return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            function numberWithCommas(num) {
+                if (num === null || num === undefined || num === '') return '0';
+                var n = parseFloat(String(num).replace(/,/g, ''));
+                if (isNaN(n)) return '0';
+                n = Math.round(n * 100) / 100;
+                var parts = n.toString().split('.');
+                var intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                if (parts.length > 1) {
+                    var decPart = parts[1].replace(/0+$/, '');
+                    return decPart ? intPart + '.' + decPart : intPart;
+                }
+                return intPart;
             }
 
             // track which row is being edited (index in cart)
@@ -651,7 +661,7 @@
                         typeof row[1] === "number" ? row[1] : String(row[1]).split("<")[0];
                     rawQty = Number(String(rawQty).replace(/,/g, "")) || 0;
 
-                    let newQty = rawQty + 1;
+                    let newQty = Math.round((rawQty + 1) * 100) / 100;
                     if (newQty > available_quantity) {
                         row[1] = numberWithCommas(rawQty) +
                             "<span class='text text-danger'> Max</span>";
@@ -838,7 +848,7 @@
                     // Incoming increment (scanner adds 1 each time)
                     let incomingQty = 1;
 
-                    let newQty = existingQty + incomingQty;
+                    let newQty = Math.round((existingQty + incomingQty) * 100) / 100;
 
                     // Check stock limit (if not quotes page)
                     if (!$("#quotes_page").length && stockQty && newQty > stockQty) {
