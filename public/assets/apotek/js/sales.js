@@ -352,8 +352,6 @@ function applyCartEdit() {
     var vat;
     var unit_total;
     var vat_money;
-    console.log("TAX VALUE RAW =", document.getElementById("vat").value);
-console.log("TAX PARSED =", tax);
 
     if (fixed_price === "NO") {
         vat = Number(
