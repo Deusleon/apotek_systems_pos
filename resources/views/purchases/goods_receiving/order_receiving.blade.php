@@ -155,6 +155,18 @@
                         @csrf
                         <input type="hidden" name="supplier_id" id="modal_supplier_id">
                         <input type="hidden" name="order_id" id="modal_order_id">
+                        
+                        <!-- Price Category Dropdown -->
+                        <div class="mb-3">
+                            <label for="price_category"><strong>Price Category:</strong></label>
+                            <select name="price_category" id="price_category" class="form-control form-control-sm">
+                                @foreach($price_categories as $price_category)
+                                    <option value="{{$price_category->id}}" {{ (isset($default_price_category) && strtoupper($default_price_category) == strtoupper($price_category->name)) || (!isset($default_price_category) && strtoupper($price_category->name) == 'WHOLESALE') ? 'selected' : '' }}>
+                                        {{ $price_category->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
                        <!-- Order Items Table with fixed header -->
                         <div class="receive-items-wrapper">
