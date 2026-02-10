@@ -221,23 +221,46 @@
                         return numberWithCommas(data);
                     }
                 },
+                // {
+                //     data: 'item_returned',
+                //     render: function (item, type, row) {
+                //         console.log('item_returned', row);
+                //         const amount = parseFloat(row.amount) || 0;
+                //         const vat = parseFloat(row.vat) || 0;
+                //         const discount = parseFloat(row.discount) || 0;
+                //         const remained = Math.round(parseFloat(item.remained_qty) * 100) / 100 || 1;
+                //         const rtn = parseFloat(item.rtn_qty) || 0;
+
+                //         const total = (((amount - vat) + discount) / remained) * rtn
+                //             + ((vat / remained) * rtn);
+
+                //         return formatMoney(total);
+                //     }
+                // },
                 {
                     data: 'item_returned',
                     render: function (item, type, row) {
+
                         const amount = parseFloat(row.amount) || 0;
                         const vat = parseFloat(row.vat) || 0;
                         const discount = parseFloat(row.discount) || 0;
-                        const remained = Math.round(parseFloat(item.remained_qty) * 100) / 100 || 1;
+
+                        let remained = parseFloat(item.remained_qty);
+                        if (!remained || remained <= 0) remained = 1; // prevent divide by 0
+
                         const rtn = parseFloat(item.rtn_qty) || 0;
 
-                        const total = (((amount - vat) + discount) / remained) * rtn
-                            + ((vat / remained) * rtn);
+                        // refund per unit
+                        const unit_price = (amount) / remained;
+
+                        // total refund
+                        const total = unit_price * rtn;
 
                         return formatMoney(total);
                     }
                 },
                 @if(Auth::user()->checkPermission('Approve Sales Returns'))
-                                                                                                        {
+                                                                                                                {
                         data: "action",
                         defaultContent: "<button type='button' id='approve' class='btn btn-sm btn-rounded btn-primary'>Approve</button><button type='button' id='reject' class='btn btn-sm btn-rounded btn-danger'>Reject</button>"
                     }
@@ -248,7 +271,7 @@
                         }
                     @endif
 
-                                                        ], aaSorting: [[1, "desc"]]
+                                                            ], aaSorting: [[1, "desc"]]
         });
 
         function getRetunedProducts(action, product) {
