@@ -29,11 +29,13 @@ class ConfigurationsController extends Controller
 
         $configurations = Setting::orderBy( 'display_number', 'ASC' )->get();
         $store = Store::all();
+        $price_categories = PriceCategory::all();
 
         return View::make( 'configurations.index' )
         ->with( compact( 'configurations' ) )
         ->with( compact( 'sale_types' ) )
-        ->with( compact( 'store' ) );
+        ->with( compact( 'store' ) )
+        ->with( compact( 'price_categories' ) );
     }
 
     public function store( Request $request )

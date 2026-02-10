@@ -33,6 +33,7 @@ class GoodsReceivingController extends Controller
 
         $back_date = Setting::where('id', 126)->value('value');
         $expire_date = Setting::where('id', 123)->value('value');
+        $default_price_category = Setting::where('id', 125)->value('value');
 
         $orders = Order::with(['details', 'details.product', 'supplier'])
             ->where('status', '<=', '3')
@@ -56,7 +57,7 @@ class GoodsReceivingController extends Controller
         return View::make('purchases.goods_receiving.index',
             (compact('orders', ['order_details', 'suppliers', 'default_supplier',
                 'order_receiving', 'price_categories','stores', 'default_store_id', 'default_store_name',
-                'current_stock', 'item_stocks', 'invoices', 'batch_setting', 'invoice_setting', 'back_date', 'expire_date'])));
+                'current_stock', 'item_stocks', 'invoices', 'batch_setting', 'invoice_setting', 'back_date', 'expire_date', 'default_price_category'])));
     }
 
     private function resolveStoreId($request = null)
