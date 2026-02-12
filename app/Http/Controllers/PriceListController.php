@@ -52,7 +52,8 @@ class PriceListController extends Controller {
             'price_categories.name as price_category_name',
             'sales_prices.price_category_id as price_category_id'
         )
-        ->where( 'inv_current_stock.quantity', '>', 0 );
+        ->where( 'inv_current_stock.quantity', '>', 0 )
+        ->orderBy('sales_prices.id', 'desc'); // Get latest price first
         if ( !is_all_store() ) {
             $query->where( 'inv_current_stock.store_id', $store_id );
         }
@@ -131,7 +132,8 @@ class PriceListController extends Controller {
                 )
                 ->where('sp.price_category_id', $categoryId)
                 // ->where('cs.unit_cost', '>', 0)
-                ->where('cs.quantity', '>', 0);
+                ->where('cs.quantity', '>', 0)
+                ->orderBy('sp.id', 'desc'); // Get latest price first
                 if (!is_all_store()) {
                     $query->where('cs.store_id', $store_id);
                 }
