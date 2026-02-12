@@ -99,7 +99,7 @@ class PDFOptimizer
                 'orientation' => '',
                 'isHtml5ParserEnabled' => false, // Disable for performance
                 'isRemoteEnabled' => false,
-                'dpi' => 72, // Lower DPI for faster generation
+                'dpi' => 96, // Standard DPI to maintain font size
                 'defaultFont' => 'sans-serif',
                 'tempDir' => storage_path('app/temp'),
                 'enable_font_subsetting' => true, // Enable for smaller file size

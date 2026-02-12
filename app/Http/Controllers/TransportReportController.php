@@ -33,7 +33,7 @@ class TransportReportController extends Controller
             
             // Apply optimization options
             $pdf->setOptions([
-                'dpi' => 72,
+                'dpi' => 96,
                 'isHtml5ParserEnabled' => false,
                 'isFontSubsettingEnabled' => true,
                 'isRemoteEnabled' => false,

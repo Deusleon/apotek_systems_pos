@@ -36,7 +36,7 @@ class AccountingReportController extends Controller
                 ->setOptions([
                     'isHtml5ParserEnabled' => false,
                     'isRemoteEnabled' => false,
-                    'dpi' => 72,
+                    'dpi' => 96,
                     'enable_font_subsetting' => true,
                 ]);
             
