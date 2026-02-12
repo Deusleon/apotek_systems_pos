@@ -13,17 +13,62 @@ use App\PriceCategory;
 use App\PurchaseReturn;
 use App\Setting;
 use App\Supplier;
+use App\Http\Controllers\PDFOptimizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use PDF;
 use View;
 
-ini_set('max_execution_time', 500);
-set_time_limit(500);
-ini_set('memory_limit', '512M');
+// Use PDFOptimizer for memory and time limits
+PDFOptimizer::initializePdfLimits('2048M', 1800);
 
 class PurchaseReportController extends Controller
 {
+    /**
+     * Generate optimized PDF with memory management
+     */
+    private function generateOptimizedPdf($view, $data, $filename, $orientation = '')
+    {
+        PDFOptimizer::initializePdfLimits();
+        
+        try {
+            $pdf = PDF::loadView($view, $data)
+                ->setPaper('a4', $orientation)
+                ->setOptions([
+                    'isHtml5ParserEnabled' => false,
+                    'isRemoteEnabled' => false,
+                    'dpi' => 72,
+                    'enable_font_subsetting' => true,
+                ]);
+            
+            PDFOptimizer::forceGarbageCollection();
+            
+            return $pdf->stream($filename);
+        } catch (\Exception $e) {
+            Log::error("PDF generation failed: " . $e->getMessage());
+            throw $e;
+        }
+    }
+    
+    /**
+     * Get pharmacy settings efficiently with single query
+     */
+    private function getPharmacySettingsOptimized()
+    {
+        $settingIds = [100, 102, 105, 106, 107, 108, 109];
+        $settings = Setting::whereIn('id', $settingIds)->pluck('value', 'id')->toArray();
+        
+        return [
+            'name' => $settings[100] ?? '',
+            'tin_number' => $settings[102] ?? '',
+            'logo' => $settings[105] ?? '',
+            'address' => $settings[106] ?? '',
+            'phone' => $settings[107] ?? '',
+            'email' => $settings[108] ?? '',
+            'website' => $settings[109] ?? '',
+        ];
+    }
 
     /**
      * Get the branch filter condition for queries.
@@ -62,14 +107,11 @@ class PurchaseReportController extends Controller
 
     protected function reportOption(Request $request)
     {
-
-        $pharmacy['name'] = Setting::where('id', 100)->value('value');
-        $pharmacy['logo'] = Setting::where('id', 105)->value('value');
-        $pharmacy['address'] = Setting::where('id', 106)->value('value');
-        $pharmacy['email'] = Setting::where('id', 108)->value('value');
-        $pharmacy['website'] = Setting::where('id', 109)->value('value');
-        $pharmacy['phone'] = Setting::where('id', 107)->value('value');
-        $pharmacy['tin_number'] = Setting::where('id', 102)->value('value');
+        // Initialize PDF optimizer for large reports
+        PDFOptimizer::initializePdfLimits();
+        
+        // Get pharmacy settings efficiently
+        $pharmacy = $this->getPharmacySettingsOptimized();
         
         // Get store/branch name for the report
         $store_id = current_store_id();
@@ -89,21 +131,21 @@ class PurchaseReportController extends Controller
                     if ($data->isEmpty()) {
                         return response()->view('error_pages.pdf_zero_data');
                     }
-                $pdf = PDF::loadView( 'purchases_reports.material_received_report_pdf',
-                compact( 'data', 'pharmacy', 'branch_name', 'store_id') )
-                ->setPaper( 'a4', '' );
-                return $pdf->stream( 'material_received_report.pdf' );
+                    return $this->generateOptimizedPdf(
+                        'purchases_reports.material_received_report_pdf',
+                        compact( 'data', 'pharmacy', 'branch_name', 'store_id'),
+                        'material_received_report.pdf'
+                    );
                 } else {
                     if ($data == []) {
                         return response()->view('error_pages.pdf_zero_data');
                     }
-
-                    $pdf = PDF::loadView('purchases_reports.material_received_all_supplier_report_pdf',
-                        compact('data', 'pharmacy', 'branch_name', 'store_id'));
-                    return $pdf->stream('material_received_all_supplier.pdf');
+                    return $this->generateOptimizedPdf(
+                        'purchases_reports.material_received_all_supplier_report_pdf',
+                        compact('data', 'pharmacy', 'branch_name', 'store_id'),
+                        'material_received_all_supplier.pdf'
+                    );
                 }
-
-
                 break;
             case 2:
                 $data = $this->InvoiceSummaryReport($request->suppliers, $request->expire_date,
@@ -111,42 +153,49 @@ class PurchaseReportController extends Controller
                 if ($data->isEmpty()) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                $pdf = PDF::loadView( 'purchases_reports.invoice_summary_report_pdf',
-                compact( 'data', 'pharmacy', 'branch_name') )
-                ->setPaper( 'a4', '' );
-                return $pdf->stream( 'invoice_summary_report.pdf' );
+                return $this->generateOptimizedPdf(
+                    'purchases_reports.invoice_summary_report_pdf',
+                    compact( 'data', 'pharmacy', 'branch_name'),
+                    'invoice_summary_report.pdf'
+                );
             case 3:
                 break;
             case 4:
                 $data = $this->supplierList();
-                $pdf = PDF::loadView( 'purchases_reports.supplier_list_pdf',
-                compact( 'data', 'pharmacy', 'branch_name') )
-                ->setPaper( 'a4', '' );
-                return $pdf->stream( 'supplier_list_report.pdf' );
+                return $this->generateOptimizedPdf(
+                    'purchases_reports.supplier_list_pdf',
+                    compact( 'data', 'pharmacy', 'branch_name'),
+                    'supplier_list_report.pdf'
+                );
             case 5:
                 $data = $this->supplierPriceComparison();
-                $pdf = PDF::loadView( 'purchases_reports.supplier_price_comparison_report_pdf',
-                compact( 'data', 'pharmacy', 'branch_name') )
-                ->setPaper( 'a4', '' );
-                return $pdf->stream( 'supplier_price_comparison_report.pdf' );
+                return $this->generateOptimizedPdf(
+                    'purchases_reports.supplier_price_comparison_report_pdf',
+                    compact( 'data', 'pharmacy', 'branch_name'),
+                    'supplier_price_comparison_report.pdf'
+                );
             case 6:
                 $data = $this->purchaseOrderDetailsReport($request->date_range);
                 if ($data->isEmpty()) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                $pdf = PDF::loadView( 'purchases_reports.purchase_Order_Details_Report_pdf',
-                compact( 'data', 'pharmacy', 'branch_name') )
-                ->setPaper( 'a4', 'landscape' );
-                return $pdf->stream( 'purchase_order_details_report.pdf' );
+                return $this->generateOptimizedPdf(
+                    'purchases_reports.purchase_Order_Details_Report_pdf',
+                    compact( 'data', 'pharmacy', 'branch_name'),
+                    'purchase_order_details_report.pdf',
+                    'landscape'
+                );
             case 7:
                 $data = $this->purchaseReturnReport($request->date_range);
                 if ($data->isEmpty()) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                $pdf = PDF::loadView( 'purchases_reports.purchase_return_report_pdf',
-                compact( 'data', 'pharmacy', 'branch_name') )
-                ->setPaper( 'a4', 'landscape' );
-                return $pdf->stream( 'purchase_return_report.pdf' );
+                return $this->generateOptimizedPdf(
+                    'purchases_reports.purchase_return_report_pdf',
+                    compact( 'data', 'pharmacy', 'branch_name'),
+                    'purchase_return_report.pdf',
+                    'landscape'
+                );
             default;
         }
     }
@@ -157,6 +206,7 @@ class PurchaseReportController extends Controller
         
         // Get branch filter
         $store_id = $this->getBranchFilter();
+
 
         if ($invoice_no == null) {
             if ($supplier == null) {
