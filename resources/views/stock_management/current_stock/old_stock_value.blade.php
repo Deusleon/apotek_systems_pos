@@ -32,12 +32,12 @@
 @endsection
 
 @section('content-title')
-    Old Stock
+    Current Stock
 @endsection
 
 @section('content-sub-title')
     <li class="breadcrumb-item"><a href="{{route('home')}}"><i class="feather icon-home"></i></a></li>
-    <li class="breadcrumb-item"><a href="#"> Inventory / Old Stock </a></li>
+    <li class="breadcrumb-item"><a href="#"> Inventory / Current Stock / Old Stock </a></li>
 @endsection
 
 @section("content")
