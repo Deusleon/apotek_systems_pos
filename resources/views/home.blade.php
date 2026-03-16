@@ -69,8 +69,8 @@
 
 
         /**
-                                                                                                      Component
-                                                                                                    **/
+                                                                                                          Component
+                                                                                                        **/
 
         label {
             width: 100%;
@@ -119,24 +119,26 @@
                 <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
                     @php
                         $firstAvailableTab = '';
-                        
+
                         // Determine the first available tab based on permissions
-                        if(auth()->user()->checkPermission('View Sales Summary')) {
+                        if (auth()->user()->checkPermission('View Sales Summary')) {
                             $firstAvailableTab = 'sales';
-                        } elseif(auth()->user()->checkPermission('View Purchasing Summary')) {
+                        } elseif (auth()->user()->checkPermission('View Purchasing Summary')) {
                             $firstAvailableTab = 'purchase';
-                        } elseif(auth()->user()->checkPermission('View Inventory Summary')) {
+                        } elseif (auth()->user()->checkPermission('View Inventory Summary')) {
                             $firstAvailableTab = 'stock';
-                        } elseif(auth()->user()->checkPermission('View Transport Summary')) {
+                        } elseif (auth()->user()->checkPermission('View Transport Summary')) {
                             $firstAvailableTab = 'transport';
-                        } elseif(auth()->user()->checkPermission('View Accounting Summary')) {
+                        } elseif (auth()->user()->checkPermission('View Accounting Summary')) {
                             $firstAvailableTab = 'expense';
                         }
                     @endphp
-                    
+
                     @if(auth()->user()->checkPermission('View Sales Summary'))
                         <li class="nav-item">
-                            <a class="nav-link {{ $firstAvailableTab == 'sales' ? 'active' : '' }}" data-toggle="pill" href="#pills-home" role="tab" aria-selected="{{ $firstAvailableTab == 'sales' ? 'true' : 'false' }}">Sales
+                            <a class="nav-link {{ $firstAvailableTab == 'sales' ? 'active' : '' }}" data-toggle="pill"
+                                href="#pills-home" role="tab"
+                                aria-selected="{{ $firstAvailableTab == 'sales' ? 'true' : 'false' }}">Sales
                             </a>
                         </li>
                     @endif
@@ -144,7 +146,8 @@
                     @if(auth()->user()->checkPermission('View Purchasing Summary'))
                         <li class="nav-item">
                             @if(auth()->user()->checkPermission('View Purchasing Summary'))
-                                <a class="nav-link {{ $firstAvailableTab == 'purchase' ? 'active' : '' }}" data-toggle="pill" href="#pills-purchase" role="tab"
+                                <a class="nav-link {{ $firstAvailableTab == 'purchase' ? 'active' : '' }}" data-toggle="pill"
+                                    href="#pills-purchase" role="tab"
                                     aria-selected="{{ $firstAvailableTab == 'purchase' ? 'true' : 'false' }}">Purchasing</a>
                             @endif
 
@@ -154,7 +157,9 @@
                     @if(auth()->user()->checkPermission('View Inventory Summary'))
                         <li class="nav-item">
                             @if(auth()->user()->checkPermission('View Inventory Summary'))
-                                <a class="nav-link {{ $firstAvailableTab == 'stock' ? 'active' : '' }}" data-toggle="pill" href="#pills-stock" role="tab" aria-selected="{{ $firstAvailableTab == 'stock' ? 'true' : 'false' }}">Inventory
+                                <a class="nav-link {{ $firstAvailableTab == 'stock' ? 'active' : '' }}" data-toggle="pill"
+                                    href="#pills-stock" role="tab"
+                                    aria-selected="{{ $firstAvailableTab == 'stock' ? 'true' : 'false' }}">Inventory
                                 </a>
                             @endif
                         </li>
@@ -162,7 +167,9 @@
 
                     @if(auth()->user()->checkPermission('View Transport Summary'))
                         <li class="nav-item">
-                            <a class="nav-link {{ $firstAvailableTab == 'transport' ? 'active' : '' }}" data-toggle="pill" href="#pills-transport" role="tab" aria-selected="{{ $firstAvailableTab == 'transport' ? 'true' : 'false' }}">Transport
+                            <a class="nav-link {{ $firstAvailableTab == 'transport' ? 'active' : '' }}" data-toggle="pill"
+                                href="#pills-transport" role="tab"
+                                aria-selected="{{ $firstAvailableTab == 'transport' ? 'true' : 'false' }}">Transport
                             </a>
                         </li>
                     @endif
@@ -170,7 +177,9 @@
                     @if(auth()->user()->checkPermission('View Accounting Summary'))
                         <li class="nav-item">
                             @if(auth()->user()->checkPermission('View Accounting Summary') || auth()->user()->checkPermission('View Purchasing Summary') || auth()->user()->checkPermission('View Inventory Summary'))
-                                <a class="nav-link {{ $firstAvailableTab == 'expense' ? 'active' : '' }}" data-toggle="pill" href="#pills-expense" role="tab" aria-selected="{{ $firstAvailableTab == 'expense' ? 'true' : 'false' }}">Accounting
+                                <a class="nav-link {{ $firstAvailableTab == 'expense' ? 'active' : '' }}" data-toggle="pill"
+                                    href="#pills-expense" role="tab"
+                                    aria-selected="{{ $firstAvailableTab == 'expense' ? 'true' : 'false' }}">Accounting
                                 </a>
                             @endif
 
@@ -204,7 +213,8 @@
 
                 {{-- Tab 1 - Sales --}}
                 @if(auth()->user()->checkPermission('View Sales Summary'))
-                    <div class="tab-pane fade {{ $firstAvailableTab == 'sales' ? 'show active' : '' }}" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+                    <div class="tab-pane fade {{ $firstAvailableTab == 'sales' ? 'show active' : '' }}" id="pills-home"
+                        role="tabpanel" aria-labelledby="pills-home-tab">
                         {{-- row 1 start --}}
                         <div class="row">
                             <!-- [ Today sales section ] start -->
@@ -298,7 +308,8 @@
                 {{-- Tab 2 - Inventory --}}
                 @if(auth()->user()->checkPermission('View Inventory Summary'))
                     @if(auth()->user()->checkPermission('View Inventory Summary') || auth()->user()->checkPermission('View Inventory Summary'))
-                        <div class="tab-pane fade {{ $firstAvailableTab == 'stock' ? 'show active' : '' }}" id="pills-stock" role="tabpanel" aria-labelledby="pills-stock-tab">
+                        <div class="tab-pane fade {{ $firstAvailableTab == 'stock' ? 'show active' : '' }}" id="pills-stock"
+                            role="tabpanel" aria-labelledby="pills-stock-tab">
                             {{-- row starts --}}
                             <div class="row">
                                 <div class="col-md-4 col-lg-4 col-sm-4">
@@ -611,7 +622,8 @@
                     @endif
 
                     @if($firstAvailableTab != 'purchase')
-                        <div class="tab-pane fade {{ $firstAvailableTab == 'purchase' ? 'show active' : '' }}" id="pills-purchase" role="tabpanel" aria-labelledby="pills-purchase-tab">
+                        <div class="tab-pane fade {{ $firstAvailableTab == 'purchase' ? 'show active' : '' }}" id="pills-purchase"
+                            role="tabpanel" aria-labelledby="pills-purchase-tab">
                             {{-- row 1 start--}}
                             <div class="row">
                                 <!-- [ Today purchase section ] start -->
@@ -795,7 +807,8 @@
                     @endif
 
                     @if($firstAvailableTab != 'expense')
-                        <div class="tab-pane fade {{ $firstAvailableTab == 'expense' ? 'show active' : '' }}" id="pills-expense" role="tabpanel" aria-labelledby="pills-expense-tab">
+                        <div class="tab-pane fade {{ $firstAvailableTab == 'expense' ? 'show active' : '' }}" id="pills-expense"
+                            role="tabpanel" aria-labelledby="pills-expense-tab">
                             {{-- row 1 start--}}
                             <div class="row">
                                 <!-- [ Today expense section ] start -->
@@ -888,7 +901,8 @@
 
                 {{-- Tab 5 - Transport --}}
                 @if(auth()->user()->checkPermission('View Transport Summary'))
-                    <div class="tab-pane fade {{ $firstAvailableTab == 'transport' ? 'show active' : '' }}" id="pills-transport" role="tabpanel" aria-labelledby="pills-transport-tab">
+                    <div class="tab-pane fade {{ $firstAvailableTab == 'transport' ? 'show active' : '' }}" id="pills-transport"
+                        role="tabpanel" aria-labelledby="pills-transport-tab">
                         <div class="row">
                             <div class="col-md-6 col-xl-3">
                                 <div class="card">
@@ -1347,10 +1361,19 @@
                 });
             });
 
-            function numberWithCommas(digit) {
-                return String(parseFloat(digit))
-                    .toString()
-                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            function numberWithCommas(num) {
+                if (num === null || num === undefined || num === '') return '0';
+                var n = parseFloat(String(num).replace(/,/g, ''));
+                if (isNaN(n)) return '0';
+                // Round to 2 decimal places to avoid floating-point artifacts
+                n = Math.round(n * 100) / 100;
+                var parts = n.toString().split('.');
+                var intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                if (parts.length > 1) {
+                    var decPart = parts[1].replace(/0+$/, '');
+                    return decPart ? intPart + '.' + decPart : intPart;
+                }
+                return intPart;
             }
         </script>
 

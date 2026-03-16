@@ -5,13 +5,63 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Production;
 use App\Setting;
+use App\Http\Controllers\PDFOptimizer;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade as PDF;
 
+// Use PDFOptimizer for memory and time limits
+PDFOptimizer::initializePdfLimits('2048M', 1800);
+
 class ProductionReportController extends Controller
- {
+{
+    /**
+     * Generate optimized PDF with memory management
+     */
+    private function generateOptimizedPdf($view, $data, $filename, $orientation = '')
+    {
+        PDFOptimizer::initializePdfLimits();
+        
+        try {
+            $pdf = PDF::loadView($view, $data)
+                ->setPaper('a4', $orientation)
+                ->setOptions([
+                    'isHtml5ParserEnabled' => false,
+                    'isRemoteEnabled' => false,
+                    'dpi' => 96,
+                    'enable_font_subsetting' => true,
+                ]);
+            
+            PDFOptimizer::forceGarbageCollection();
+            
+            return $pdf->stream($filename);
+        } catch (\Exception $e) {
+            Log::error("PDF generation failed: " . $e->getMessage());
+            throw $e;
+        }
+    }
+    
+    /**
+     * Get pharmacy settings efficiently with single query
+     */
+    private function getPharmacySettingsOptimized()
+    {
+        $settingIds = [100, 102, 105, 106, 107, 108, 109, 111];
+        $settings = Setting::whereIn('id', $settingIds)->pluck('value', 'id')->toArray();
+        
+        return [
+            'name' => $settings[100] ?? '',
+            'tin_number' => $settings[102] ?? '',
+            'logo' => $settings[105] ?? '',
+            'address' => $settings[106] ?? '',
+            'phone' => $settings[107] ?? '',
+            'email' => $settings[108] ?? '',
+            'website' => $settings[109] ?? '',
+        ];
+    }
+    
     public function index()
- {
+    {
         // Get selling prices for meat types from database
         $meatPrices = $this->getMeatPrices();
         
@@ -22,19 +72,18 @@ class ProductionReportController extends Controller
     }
 
     public function filter( Request $request )
- {
+    {
+        // Initialize PDF optimizer for large reports
+        PDFOptimizer::initializePdfLimits();
+        
         $date_range = explode( '-', $request->date_range );
         $from = trim( $date_range[ 0 ] );
         $to = trim( $date_range[ 1 ] );
         $type = $request->price_type;
         $enable_discount = Setting::where( 'id', 111 )->value( 'value' );
-        $pharmacy[ 'name' ] = Setting::where( 'id', 100 )->value( 'value' );
-        $pharmacy[ 'logo' ] = Setting::where( 'id', 105 )->value( 'value' );
-        $pharmacy[ 'address' ] = Setting::where( 'id', 106 )->value( 'value' );
-        $pharmacy[ 'email' ] = Setting::where( 'id', 108 )->value( 'value' );
-        $pharmacy[ 'website' ] = Setting::where( 'id', 109 )->value( 'value' );
-        $pharmacy[ 'phone' ] = Setting::where( 'id', 107 )->value( 'value' );
-        $pharmacy[ 'tin_number' ] = Setting::where( 'id', 102 )->value( 'value' );
+        
+        // Get pharmacy settings efficiently
+        $pharmacy = $this->getPharmacySettingsOptimized();
         $pharmacy[ 'from_date' ] = date( 'Y-m-d', strtotime( $from ) );
         $pharmacy[ 'to_date' ] = date( 'Y-m-d', strtotime( $to ) );
 
@@ -53,10 +102,12 @@ class ProductionReportController extends Controller
             'tripe' => $meatPrices['tripe'] ?? 0,
         ];
         
-        $pdf = PDF::loadView( 'production_reports.report_pdf',
-        compact( 'data', 'pharmacy', 'enable_discount', 'prices' ) )
-        ->setPaper( 'a4', 'landscape' );
-        return $pdf->stream( 'Production_Report.pdf' );
+        return $this->generateOptimizedPdf(
+            'production_reports.report_pdf',
+            compact( 'data', 'pharmacy', 'enable_discount', 'prices' ),
+            'Production_Report.pdf',
+            'landscape'
+        );
     }
 
     private function getProductions( $from, $to )

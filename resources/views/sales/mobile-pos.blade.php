@@ -366,6 +366,13 @@
                     <input type="text" id="customerInput" class="input" placeholder="Customer name" autocomplete="off">
                 </div>
                 <div style="display: flex; flex-direction: column;">
+                    <label for="paymentInput">Payment</label>
+                    <select name="payment" id="paymentInput" class="input">
+                        <option value="cash">Cash</option>
+                        <option value="credit">Bill</option>
+                    </select>
+                </div>
+                <div style="display: flex; flex-direction: column;">
                     <label for="weightInput">Weight (kg)</label>
                     <input type="text" inputmode="numeric" id="weightInput" class="input" placeholder="Weight (kg)"
                         autocomplete="off">
@@ -405,7 +412,7 @@
                 <div class="receipt-info2" id="receiptNumber">Receipt #: #000000</div>
                 <div class="receipt-info2" id="receiptDate">Date: {{ date('Y-m-d H:i:s') }}</div>
                 <div class="receipt-info2" id="customerName"></div>
-                <div class="receipt-info2">Payment: CASH</div>
+                <div class="receipt-info2">Payment: <span id="receiptPayment"></span></div>
             </div>
 
             <div class="receipt-items-header">
@@ -437,8 +444,6 @@
 
     <script src="{{asset("assets/js/vendor-all.min.js")}}"></script>
     <script src="{{asset("assets/plugins/bootstrap/js/bootstrap.min.js")}}"></script>
-    {{--
-    <script src="{{asset(" assets/js/pcoded.min.js")}}"></script> --}}
 
     <script>
 

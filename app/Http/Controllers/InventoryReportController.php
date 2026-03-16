@@ -17,6 +17,7 @@ use App\StockTransfer;
 use App\StockCountSchedule;
 use App\Store;
 use App\SalesDetail;
+use App\Http\Controllers\PDFOptimizer;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,12 +25,55 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade as PDF;
 
-ini_set( 'max_execution_time', 1800 );
-set_time_limit( 1800 );
-ini_set( 'memory_limit', '2048M' );
+// Use PDFOptimizer for memory and time limits
+PDFOptimizer::initializePdfLimits('2048M', 1800);
 
 class InventoryReportController extends Controller
- {
+{
+    /**
+     * Generate optimized PDF with memory management
+     */
+    private function generateOptimizedPdf($view, $data, $filename, $orientation = '')
+    {
+        PDFOptimizer::initializePdfLimits();
+        
+        try {
+            $pdf = PDF::loadView($view, $data)
+                ->setPaper('a4', $orientation)
+                ->setOptions([
+                    'isHtml5ParserEnabled' => false,
+                    'isRemoteEnabled' => false,
+                    'dpi' => 96,
+                    'enable_font_subsetting' => true,
+                ]);
+            
+            PDFOptimizer::forceGarbageCollection();
+            
+            return $pdf->stream($filename);
+        } catch (\Exception $e) {
+            Log::error("PDF generation failed: " . $e->getMessage());
+            throw $e;
+        }
+    }
+    
+    /**
+     * Get pharmacy settings efficiently with single query
+     */
+    private function getPharmacySettingsOptimized()
+    {
+        $settingIds = [100, 102, 105, 106, 107, 108, 109, 121];
+        $settings = Setting::whereIn('id', $settingIds)->pluck('value', 'id')->toArray();
+        
+        return [
+            'name' => $settings[100] ?? '',
+            'tin_number' => $settings[102] ?? '',
+            'logo' => $settings[105] ?? '',
+            'address' => $settings[106] ?? '',
+            'phone' => $settings[107] ?? '',
+            'email' => $settings[108] ?? '',
+            'website' => $settings[109] ?? '',
+        ];
+    }
 
     public function index()
  {
@@ -70,14 +114,13 @@ class InventoryReportController extends Controller
         if (!Auth()->user()->checkPermission('View Inventory Reports')) {
             abort(403, 'Access Denied');
         }
-    $pharmacy['name'] = Setting::where('id', 100)->value('value');
-    $pharmacy['address'] = Setting::where('id', 106)->value('value');
-    $pharmacy['phone'] = Setting::where('id', 107)->value('value');
-    $pharmacy['email'] = Setting::where('id', 108)->value('value');
-    $pharmacy['website'] = Setting::where('id', 109)->value('value');
-    $pharmacy['logo'] = Setting::where('id', 105)->value('value');
-    $pharmacy['tin_number'] = Setting::where('id', 102)->value('value');
-    $isMultiStore = Setting::where('id', 121)->value('value') === 'YES';
+        
+        // Initialize PDF optimizer for large reports
+        PDFOptimizer::initializePdfLimits();
+        
+        // Get pharmacy settings efficiently
+        $pharmacy = $this->getPharmacySettingsOptimized();
+        $isMultiStore = Setting::where('id', 121)->value('value') === 'YES';
 
         switch ($request->report_option) {
             case 1:
@@ -91,10 +134,11 @@ class InventoryReportController extends Controller
                     if ($data == []) {
                         return response()->view('error_pages.pdf_zero_data');
                     }
-                    $pdf = PDF::loadView( 'inventory_reports.current_stock_by_store_report_pdf',
-                    compact( 'data', 'store', 'pharmacy', 'isMultiStore' ) )
-                    ->setPaper( 'a4', '' );
-                    return $pdf->stream( 'current_stock_by_store_report.pdf' );
+                    return $this->generateOptimizedPdf(
+                        'inventory_reports.current_stock_by_store_report_pdf',
+                        compact( 'data', 'store', 'pharmacy', 'isMultiStore' ),
+                        'current_stock_by_store_report.pdf'
+                    );
                 } else {
                     $category_name = Category::where('id', $request->category_name)
                                 ->first();
@@ -103,10 +147,11 @@ class InventoryReportController extends Controller
                     if ($data == []) {
                         return response()->view('error_pages.pdf_zero_data');
                     }
-                    $pdf = PDF::loadView( 'inventory_reports.current_stock_report_pdf',
-                    compact( 'data', 'store', 'category', 'pharmacy', 'isMultiStore' ) )
-                    ->setPaper( 'a4', '' );
-                    return $pdf->stream( 'current_stock_report.pdf' );
+                    return $this->generateOptimizedPdf(
+                        'inventory_reports.current_stock_report_pdf',
+                        compact( 'data', 'store', 'category', 'pharmacy', 'isMultiStore' ),
+                        'current_stock_report.pdf'
+                    );
                 }
             case 12:
                 $request_store = $request->store_name ?? current_store_id();    
@@ -119,10 +164,11 @@ class InventoryReportController extends Controller
                     if ($data == []) {
                         return response()->view('error_pages.pdf_zero_data');
                     }
-                    $pdf = PDF::loadView( 'inventory_reports.current_stock_by_store_detailed_report_pdf',
-                    compact( 'data', 'store', 'pharmacy', 'isMultiStore' ) )
-                    ->setPaper( 'a4', '' );
-                    return $pdf->stream( 'current_stock_by_store_detailed_report.pdf' );
+                    return $this->generateOptimizedPdf(
+                        'inventory_reports.current_stock_by_store_detailed_report_pdf',
+                        compact( 'data', 'store', 'pharmacy', 'isMultiStore' ),
+                        'current_stock_by_store_detailed_report.pdf'
+                    );
                 } else {
                     $category_name = Category::where('id', $request->category_name)
                                 ->first();
@@ -131,10 +177,11 @@ class InventoryReportController extends Controller
                     if ($data == []) {
                         return response()->view('error_pages.pdf_zero_data');
                     }
-                    $pdf = PDF::loadView( 'inventory_reports.current_stock_detailed_report_pdf',
-                    compact( 'data', 'store', 'category', 'pharmacy', 'isMultiStore' ) )
-                    ->setPaper( 'a4', '' );
-                    return $pdf->stream( 'current_stock_detailed_report.pdf' );
+                    return $this->generateOptimizedPdf(
+                        'inventory_reports.current_stock_detailed_report_pdf',
+                        compact( 'data', 'store', 'category', 'pharmacy', 'isMultiStore' ),
+                        'current_stock_detailed_report.pdf'
+                    );
                 }
             case 2:
                 $data = $this->productDetailReport($request->category_name_detail);
@@ -142,21 +189,21 @@ class InventoryReportController extends Controller
                     return response()->view('error_pages.pdf_zero_data');
                 }
                 if ($request->category_name_detail != null) {
-                    $pdf = PDF::loadView( 'inventory_reports.product_detail_report_pdf',
-                    compact( 'data',  'pharmacy', 'isMultiStore' ) )
-                    ->setPaper( 'a4', '' );
-                    return $pdf->stream( 'product_details_report.pdf' );
+                    return $this->generateOptimizedPdf(
+                        'inventory_reports.product_detail_report_pdf',
+                        compact( 'data',  'pharmacy', 'isMultiStore' ),
+                        'product_details_report.pdf'
+                    );
                 } else {
-                    $pdf = PDF::loadView( 'inventory_reports.product_detail1_report_pdf',
-                    compact( 'data',  'pharmacy', 'isMultiStore' ) )
-                    ->setPaper( 'a4', '' );
-                    return $pdf->stream( 'product_details_report.pdf' );
+                    return $this->generateOptimizedPdf(
+                        'inventory_reports.product_detail1_report_pdf',
+                        compact( 'data',  'pharmacy', 'isMultiStore' ),
+                        'product_details_report.pdf'
+                    );
                 }
             case 3:
-                // Force cleanup before processing
-                if (function_exists('gc_collect_cycles')) {
-                    gc_collect_cycles();
-                }
+                // Force cleanup before processing using optimized method
+                PDFOptimizer::forceGarbageCollection();
 
                 //product ledger
                 $data = $this->productLedgerReport($request->product);
@@ -164,63 +211,55 @@ class InventoryReportController extends Controller
                     return response()->view('error_pages.pdf_zero_data');
                 }
 
-                // Temporarily increase limits for this report
-                $oldMemoryLimit = ini_get('memory_limit');
-                $oldTimeLimit = ini_get('max_execution_time');
-
-                ini_set('memory_limit', '3072M');
-                set_time_limit(1800);
-
-                try {
-                    $pdf = PDF::loadView( 'inventory_reports.product_ledger_report_pdf',
-                    compact( 'data',  'pharmacy', 'isMultiStore' ) )
-                    ->setPaper( 'a4', '' );
-                    return $pdf->stream( 'product_ledger_report.pdf' );
-                } finally {
-                    // Restore original limits
-                    ini_set('memory_limit', $oldMemoryLimit);
-                    set_time_limit($oldTimeLimit);
-                }
+                return $this->generateOptimizedPdf(
+                    'inventory_reports.product_ledger_report_pdf',
+                    compact( 'data',  'pharmacy', 'isMultiStore' ),
+                    'product_ledger_report.pdf'
+                );
             case 17:
                 //product ledger
                 $data = $this->productLedgerDetailedReport($request->product);
                 if ($data == []) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                $pdf = PDF::loadView( 'inventory_reports.product_ledger_detailed_report_pdf',
-                compact( 'data',  'pharmacy', 'isMultiStore' ) )
-                ->setPaper( 'a4', '' );
-                return $pdf->stream( 'product_ledger_detailed_report.pdf' );
+                return $this->generateOptimizedPdf(
+                    'inventory_reports.product_ledger_detailed_report_pdf',
+                    compact( 'data',  'pharmacy', 'isMultiStore' ),
+                    'product_ledger_detailed_report.pdf'
+                );
             case 4:
                 //expired product
                 $data = $this->expiredProductReport();
                 if ($data->isEmpty()) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                $pdf = PDF::loadView( 'inventory_reports.expiry_product_report_pdf',
-                compact( 'data',  'pharmacy', 'isMultiStore' ) )
-                ->setPaper( 'a4', '' );
-                return $pdf->stream( 'expiry_product_report.pdf' );
+                return $this->generateOptimizedPdf(
+                    'inventory_reports.expiry_product_report_pdf',
+                    compact( 'data',  'pharmacy', 'isMultiStore' ),
+                    'expiry_product_report.pdf'
+                );
             case 13:
                 //products expire date
                 $data = $this->productsExpireDateReport();
                 if ($data->isEmpty()) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                $pdf = PDF::loadView( 'inventory_reports.product_expire_date_report_pdf',
-                compact( 'data',  'pharmacy', 'isMultiStore' ) )
-                ->setPaper( 'a4', '' );
-                return $pdf->stream( 'products_expire_date_report.pdf' );
+                return $this->generateOptimizedPdf(
+                    'inventory_reports.product_expire_date_report_pdf',
+                    compact( 'data',  'pharmacy', 'isMultiStore' ),
+                    'products_expire_date_report.pdf'
+                );
             case 5:
                 //out of stock
                 $data = $this->outOfStockReport();
                 if ($data->isEmpty()) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                $pdf = PDF::loadView( 'inventory_reports.outofstock_report_pdf',
-                compact( 'data',  'pharmacy', 'isMultiStore' ) )
-                ->setPaper( 'a4', '' );
-                return $pdf->stream( 'outofstock_report.pdf' );
+                return $this->generateOptimizedPdf(
+                    'inventory_reports.outofstock_report_pdf',
+                    compact( 'data',  'pharmacy', 'isMultiStore' ),
+                    'outofstock_report.pdf'
+                );
             case 6:
                 //outgoing tracking report
                 $dates = explode(" - ", $request->out_dates);
@@ -230,10 +269,11 @@ class InventoryReportController extends Controller
                 if ($data->isEmpty()) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                $pdf = PDF::loadView( 'inventory_reports.outgoing_stocktracking_report_pdf',
-                compact( 'data', 'date1', 'date2', 'pharmacy', 'isMultiStore' ) )
-                ->setPaper( 'a4', '' );
-                return $pdf->stream( 'outgoing_stocktracking_report.pdf' );
+                return $this->generateOptimizedPdf(
+                    'inventory_reports.outgoing_stocktracking_report_pdf',
+                    compact( 'data', 'date1', 'date2', 'pharmacy', 'isMultiStore' ),
+                    'outgoing_stocktracking_report.pdf'
+                );
             case 14:
                 //outgoing tracking summary report
                 $dates = explode(" - ", $request->out_dates);
@@ -243,10 +283,11 @@ class InventoryReportController extends Controller
                 if ($data->isEmpty()) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                $pdf = PDF::loadView( 'inventory_reports.outgoing_stocktracking_summary_report_pdf',
-                compact( 'data', 'date1', 'date2',  'pharmacy', 'isMultiStore' ) )
-                ->setPaper( 'a4', '' );
-                return $pdf->stream( 'outgoing_stocktracking_summary_report.pdf' );
+                return $this->generateOptimizedPdf(
+                    'inventory_reports.outgoing_stocktracking_summary_report_pdf',
+                    compact( 'data', 'date1', 'date2',  'pharmacy', 'isMultiStore' ),
+                    'outgoing_stocktracking_summary_report.pdf'
+                );
             case 15:
                 //fast moving summary report
                 $request_store = $request->store_name ?? current_store_id();    
@@ -257,10 +298,11 @@ class InventoryReportController extends Controller
                 if ($data->isEmpty()) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                $pdf = PDF::loadView( 'inventory_reports.fast_moving_report_pdf',
-                compact( 'data', 'store', 'pharmacy', 'isMultiStore' ) )
-                ->setPaper( 'a4', '' );
-                return $pdf->stream( 'fast_moving_report.pdf' );
+                return $this->generateOptimizedPdf(
+                    'inventory_reports.fast_moving_report_pdf',
+                    compact( 'data', 'store', 'pharmacy', 'isMultiStore' ),
+                    'fast_moving_report.pdf'
+                );
             case 16:
                 //dead stock summary report
                 $request_store = $request->store_name ?? current_store_id();    
@@ -271,10 +313,11 @@ class InventoryReportController extends Controller
                 if ($data->isEmpty()) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                $pdf = PDF::loadView( 'inventory_reports.dead_stock_report_pdf',
-                compact( 'data', 'store', 'pharmacy', 'isMultiStore' ) )
-                ->setPaper( 'a4', '' );
-                return $pdf->stream( 'dead_stock_report.pdf' );
+                return $this->generateOptimizedPdf(
+                    'inventory_reports.dead_stock_report_pdf',
+                    compact( 'data', 'store', 'pharmacy', 'isMultiStore' ),
+                    'dead_stock_report.pdf'
+                );
             case 7:
                 //stock adjustment report
                 $dates = explode(" - ", $request->adjustment_date);
@@ -284,15 +327,17 @@ class InventoryReportController extends Controller
                     return response()->view('error_pages.pdf_zero_data');
                 }
                 if ($request->stock_adjustment_reason != null) {
-                $pdf = PDF::loadView( 'inventory_reports.stock_adjustment_reason_report_pdf',
-                compact( 'data',  'type', 'pharmacy', 'isMultiStore' ) )
-                ->setPaper( 'a4', '' );
-                return $pdf->stream( 'stock_adjustment_reason_report.pdf' );
+                    return $this->generateOptimizedPdf(
+                        'inventory_reports.stock_adjustment_reason_report_pdf',
+                        compact( 'data',  'type', 'pharmacy', 'isMultiStore' ),
+                        'stock_adjustment_reason_report.pdf'
+                    );
                 } else {
-                $pdf = PDF::loadView( 'inventory_reports.stock_adjustment_report_pdf',
-                compact( 'data', 'type', 'pharmacy', 'isMultiStore' ) )
-                ->setPaper( 'a4', '' );
-                return $pdf->stream( 'stock_adjustment_report.pdf' );
+                    return $this->generateOptimizedPdf(
+                        'inventory_reports.stock_adjustment_report_pdf',
+                        compact( 'data', 'type', 'pharmacy', 'isMultiStore' ),
+                        'stock_adjustment_report.pdf'
+                    );
                 }
             case 8:
                 //stock issue report
@@ -303,30 +348,33 @@ class InventoryReportController extends Controller
                     if ($data == []) {
                         return response()->view('error_pages.pdf_zero_data');
                     }
-                $pdf = PDF::loadView( 'inventory_reports.stock_issue_report_pdf',
-                compact( 'data', 'pharmacy', 'isMultiStore' ) )
-                ->setPaper( 'a4', '' );
-                return $pdf->stream( 'stock_issue_report.pdf' );
+                    return $this->generateOptimizedPdf(
+                        'inventory_reports.stock_issue_report_pdf',
+                        compact( 'data', 'pharmacy', 'isMultiStore' ),
+                        'stock_issue_report.pdf'
+                    );
                 } elseif ($request->stock_issue == '1') {
                     // Issued
                     $data = $this->stockIssueReport($dates);
                     if ($data == []) {
                         return response()->view('error_pages.pdf_zero_data');
                     }
-                $pdf = PDF::loadView( 'inventory_reports.stock_issue_report_pdf',
-                compact( 'data', 'pharmacy', 'isMultiStore' ) )
-                ->setPaper( 'a4', '' );
-                return $pdf->stream( 'stock_issue_report.pdf' );
+                    return $this->generateOptimizedPdf(
+                        'inventory_reports.stock_issue_report_pdf',
+                        compact( 'data', 'pharmacy', 'isMultiStore' ),
+                        'stock_issue_report.pdf'
+                    );
                 } elseif ($request->stock_issue == '2') {
                     // Pending
                     $data = $this->getPendingRequisitions($dates);
                     if ($data == []) {
                         return response()->view('error_pages.pdf_zero_data');
                     }
-                $pdf = PDF::loadView( 'inventory_reports.stock_issue_report_pdf',
-                compact( 'data', 'pharmacy', 'isMultiStore' ) )
-                ->setPaper( 'a4', '' );
-                return $pdf->stream( 'stock_issue_report.pdf' );
+                    return $this->generateOptimizedPdf(
+                        'inventory_reports.stock_issue_report_pdf',
+                        compact( 'data', 'pharmacy', 'isMultiStore' ),
+                        'stock_issue_report.pdf'
+                    );
                 }
             case 9:
                 //stock transfer
@@ -336,38 +384,44 @@ class InventoryReportController extends Controller
                     if ($data->isEmpty()) {
                         return response()->view('error_pages.pdf_zero_data');
                     }
-                    $pdf = PDF::loadView( 'inventory_reports.stock_transfer_report_pdf',
-                    compact( 'data', 'pharmacy', 'isMultiStore' ) )
-                    ->setPaper( 'a4', 'landscape' );
-                    return $pdf->stream( 'stock_transfer_report.pdf' );
+                    return $this->generateOptimizedPdf(
+                        'inventory_reports.stock_transfer_report_pdf',
+                        compact( 'data', 'pharmacy', 'isMultiStore' ),
+                        'stock_transfer_report.pdf',
+                        'landscape'
+                    );
                 } else {
                     $data = $this->stockTransferStatusReport($request->stock_transfer, $dates);
                     if ($data->isEmpty()) {
                         return response()->view('error_pages.pdf_zero_data');
                     }
-                    $pdf = PDF::loadView( 'inventory_reports.stock_transfer_status_report_pdf',
-                    compact( 'data', 'pharmacy', 'isMultiStore' ) )
-                    ->setPaper( 'a4', 'landscape' );
-                    return $pdf->stream( 'stock_transfer_status_report.pdf' );
+                    return $this->generateOptimizedPdf(
+                        'inventory_reports.stock_transfer_status_report_pdf',
+                        compact( 'data', 'pharmacy', 'isMultiStore' ),
+                        'stock_transfer_status_report.pdf',
+                        'landscape'
+                    );
                 }
             case 10:
                 $data = $this->stockMaxLevel();
                 if ($data == []) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                    $pdf = PDF::loadView( 'inventory_reports.stock_max_level_pdf',
-                    compact( 'data', 'pharmacy', 'isMultiStore' ) )
-                    ->setPaper( 'a4', '' );
-                    return $pdf->stream( 'stock_max_level.pdf' );
+                return $this->generateOptimizedPdf(
+                    'inventory_reports.stock_max_level_pdf',
+                    compact( 'data', 'pharmacy', 'isMultiStore' ),
+                    'stock_max_level.pdf'
+                );
             case 11:
                 $data = $this->stockMinLevel();
                 if ($data == []) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                    $pdf = PDF::loadView( 'inventory_reports.stock_min_level_pdf',
-                    compact( 'data', 'pharmacy', 'isMultiStore' ) )
-                    ->setPaper( 'a4', '' );
-                    return $pdf->stream( 'stock_min_level.pdf' );
+                return $this->generateOptimizedPdf(
+                    'inventory_reports.stock_min_level_pdf',
+                    compact( 'data', 'pharmacy', 'isMultiStore' ),
+                    'stock_min_level.pdf'
+                );
             case 18:
                 //stock requisition report
                 $dates = explode(" - ", $request->requisition_date);
@@ -376,10 +430,12 @@ class InventoryReportController extends Controller
                 if ($data == []) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                $pdf = PDF::loadView( 'inventory_reports.stock_requisition_report_pdf',
-                compact( 'data', 'pharmacy', 'isMultiStore' ) )
-                ->setPaper( 'a4', 'landscape' );
-                return $pdf->stream( 'stock_requisition_report.pdf' );
+                return $this->generateOptimizedPdf(
+                    'inventory_reports.stock_requisition_report_pdf',
+                    compact( 'data', 'pharmacy', 'isMultiStore' ),
+                    'stock_requisition_report.pdf',
+                    'landscape'
+                );
             default:
         }
     }

@@ -645,7 +645,23 @@ class SaleController extends Controller
                                     $details->quantity = $qty;
                                     $details->price = $price;
                                     $details->vat = (($details->price*$details->quantity) - $sale_discount) * $vat;
+                                    Log::info('Amount before sale detail', [
+                                        'sale_id' => $sale,
+                                        'stock_id' => $stock->id,
+                                        'quantity' => $qty,
+                                        'unit_price' => $price,
+                                        'amount_after_vat' => ($price*$qty) + $details->vat,
+                                    ]);
                                     $details->amount = ($details->price*$details->quantity) + $details->vat;
+                                    Log::info('Amount after sale detail', [
+                                        'sale_id' => $sale,
+                                        'stock_id' => $stock->id,
+                                        'quantity' => $qty,
+                                        'unit_price' => $price,
+                                        'unit_discount' => $unit_discount,
+                                        'sale_discount' => $sale_discount,
+                                        'amount_after_vat' => ($details->price*$details->quantity) + $details->vat,
+                                    ]);
                                     $details->discount = $sale_discount;
                                     $details->save();
                                     $stock->save();

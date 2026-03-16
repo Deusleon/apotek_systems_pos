@@ -12,16 +12,43 @@ use App\SalesDetail;
 use App\SalesReturn;
 use App\Setting;
 use App\User;
+use App\Http\Controllers\PDFOptimizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade as PDF;
 use Illuminate\Support\Facades\Log;
 
-ini_set( 'max_execution_time', 500 );
-set_time_limit( 500 );
-ini_set( 'memory_limit', '512M' );
+// Use PDFOptimizer for memory and time limits
+PDFOptimizer::initializePdfLimits('2048M', 1800);
 
 class SaleReportController extends Controller {
+    
+    /**
+     * Generate optimized PDF with memory management
+     */
+    private function generateOptimizedPdf($view, $data, $filename, $orientation = '')
+    {
+        PDFOptimizer::initializePdfLimits();
+        
+        try {
+            $pdf = PDF::loadView($view, $data)
+                ->setPaper('a4', $orientation)
+                ->setOptions([
+                    'isHtml5ParserEnabled' => false,
+                    'isRemoteEnabled' => false,
+                    'dpi' => 96,
+                    'enable_font_subsetting' => true,
+                ]);
+            
+            PDFOptimizer::forceGarbageCollection();
+            
+            return $pdf->stream($filename);
+        } catch (\Exception $e) {
+            Log::error("PDF generation failed: " . $e->getMessage());
+            throw $e;
+        }
+    }
+    
     public function index() {
         if (!Auth()->user()->checkPermission('View Sales Reports')) {
             abort(403, 'Access Denied');
@@ -40,19 +67,18 @@ class SaleReportController extends Controller {
         if (!Auth()->user()->checkPermission('View Sales Reports')) {
             abort(403, 'Access Denied');
         }
-        // dd( 'Data is', $request->all() );
+        
+        // Initialize PDF optimizer for large reports
+        PDFOptimizer::initializePdfLimits();
+        
         $date_range = explode( '-', $request->date_range );
         $from = trim( $date_range[ 0 ] );
         $to = trim( $date_range[ 1 ] );
         $type = $request->price_type;
         $enable_discount = Setting::where( 'id', 111 )->value( 'value' );
-        $pharmacy[ 'name' ] = Setting::where( 'id', 100 )->value( 'value' );
-        $pharmacy[ 'logo' ] = Setting::where( 'id', 105 )->value( 'value' );
-        $pharmacy[ 'address' ] = Setting::where( 'id', 106 )->value( 'value' );
-        $pharmacy[ 'email' ] = Setting::where( 'id', 108 )->value( 'value' );
-        $pharmacy[ 'website' ] = Setting::where( 'id', 109 )->value( 'value' );
-        $pharmacy[ 'phone' ] = Setting::where( 'id', 107 )->value( 'value' );
-        $pharmacy[ 'tin_number' ] = Setting::where( 'id', 102 )->value( 'value' );
+        
+        // Get pharmacy settings efficiently
+        $pharmacy = $this->getPharmacySettingsOptimized();
         $pharmacy[ 'from_date' ] = date( 'Y-m-d', strtotime( $from ) );
         $pharmacy[ 'to_date' ] = date( 'Y-m-d', strtotime( $to ) );
         $isMultiStore = Setting::where('id', 121)->value('value') === 'YES';
@@ -63,49 +89,59 @@ class SaleReportController extends Controller {
             if ( empty( $data ) || ( isset( $data[ 0 ] ) && empty( array_filter( $data[ 0 ] ) ) ) ) {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
-            $pdf = PDF::loadView( 'sale_reports.cash_sale_detail_report1_pdf',
-            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
-            ->setPaper( 'a4', 'landscape' );
-            return $pdf->stream( 'Cash_sale_detail_report.pdf' );
+            return $this->generateOptimizedPdf(
+                'sale_reports.cash_sale_detail_report1_pdf',
+                compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ),
+                'Cash_sale_detail_report.pdf',
+                'landscape'
+            );
 
             case 2:
             $data = $this->cashSaleSummaryReport( $from, $to );
             if ( empty( $data ) ) {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
-            $pdf = PDF::loadView( 'sale_reports.cash_sale_summary_report_pdf',
-            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
-            ->setPaper( 'a4', 'landscape' );
-            return $pdf->stream( 'Cash_sale_summary_report.pdf' );
+            return $this->generateOptimizedPdf(
+                'sale_reports.cash_sale_summary_report_pdf',
+                compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ),
+                'Cash_sale_summary_report.pdf',
+                'landscape'
+            );
 
             case 3:
             $data = $this->creditSaleDetailReport( $from, $to );
             if ( empty( $data ) ) {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
-            $pdf = PDF::loadView( 'sale_reports.credit_sale_detail_report_pdf',
-            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
-            ->setPaper( 'a4', 'landscape' );
-            return $pdf->stream( 'Credit_sale_detail_report.pdf' );
+            return $this->generateOptimizedPdf(
+                'sale_reports.credit_sale_detail_report_pdf',
+                compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ),
+                'Credit_sale_detail_report.pdf',
+                'landscape'
+            );
 
             case 4:
             $data = $this->creditSaleSummaryReport( $from, $to );
             if ( empty( $data ) ) {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
-            $pdf = PDF::loadView( 'sale_reports.credit_sale_summary_report_pdf',
-            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
-            ->setPaper( 'a4', 'landscape' );
-            return $pdf->stream( 'Credit_sale_summary_report.pdf' );
+            return $this->generateOptimizedPdf(
+                'sale_reports.credit_sale_summary_report_pdf',
+                compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ),
+                'Credit_sale_summary_report.pdf',
+                'landscape'
+            );
 
             case 5:
             $data = $this->creditPaymentReport( $from, $to );
             if ($data->isEmpty()) {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
-            $pdf = PDF::loadView( 'sale_reports.credit_payment_report_pdf',
-            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) );
-            return $pdf->stream( 'Credit_payment_report.pdf' );
+            return $this->generateOptimizedPdf(
+                'sale_reports.credit_payment_report_pdf',
+                compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ),
+                'Credit_payment_report.pdf'
+            );
 
             case 6:
             $request->validate( [
@@ -116,19 +152,22 @@ class SaleReportController extends Controller {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
             $customer = Customer::where( 'id', $request->customer_id )->value( 'name' );
-            $pdf = PDF::loadView( 'sale_reports.customer_payment_statement_pdf',
-            compact( 'data', 'pharmacy', 'customer', 'enable_discount', 'isMultiStore' ) );
-            return $pdf->stream( 'Customer_payment_statement.pdf' );
+            return $this->generateOptimizedPdf(
+                'sale_reports.customer_payment_statement_pdf',
+                compact( 'data', 'pharmacy', 'customer', 'enable_discount', 'isMultiStore' ),
+                'Customer_payment_statement.pdf'
+            );
             
             case 7:
             $data = $this->salesTotalReport( $from, $to );
             if ( empty( $data ) || ( isset( $data[ 0 ] ) && empty( array_filter( $data[ 0 ] ) ) ) ) {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
-            $pdf = PDF::loadView( 'sale_reports.sales_total_report_pdf',
-            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
-            ->setPaper( 'a4', '' );
-            return $pdf->stream( 'Sales_total_report.pdf' );
+            return $this->generateOptimizedPdf(
+                'sale_reports.sales_total_report_pdf',
+                compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ),
+                'Sales_total_report.pdf'
+            );
 
             case 8:
             if($request->category === 'all'){
@@ -136,17 +175,21 @@ class SaleReportController extends Controller {
                 if (empty($data)) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                $pdf = Pdf::loadView('sale_reports.price_list_all_categories_report_pdf', 
-                compact( 'data', 'pharmacy', 'type', 'isMultiStore' ) );
-                return $pdf->stream('Price_list_all_categories_report_pdf.pdf');
+                return $this->generateOptimizedPdf(
+                    'sale_reports.price_list_all_categories_report_pdf',
+                    compact( 'data', 'pharmacy', 'type', 'isMultiStore' ),
+                    'Price_list_all_categories_report_pdf.pdf'
+                );
             }else{
                 $data = $this->priceListReport($request->category);
                 if (empty($data)) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                $pdf = Pdf::loadView('sale_reports.price_list_report_pdf', 
-                compact( 'data', 'pharmacy', 'type', 'isMultiStore' ) );
-                return $pdf->stream('Price_list_report.pdf');
+                return $this->generateOptimizedPdf(
+                    'sale_reports.price_list_report_pdf',
+                    compact( 'data', 'pharmacy', 'type', 'isMultiStore' ),
+                    'Price_list_report.pdf'
+                );
             }
             
             case 9:
@@ -154,85 +197,118 @@ class SaleReportController extends Controller {
             if ( empty( $data ) || ( isset( $data[ 0 ] ) && empty( array_filter( $data[ 0 ] ) ) ) ) {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
-            $pdf = PDF::loadView( 'sale_reports.sale_detail_report_pdf',
-            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
-            ->setPaper( 'a4', 'landscape' );
-            return $pdf->stream( 'Sales_detail_Report.pdf' );
+            return $this->generateOptimizedPdf(
+                'sale_reports.sale_detail_report_pdf',
+                compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ),
+                'Sales_detail_Report.pdf',
+                'landscape'
+            );
             
             case 10:
             $data = $this->SaleSummaryReport( $from, $to );
             if ( empty( $data ) ) {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
-            $pdf = PDF::loadView( 'sale_reports.sale_summary_report_pdf',
-            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
-            ->setPaper( 'a4', 'landscape' );
-            return $pdf->stream( 'Sale_summary_report.pdf' );
+            return $this->generateOptimizedPdf(
+                'sale_reports.sale_summary_report_pdf',
+                compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ),
+                'Sale_summary_report.pdf',
+                'landscape'
+            );
 
             case 11:
             $data = $this->saleReturnReport($from, $to);
             if ($data->isEmpty()) {
                 return response()->view('error_pages.pdf_zero_data');
             }
-            $pdf = PDF::loadView( 'sale_reports.sale_return_report_pdf',
-            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
-            ->setPaper( 'a4', 'landscape' );
-            return $pdf->stream( 'Sale_return_report.pdf' );
+            return $this->generateOptimizedPdf(
+                'sale_reports.sale_return_report_pdf',
+                compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ),
+                'Sale_return_report.pdf',
+                'landscape'
+            );
 
             case 12:
             $data = $this->salesComparison( $from, $to );
             if ( empty($data) || $data[0]['grand_total'] == 0 ) {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
-            $pdf = PDF::loadView( 'sale_reports.sales_comparison_report_pdf',
-            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
-            ->setPaper( 'a4', 'landscape' );
-            return $pdf->stream( 'Sales_comparison_report.pdf' );
+            return $this->generateOptimizedPdf(
+                'sale_reports.sales_comparison_report_pdf',
+                compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ),
+                'Sales_comparison_report.pdf',
+                'landscape'
+            );
             
             case 13:
             $data = $this->cashSalesTotalReport( $from, $to );
             if ( empty( $data ) || ( isset( $data[ 0 ] ) && empty( array_filter( $data[ 0 ] ) ) ) ) {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
-            $pdf = PDF::loadView( 'sale_reports.cash_sales_total_report_pdf',
-            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
-            ->setPaper( 'a4', '' );
-            return $pdf->stream( 'Cash_sales_total_report.pdf' );
+            return $this->generateOptimizedPdf(
+                'sale_reports.cash_sales_total_report_pdf',
+                compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ),
+                'Cash_sales_total_report.pdf'
+            );
             
             case 14:
             $data = $this->creditSalesTotalReport( $from, $to );
             if ( empty( $data ) || ( isset( $data[ 0 ] ) && empty( array_filter( $data[ 0 ] ) ) ) ) {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
-            $pdf = PDF::loadView( 'sale_reports.credit_sales_total_report_pdf',
-            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
-            ->setPaper( 'a4', '' );
-            return $pdf->stream( 'Credit_sales_total_report.pdf' );
+            return $this->generateOptimizedPdf(
+                'sale_reports.credit_sales_total_report_pdf',
+                compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ),
+                'Credit_sales_total_report.pdf'
+            );
 
             case 15:
             $data = $this->discountReport( $from, $to );
             if ( $data->isEmpty() ) {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
-            $pdf = PDF::loadView( 'sale_reports.discount_report_pdf',
-            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
-            ->setPaper( 'a4', '' );
-            return $pdf->stream( 'Discount_report.pdf' );
+            return $this->generateOptimizedPdf(
+                'sale_reports.discount_report_pdf',
+                compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ),
+                'Discount_report.pdf'
+            );
 
             case 16:
             $data = $this->wasteCollectionReport( $from, $to );
             if ( empty( $data ) ) {
                 return response()->view( 'error_pages.pdf_zero_data' );
             }
-            $pdf = PDF::loadView( 'sale_reports.waste_collection_report_pdf',
-            compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ) )
-            ->setPaper( 'a4', 'landscape' );
-            return $pdf->stream( 'Waste_collection_report.pdf' );
+            return $this->generateOptimizedPdf(
+                'sale_reports.waste_collection_report_pdf',
+                compact( 'data', 'pharmacy', 'enable_discount', 'isMultiStore' ),
+                'Waste_collection_report.pdf',
+                'landscape'
+            );
 
             default:
 
         }
     }
+    
+    /**
+     * Get pharmacy settings efficiently with single query
+     */
+    private function getPharmacySettingsOptimized()
+    {
+        $settingIds = [100, 102, 105, 106, 107, 108, 109];
+        $settings = Setting::whereIn('id', $settingIds)->pluck('value', 'id')->toArray();
+        
+        return [
+            'name' => $settings[100] ?? '',
+            'tin_number' => $settings[102] ?? '',
+            'logo' => $settings[105] ?? '',
+            'address' => $settings[106] ?? '',
+            'phone' => $settings[107] ?? '',
+            'email' => $settings[108] ?? '',
+            'website' => $settings[109] ?? '',
+        ];
+    }
+    
     private function saleDetailReport( $from, $to ) {
         if (!Auth()->user()->checkPermission('Sales Details Report')) {
             abort(403, 'Access Denied');

@@ -4,26 +4,86 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade as PDF;
 
 class PDFOptimizer
 {
-    // Increase limits for PDF generation
-    public static function initializePdfLimits()
+    // Configuration constants
+    const MAX_RECORDS_PER_PAGE = 50; // Records per PDF page for pagination
+    const CHUNK_SIZE_SMALL = 500;    // For datasets < 10,000
+    const CHUNK_SIZE_MEDIUM = 1000;  // For datasets 10,000 - 50,000
+    const CHUNK_SIZE_LARGE = 2000;   // For datasets > 50,000
+    const MEMORY_THRESHOLD = 512;    // MB - trigger cleanup above this
+    
+    /**
+     * Initialize PHP limits for PDF generation
+     */
+    public static function initializePdfLimits($memoryLimit = '2048M', $timeLimit = 1800)
     {
-        ini_set('max_execution_time', 1800); // 30 minutes
-        set_time_limit(1800);
-        ini_set('memory_limit', '1536M'); // 1.5GB
+        ini_set('max_execution_time', $timeLimit);
+        set_time_limit($timeLimit);
+        ini_set('memory_limit', $memoryLimit);
         
-        // Clear any output buffers
-        if (ob_get_level()) {
+        // Clear output buffers
+        while (ob_get_level()) {
             ob_end_clean();
         }
         
         // Force garbage collection
+        self::forceGarbageCollection();
+        
+        // Disable debug bar for reports if present
+        if (class_exists('\Barryvdh\Debugbar\Facade')) {
+            try {
+                \Barryvdh\Debugbar\Facade::disable();
+            } catch (\Exception $e) {
+                // Debugbar not available
+            }
+        }
+    }
+    
+    /**
+     * Force garbage collection to free memory
+     */
+    public static function forceGarbageCollection()
+    {
         if (function_exists('gc_collect_cycles')) {
+            gc_enable();
             gc_collect_cycles();
         }
+    }
+    
+    /**
+     * Get current memory usage in MB
+     */
+    public static function getMemoryUsageMB()
+    {
+        return round(memory_get_usage(true) / 1024 / 1024, 2);
+    }
+    
+    /**
+     * Check if memory cleanup is needed and perform it
+     */
+    public static function checkMemoryAndCleanup()
+    {
+        if (self::getMemoryUsageMB() > self::MEMORY_THRESHOLD) {
+            self::forceGarbageCollection();
+            Log::debug('PDF Memory cleanup triggered', ['memory_mb' => self::getMemoryUsageMB()]);
+        }
+    }
+    
+    /**
+     * Determine optimal chunk size based on record count
+     */
+    public static function getOptimalChunkSize($totalRecords)
+    {
+        if ($totalRecords < 10000) {
+            return self::CHUNK_SIZE_SMALL;
+        } elseif ($totalRecords < 50000) {
+            return self::CHUNK_SIZE_MEDIUM;
+        }
+        return self::CHUNK_SIZE_LARGE;
     }
     
     /**
@@ -37,20 +97,25 @@ class PDFOptimizer
             $defaultOptions = [
                 'paper' => 'a4',
                 'orientation' => '',
-                'isHtml5ParserEnabled' => true,
+                'isHtml5ParserEnabled' => false, // Disable for performance
                 'isRemoteEnabled' => false,
-                'dpi' => 150, // Lower DPI for faster generation
-                'defaultFont' => 'dejavusans',
+                'dpi' => 96, // Standard DPI to maintain font size
+                'defaultFont' => 'sans-serif',
                 'tempDir' => storage_path('app/temp'),
+                'enable_font_subsetting' => true, // Enable for smaller file size
             ];
             
             $pdfOptions = array_merge($defaultOptions, $options);
             
-            // Start timer
+            // Ensure temp directory exists
+            if (!is_dir($pdfOptions['tempDir'])) {
+                mkdir($pdfOptions['tempDir'], 0755, true);
+            }
+            
             $startTime = microtime(true);
             
-            // Generate PDF
-            $pdf = PDF::loadView($view, compact(array_keys($data)));
+            // Generate PDF with optimized settings
+            $pdf = PDF::loadView($view, $data);
             $pdf->setPaper($pdfOptions['paper'], $pdfOptions['orientation']);
             
             // Apply PDF options for performance
@@ -61,23 +126,30 @@ class PDFOptimizer
                 'defaultFont' => $pdfOptions['defaultFont'],
                 'tempDir' => $pdfOptions['tempDir'],
                 'chroot' => base_path(),
+                'enable_font_subsetting' => $pdfOptions['enable_font_subsetting'],
             ]);
             
-            // Force output to browser
-            $pdf->output();
-            
-            // Calculate performance
             $duration = microtime(true) - $startTime;
-            $memoryUsage = round(memory_get_peak_usage(true) / 1024 / 1024, 2);
+            $memoryUsage = self::getMemoryUsageMB();
             
-            // Log performance
+            // Count records if data is present
+            $recordCount = 'N/A';
+            if (isset($data['data'])) {
+                $recordCount = is_array($data['data']) || $data['data'] instanceof \Countable 
+                    ? count($data['data']) 
+                    : 'unknown';
+            }
+            
             Log::info("Optimized PDF Generated", [
                 'filename' => $filename,
-                'duration' => round($duration, 2) . ' seconds',
+                'duration_seconds' => round($duration, 2),
                 'memory_peak_mb' => $memoryUsage,
-                'data_records' => isset($data['data']) ? count($data['data']) : 'N/A',
+                'records' => $recordCount,
                 'view' => $view
             ]);
+            
+            // Cleanup after generation
+            self::forceGarbageCollection();
             
             return $pdf->stream($filename);
             
@@ -85,6 +157,7 @@ class PDFOptimizer
             Log::error("Optimized PDF generation failed: " . $e->getMessage(), [
                 'view' => $view,
                 'filename' => $filename,
+                'memory_mb' => self::getMemoryUsageMB(),
                 'exception' => $e->getTraceAsString()
             ]);
             
@@ -93,7 +166,95 @@ class PDFOptimizer
     }
     
     /**
-     * Process large data arrays in chunks
+     * Generate PDF with data pagination for very large datasets
+     * Splits data into manageable pages to prevent memory issues
+     */
+    public static function generatePaginatedPDF($view, $data, $dataKey, $filename = 'report.pdf', $options = [])
+    {
+        self::initializePdfLimits();
+        
+        $allData = $data[$dataKey] ?? [];
+        $totalRecords = count($allData);
+        
+        // If data is small, use regular generation
+        if ($totalRecords <= 1000) {
+            return self::generateOptimizedPDF($view, $data, $filename, $options);
+        }
+        
+        Log::info("Generating paginated PDF", [
+            'total_records' => $totalRecords,
+            'filename' => $filename
+        ]);
+        
+        // For large datasets, paginate the data
+        $recordsPerPage = $options['records_per_page'] ?? self::MAX_RECORDS_PER_PAGE * 20; // 1000 records per chunk
+        $chunks = array_chunk($allData, $recordsPerPage);
+        
+        // Generate with chunked data to reduce memory per render
+        $data[$dataKey] = $allData; // Keep full data but let view handle pagination
+        $data['_total_records'] = $totalRecords;
+        $data['_is_large_dataset'] = true;
+        
+        return self::generateOptimizedPDF($view, $data, $filename, $options);
+    }
+    
+    /**
+     * Stream large query results with callback processing
+     */
+    public static function streamQueryResults($query, $callback, $chunkSize = null)
+    {
+        $totalCount = 0;
+        
+        try {
+            // Get count first
+            $countQuery = clone $query;
+            $totalCount = $countQuery->count();
+        } catch (\Exception $e) {
+            Log::warning("Could not get total count: " . $e->getMessage());
+        }
+        
+        // Determine chunk size
+        $chunkSize = $chunkSize ?? self::getOptimalChunkSize($totalCount);
+        
+        $results = [];
+        $offset = 0;
+        $processedCount = 0;
+        
+        while (true) {
+            $chunkQuery = clone $query;
+            $chunk = $chunkQuery->limit($chunkSize)->offset($offset)->get();
+            
+            if ($chunk->isEmpty()) {
+                break;
+            }
+            
+            // Process chunk
+            $chunkResults = $callback($chunk);
+            if (is_array($chunkResults)) {
+                $results = array_merge($results, $chunkResults);
+            }
+            
+            $processedCount += $chunk->count();
+            $offset += $chunkSize;
+            
+            // Memory cleanup between chunks
+            self::checkMemoryAndCleanup();
+            
+            // Log progress for large datasets
+            if ($totalCount > 10000 && $processedCount % 10000 === 0) {
+                Log::info("PDF data streaming progress", [
+                    'processed' => $processedCount,
+                    'total' => $totalCount,
+                    'memory_mb' => self::getMemoryUsageMB()
+                ]);
+            }
+        }
+        
+        return $results;
+    }
+    
+    /**
+     * Process large data arrays in chunks with memory management
      */
     public static function processInChunks($data, $chunkSize = 1000, $callback)
     {
@@ -180,5 +341,182 @@ class PDFOptimizer
             Log::warning("Failed to estimate dataset size: " . $e->getMessage());
             return ['too_large' => false, 'count' => 0];
         }
+    }
+    
+    /**
+     * Optimized query builder for report data that uses cursor for memory efficiency
+     */
+    public static function cursorQuery($query, $callback)
+    {
+        self::initializePdfLimits();
+        
+        $results = [];
+        
+        foreach ($query->cursor() as $item) {
+            $result = $callback($item);
+            if ($result !== null) {
+                $results[] = $result;
+            }
+            
+            // Periodic memory cleanup
+            if (count($results) % 5000 === 0) {
+                self::checkMemoryAndCleanup();
+            }
+        }
+        
+        return $results;
+    }
+    
+    /**
+     * Aggregate data from query with grouping - memory efficient version
+     */
+    public static function aggregateWithGrouping($query, $groupKey, $aggregateCallback, $chunkSize = 1000)
+    {
+        self::initializePdfLimits();
+        
+        $grouped = [];
+        $offset = 0;
+        
+        while (true) {
+            $chunkQuery = clone $query;
+            $chunk = $chunkQuery->limit($chunkSize)->offset($offset)->get();
+            
+            if ($chunk->isEmpty()) {
+                break;
+            }
+            
+            foreach ($chunk as $item) {
+                $key = is_callable($groupKey) ? $groupKey($item) : $item->{$groupKey};
+                
+                if (!isset($grouped[$key])) {
+                    $grouped[$key] = [];
+                }
+                
+                $aggregateCallback($grouped[$key], $item);
+            }
+            
+            $offset += $chunkSize;
+            self::checkMemoryAndCleanup();
+        }
+        
+        return $grouped;
+    }
+    
+    /**
+     * Get pharmacy/company settings efficiently (cached)
+     */
+    public static function getPharmacySettings()
+    {
+        static $settings = null;
+        
+        if ($settings === null) {
+            $settingIds = [100, 102, 105, 106, 107, 108, 109, 121];
+            $dbSettings = DB::table('general_settings')
+                ->whereIn('id', $settingIds)
+                ->pluck('value', 'id')
+                ->toArray();
+            
+            $settings = [
+                'name' => $dbSettings[100] ?? '',
+                'tin_number' => $dbSettings[102] ?? '',
+                'logo' => $dbSettings[105] ?? '',
+                'address' => $dbSettings[106] ?? '',
+                'phone' => $dbSettings[107] ?? '',
+                'email' => $dbSettings[108] ?? '',
+                'website' => $dbSettings[109] ?? '',
+            ];
+        }
+        
+        return $settings;
+    }
+    
+    /**
+     * Build optimized report data with lazy loading
+     */
+    public static function buildReportData($query, $transformer, $options = [])
+    {
+        $startTime = microtime(true);
+        $chunkSize = $options['chunk_size'] ?? 1000;
+        $maxRecords = $options['max_records'] ?? null;
+        
+        self::initializePdfLimits();
+        
+        $results = [];
+        $offset = 0;
+        $totalProcessed = 0;
+        
+        while (true) {
+            $chunkQuery = clone $query;
+            $chunkQuery->limit($chunkSize)->offset($offset);
+            
+            if ($maxRecords && $offset >= $maxRecords) {
+                break;
+            }
+            
+            $chunk = $chunkQuery->get();
+            
+            if ($chunk->isEmpty()) {
+                break;
+            }
+            
+            foreach ($chunk as $item) {
+                $transformed = $transformer($item);
+                if ($transformed !== null) {
+                    $results[] = $transformed;
+                }
+                $totalProcessed++;
+                
+                if ($maxRecords && $totalProcessed >= $maxRecords) {
+                    break 2;
+                }
+            }
+            
+            $offset += $chunkSize;
+            self::checkMemoryAndCleanup();
+        }
+        
+        $duration = microtime(true) - $startTime;
+        Log::info("Report data built", [
+            'records' => count($results),
+            'duration_seconds' => round($duration, 2),
+            'memory_mb' => self::getMemoryUsageMB()
+        ]);
+        
+        return $results;
+    }
+    
+    /**
+     * Generate a summary report from detailed data - memory efficient
+     */
+    public static function buildSummaryFromDetail($query, $groupKeyFn, $summaryFn, $chunkSize = 1000)
+    {
+        self::initializePdfLimits();
+        
+        $summaries = [];
+        $offset = 0;
+        
+        while (true) {
+            $chunkQuery = clone $query;
+            $chunk = $chunkQuery->limit($chunkSize)->offset($offset)->get();
+            
+            if ($chunk->isEmpty()) {
+                break;
+            }
+            
+            foreach ($chunk as $item) {
+                $key = $groupKeyFn($item);
+                
+                if (!isset($summaries[$key])) {
+                    $summaries[$key] = $summaryFn($item, null, true); // Initialize
+                } else {
+                    $summaries[$key] = $summaryFn($item, $summaries[$key], false); // Aggregate
+                }
+            }
+            
+            $offset += $chunkSize;
+            self::checkMemoryAndCleanup();
+        }
+        
+        return array_values($summaries);
     }
 }

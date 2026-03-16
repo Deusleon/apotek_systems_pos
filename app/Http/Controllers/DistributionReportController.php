@@ -6,11 +6,61 @@ use Illuminate\Http\Request;
 use App\ProductionDistribution;
 use App\Store;
 use App\Setting;
+use App\Http\Controllers\PDFOptimizer;
 use Barryvdh\DomPDF\Facade as PDF;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
+// Use PDFOptimizer for memory and time limits
+PDFOptimizer::initializePdfLimits('2048M', 1800);
 
 class DistributionReportController extends Controller
 {
+    /**
+     * Generate optimized PDF with memory management
+     */
+    private function generateOptimizedPdf($view, $data, $filename, $orientation = '')
+    {
+        PDFOptimizer::initializePdfLimits();
+        
+        try {
+            $pdf = PDF::loadView($view, $data)
+                ->setPaper('a4', $orientation)
+                ->setOptions([
+                    'isHtml5ParserEnabled' => false,
+                    'isRemoteEnabled' => false,
+                    'dpi' => 96,
+                    'enable_font_subsetting' => true,
+                ]);
+            
+            PDFOptimizer::forceGarbageCollection();
+            
+            return $pdf->stream($filename);
+        } catch (\Exception $e) {
+            Log::error("PDF generation failed: " . $e->getMessage());
+            throw $e;
+        }
+    }
+    
+    /**
+     * Get pharmacy settings efficiently with single query
+     */
+    private function getPharmacySettingsOptimized()
+    {
+        $settingIds = [100, 102, 105, 106, 107, 108, 109];
+        $settings = Setting::whereIn('id', $settingIds)->pluck('value', 'id')->toArray();
+        
+        return [
+            'name' => $settings[100] ?? '',
+            'tin_number' => $settings[102] ?? '',
+            'logo' => $settings[105] ?? '',
+            'address' => $settings[106] ?? '',
+            'phone' => $settings[107] ?? '',
+            'email' => $settings[108] ?? '',
+            'website' => $settings[109] ?? '',
+        ];
+    }
+    
     public function index()
     {
         $stores = Store::where('id', '>', 1)->orderBy('name')->get();
@@ -19,18 +69,16 @@ class DistributionReportController extends Controller
 
     public function filter(Request $request)
     {
+        // Initialize PDF optimizer for large reports
+        PDFOptimizer::initializePdfLimits();
+        
         $date_range = explode('-', $request->date_range);
         $from = trim($date_range[0]);
         $to = trim($date_range[1]);
         $store_id = $request->store_id;
 
-        $pharmacy['name'] = Setting::where('id', 100)->value('value');
-        $pharmacy['logo'] = Setting::where('id', 105)->value('value');
-        $pharmacy['address'] = Setting::where('id', 106)->value('value');
-        $pharmacy['email'] = Setting::where('id', 108)->value('value');
-        $pharmacy['website'] = Setting::where('id', 109)->value('value');
-        $pharmacy['phone'] = Setting::where('id', 107)->value('value');
-        $pharmacy['tin_number'] = Setting::where('id', 102)->value('value');
+        // Get pharmacy settings efficiently
+        $pharmacy = $this->getPharmacySettingsOptimized();
         $pharmacy['from_date'] = date('Y-m-d', strtotime($from));
         $pharmacy['to_date'] = date('Y-m-d', strtotime($to));
 
@@ -43,11 +91,12 @@ class DistributionReportController extends Controller
         $stores = Store::where('id', '>', 1)->orderBy('name')->get();
         $selectedStore = $store_id ? Store::find($store_id) : null;
 
-        $pdf = PDF::loadView('distribution_reports.report_pdf', 
-            compact('data', 'pharmacy', 'stores', 'selectedStore'))
-            ->setPaper('a4', 'landscape');
-        
-        return $pdf->stream('Distribution_Report.pdf');
+        return $this->generateOptimizedPdf(
+            'distribution_reports.report_pdf',
+            compact('data', 'pharmacy', 'stores', 'selectedStore'),
+            'Distribution_Report.pdf',
+            'landscape'
+        );
     }
 
     private function getDistributions($from, $to, $store_id = null)

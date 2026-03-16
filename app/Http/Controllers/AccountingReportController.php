@@ -12,16 +12,62 @@ use App\Sale;
 use App\SalesDetail;
 use App\Setting;
 use App\Store;
+use App\Http\Controllers\PDFOptimizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use PDF;
 
-ini_set('max_execution_time', 500);
-set_time_limit(500);
-ini_set('memory_limit', '512M');
+// Use PDFOptimizer for memory and time limits
+PDFOptimizer::initializePdfLimits('2048M', 1800);
 
 class AccountingReportController extends Controller
 {
+    /**
+     * Generate optimized PDF with memory management
+     */
+    private function generateOptimizedPdf($view, $data, $filename, $orientation = '')
+    {
+        PDFOptimizer::initializePdfLimits();
+        
+        try {
+            $pdf = PDF::loadView($view, $data)
+                ->setPaper('a4', $orientation)
+                ->setOptions([
+                    'isHtml5ParserEnabled' => false,
+                    'isRemoteEnabled' => false,
+                    'dpi' => 96,
+                    'enable_font_subsetting' => true,
+                ]);
+            
+            PDFOptimizer::forceGarbageCollection();
+            
+            return $pdf->stream($filename);
+        } catch (\Exception $e) {
+            Log::error("PDF generation failed: " . $e->getMessage());
+            throw $e;
+        }
+    }
+    
+    /**
+     * Get pharmacy settings efficiently with single query
+     */
+    private function getPharmacySettingsOptimized()
+    {
+        $settingIds = [100, 102, 105, 106, 107, 108, 109];
+        $settings = Setting::whereIn('id', $settingIds)->pluck('value', 'id')->toArray();
+        
+        return [
+            'name' => $settings[100] ?? '',
+            'tin_number' => $settings[102] ?? '',
+            'logo' => $settings[105] ?? '',
+            'address' => $settings[106] ?? '',
+            'phone' => $settings[107] ?? '',
+            'email' => $settings[108] ?? '',
+            'website' => $settings[109] ?? '',
+        ];
+    }
+    
     public function index()
     {
         $price_categories = PriceCategory::all();
@@ -31,14 +77,11 @@ class AccountingReportController extends Controller
 
     protected function reportOption(Request $request)
     {
-
-        $pharmacy['name'] = Setting::where('id', 100)->value('value');
-        $pharmacy['logo'] = Setting::where('id', 105)->value('value');
-        $pharmacy['address'] = Setting::where('id', 106)->value('value');
-        $pharmacy['email'] = Setting::where('id', 108)->value('value');
-        $pharmacy['website'] = Setting::where('id', 109)->value('value');
-        $pharmacy['phone'] = Setting::where('id', 107)->value('value');
-        $pharmacy['tin_number'] = Setting::where('id', 102)->value('value');
+        // Initialize PDF optimizer for large reports
+        PDFOptimizer::initializePdfLimits();
+        
+        // Get pharmacy settings efficiently
+        $pharmacy = $this->getPharmacySettingsOptimized();
 
         switch ($request->report_option) {
             case 1:
@@ -47,38 +90,44 @@ class AccountingReportController extends Controller
                 if ($data == []) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                $pdf = PDF::loadView( 'accounting_reports.current_stock_value_report_pdf',
-                compact( 'data', 'pharmacy') )
-                ->setPaper( 'a4', 'landscape' );
-                return $pdf->stream( 'current_stock_value_report.pdf' );
+                return $this->generateOptimizedPdf(
+                    'accounting_reports.current_stock_value_report_pdf',
+                    compact( 'data', 'pharmacy'),
+                    'current_stock_value_report.pdf',
+                    'landscape'
+                );
             case 2:
                 $dates = explode(" - ", $request->date_range);
                 $data = $this->grossProfitDetail($dates);
                 if ($data == []) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                $pdf = PDF::loadView('accounting_reports.gross_profit_detail_report_pdf',
-                    compact('data', 'pharmacy'))
-                    ->setPaper('a4', 'landscape');
-                return $pdf->stream('gross_profit_detail_report.pdf');
+                return $this->generateOptimizedPdf(
+                    'accounting_reports.gross_profit_detail_report_pdf',
+                    compact('data', 'pharmacy'),
+                    'gross_profit_detail_report.pdf',
+                    'landscape'
+                );
             case 3:
                 $dates = explode(" - ", $request->date_range);
                 $data = $this->grossProfitSummary($dates);
                 if ($data == []) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                $pdf = PDF::loadView('accounting_reports.gross_profit_summary_report_pdf',
-                    compact('data', 'pharmacy'))
-                    ->setPaper('a4', '');
-                return $pdf->stream('gross_profit_summary_report.pdf');
+                return $this->generateOptimizedPdf(
+                    'accounting_reports.gross_profit_summary_report_pdf',
+                    compact('data', 'pharmacy'),
+                    'gross_profit_summary_report.pdf'
+                );
 
             case 4:
                 $dates = explode(" - ", $request->date_range);
                 $data = $this->pettyCashReport($dates);
-                $pdf = PDF::loadView('accounting_reports.petty_cash_report_pdf',
-                    compact('data', 'pharmacy'))
-                    ->setPaper('a4', '');
-                return $pdf->stream('petty_cash_report.pdf');
+                return $this->generateOptimizedPdf(
+                    'accounting_reports.petty_cash_report_pdf',
+                    compact('data', 'pharmacy'),
+                    'petty_cash_report.pdf'
+                );
 
             case 5:
                 $dates = explode(" - ", $request->date_range);
@@ -86,10 +135,11 @@ class AccountingReportController extends Controller
                 if ($data->isEmpty()) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                $pdf = PDF::loadView('accounting_reports.expense_report_pdf',
-                    compact('data', 'pharmacy'))
-                    ->setPaper('a4', '');
-                return $pdf->stream('expense_report.pdf');
+                return $this->generateOptimizedPdf(
+                    'accounting_reports.expense_report_pdf',
+                    compact('data', 'pharmacy'),
+                    'expense_report.pdf'
+                );
 
             case 6:
                 $dates = explode(" - ", $request->date_range);
@@ -97,10 +147,11 @@ class AccountingReportController extends Controller
                 if ($data->isEmpty()) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                $pdf = PDF::loadView('accounting_reports.income_statement_report_pdf',
-                    compact('data', 'pharmacy'))
-                    ->setPaper('a4', '');
-                return $pdf->stream('income_statement_report.pdf');
+                return $this->generateOptimizedPdf(
+                    'accounting_reports.income_statement_report_pdf',
+                    compact('data', 'pharmacy'),
+                    'income_statement_report.pdf'
+                );
             case 7:
 
                 if ($request->expire_date_range != null) {
@@ -112,10 +163,11 @@ class AccountingReportController extends Controller
                 if ($data == []) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                $pdf = PDF::loadView('accounting_reports.expired_products_cost_report_pdf',
-                    compact('data', 'pharmacy'))
-                    ->setPaper('a4', '');
-                return $pdf->stream('cost_of_expired_products_report.pdf');
+                return $this->generateOptimizedPdf(
+                    'accounting_reports.expired_products_cost_report_pdf',
+                    compact('data', 'pharmacy'),
+                    'cost_of_expired_products_report.pdf'
+                );
 
             case 8:
                 $expMonth = $request->months;
@@ -123,10 +175,11 @@ class AccountingReportController extends Controller
                 if ($data == []) {
                     return response()->view('error_pages.pdf_zero_data');
                 }
-                $pdf = PDF::loadView('accounting_reports.cost_of_products_near_to_expire_report_pdf',
-                    compact('data', 'expMonth', 'pharmacy'))
-                    ->setPaper('a4', '');
-                return $pdf->stream('cost_of_products_near_to_expire_report.pdf');
+                return $this->generateOptimizedPdf(
+                    'accounting_reports.cost_of_products_near_to_expire_report_pdf',
+                    compact('data', 'expMonth', 'pharmacy'),
+                    'cost_of_products_near_to_expire_report.pdf'
+                );
             default:
         }
     }
