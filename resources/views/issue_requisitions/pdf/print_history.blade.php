@@ -77,10 +77,26 @@
 
         .footer {
             text-align: center;
-            margin-top: 40px;
             font-size: 12px;
             padding-top: 20px;
             border-top: 1px solid #ddd;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            background: white;
+            padding: 10px 20px;
+        }
+
+        /* Footer for last page only - pushed to bottom */
+        .footer-last-page {
+            text-align: center;
+            font-size: 12px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            margin-top: auto;
+            min-height: 100px;
         }
 
         .slogan {
@@ -221,26 +237,12 @@
     </div>
     @endif
 
-    <!-- Footer -->
-    <div class="footer page-break-protect">
+    <!-- Footer - positioned at bottom of page -->
+    <div class="footer-last-page">
         <p style="margin: 5px 0;">Issued By: <b>{{ $requisition->creator->name ?? 'N/A' }}</b></p>
-        <!-- <p style="margin: 5px 0;">Printed on: <b>{{ date('Y-m-d H:i:s') }}</b></p> -->
         @if(!empty($pharmacy['slogan']))
             <p class="slogan" style="margin: 10px 0;">{{ $pharmacy['slogan'] }}</p>
         @endif
     </div>
-
-    <!-- Page Numbering -->
-    <script type="text/php">
-        if (isset($pdf)) {
-            $x = 280;
-            $y = 820;
-            $text = "Page {PAGE_NUM} of {PAGE_COUNT}";
-            $font = null;
-            $size = 10;
-            $color = [0,0,0];
-            $pdf->page_text($x, $y, $text, $font, $size, $color);
-        }
-    </script>
 </body>
 </html>
