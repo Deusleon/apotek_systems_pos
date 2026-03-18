@@ -89,14 +89,18 @@
             padding: 10px 20px;
         }
 
-        /* Footer for last page only - pushed to bottom */
         .footer-last-page {
             text-align: center;
             font-size: 12px;
             padding-top: 20px;
             border-top: 1px solid #ddd;
-            margin-top: auto;
-            min-height: 100px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            padding: 15px 20px;
+            background: white;
         }
 
         .slogan {
@@ -237,7 +241,7 @@
     </div>
     @endif
 
-    <!-- Footer - positioned at bottom of page -->
+    <!-- Footer - fixed at bottom of every page -->
     <div class="footer-last-page">
         <p style="margin: 5px 0;">Issued By: <b>{{ $requisition->creator->name ?? 'N/A' }}</b></p>
         @if(!empty($pharmacy['slogan']))
