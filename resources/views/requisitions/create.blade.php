@@ -287,8 +287,8 @@
                 data: 'quantity',
                 render: function(data, type, row) {
                     if (type === 'display') {
-                        // Display as plain text (no input field)
-                        return data.toLocaleString();
+                        // Display with 2 decimal places
+                        return Number(data).toFixed(2);
                     }
                     return data;
                 }
@@ -328,7 +328,8 @@
     function saveQuantityChange(event, rowIndex) {
         const row = order_table.row(rowIndex).node();
         const inputField = row.querySelector('input');
-        const newQuantity = parseFloat(inputField.value);
+        // Round to 2 decimal places
+        const newQuantity = Math.round(parseFloat(inputField.value) * 100) / 100;
         
         if (!isNaN(newQuantity) && newQuantity > 0) {
             const rowData = order_table.row(rowIndex).data();
