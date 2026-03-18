@@ -35,9 +35,10 @@ class SaleReportController extends Controller {
                 ->setPaper('a4', $orientation)
                 ->setOptions([
                     'isHtml5ParserEnabled' => false,
-                    'isRemoteEnabled' => false,
+                    'isRemoteEnabled' => true,
                     'dpi' => 96,
                     'enable_font_subsetting' => true,
+                    'chroot' => base_path(),
                 ]);
             
             PDFOptimizer::forceGarbageCollection();
