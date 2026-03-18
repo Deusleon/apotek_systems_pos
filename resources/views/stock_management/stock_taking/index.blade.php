@@ -1,10 +1,17 @@
 @php
     function smartFormat($num)
     {
-        // Format to exactly 2 decimal places
+        // Round to 2 decimal places first
         $num = round($num, 2);
-        $str = number_format($num, 2, '.', ',');
-        return $str;
+        $str = (string) $num;
+
+        if (strpos($str, '.') !== false) {
+            // Has decimal places - show exactly 2 decimal places
+            return number_format($num, 2, '.', ',');
+        } else {
+            // Whole number - no decimal places
+            return number_format((int) $num);
+        }
     }
 @endphp
 @extends("layouts.master")
@@ -262,12 +269,19 @@
             $(document).ready(function () {
 
                 function formatNumberNoDecimals(num) {
-                    // Round to exactly 2 decimal places and format with thousand separators
+                    // Round to 2 decimal places
                     let rounded = Math.round((parseFloat(num) + Number.EPSILON) * 100) / 100;
-                    // Format with exactly 2 decimal places
-                    let parts = rounded.toFixed(2).split('.');
-                    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                    return parts.join('.');
+                    let str = String(rounded);
+
+                    if (str.includes(".")) {
+                        // Has decimal places - show exactly 2 decimal places with thousand separators
+                        let parts = rounded.toFixed(2).split('.');
+                        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                        return parts.join('.');
+                    } else {
+                        // Whole number - no decimal places
+                        return Number(rounded).toLocaleString();
+                    }
                 }
 
                 // sanitize raw typed value: return integer or null when empty/invalid
