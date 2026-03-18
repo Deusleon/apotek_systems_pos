@@ -1,25 +1,10 @@
 @php
     function smartFormat($num)
     {
-        $str = (string) $num;
-
-        if (strpos($str, '.') !== false) {
-
-            list($whole, $decimal) = explode('.', $str);
-
-            $decimal = rtrim($decimal, '0');
-
-            if ($decimal === '') {
-                return number_format((int) $whole);
-            }
-
-            $wholeFormatted = number_format((int) $whole);
-
-            return $wholeFormatted . '.' . $decimal;
-
-        } else {
-            return number_format((int) $str);
-        }
+        // Format to exactly 2 decimal places
+        $num = round($num, 2);
+        $str = number_format($num, 2, '.', ',');
+        return $str;
     }
 @endphp
 @extends("layouts.master")
@@ -277,23 +262,12 @@
             $(document).ready(function () {
 
                 function formatNumberNoDecimals(num) {
-                    let str = String(num);
-
-                    if (str.includes(".")) {
-                        let [whole, decimal] = str.split(".");
-
-                        decimal = decimal.replace(/0+$/, "");
-
-                        if (decimal === "") {
-                            return Number(whole).toLocaleString();
-                        }
-
-                        let wholeFormatted = Number(whole).toLocaleString();
-
-                        return wholeFormatted + "." + decimal;
-                    } else {
-                        return Number(str).toLocaleString();
-                    }
+                    // Round to exactly 2 decimal places and format with thousand separators
+                    let rounded = Math.round((parseFloat(num) + Number.EPSILON) * 100) / 100;
+                    // Format with exactly 2 decimal places
+                    let parts = rounded.toFixed(2).split('.');
+                    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                    return parts.join('.');
                 }
 
                 // sanitize raw typed value: return integer or null when empty/invalid
