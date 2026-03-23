@@ -13,7 +13,7 @@
                 <div class="modal-body">
                     <input type="hidden" id="petty_cash_id" name="petty_cash_id">
                     <div class="form-group">
-                        <label for="details">Purpose / Details</label>
+                        <label for="details">Details</label>
                         <input type="text" class="form-control" id="details" name="details" required>
                     </div>
                     <div class="form-group">
