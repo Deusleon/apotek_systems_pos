@@ -18,7 +18,7 @@
                     </div>
                     <div class="form-group">
                         <label for="amount">Amount Spent</label>
-                        <input type="text" class="form-control" id="amount" name="amount" required>
+                        <input type="text" class="form-control" id="amount" name="amount" placeholder="0.00" oninput="formatAsUserTypes(this)" onblur="formatOnBlur(this)" required>
                     </div>
                 </div>
                 <div class="modal-footer">

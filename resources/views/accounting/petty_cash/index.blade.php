@@ -120,6 +120,46 @@ Petty Cash
 @include("accounting.petty_cash.add_expense")
 @include("accounting.petty_cash.show_expenses")
 
+<script>
+function formatAsUserTypes(input) {
+    // Get the raw value (remove commas for processing)
+    let value = input.value.replace(/,/g, '');
+    
+    // Only allow numbers and decimal point
+    value = value.replace(/[^0-9.]/g, '');
+    
+    // Prevent multiple decimal points
+    const parts = value.split('.');
+    if (parts.length > 2) {
+        value = parts[0] + '.' + parts[1];
+    }
+    
+    // Format with commas as user types (no decimal yet)
+    if (value) {
+        const integerPart = value.split('.')[0];
+        const formatted = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        input.value = value.includes('.') ? formatted + '.' + value.split('.')[1] : formatted;
+    } else {
+        input.value = '';
+    }
+}
+
+function formatOnBlur(input) {
+    // Get the raw value
+    let value = input.value.replace(/,/g, '');
+    
+    // Parse as float
+    let num = parseFloat(value);
+    
+    // If valid number, format with 2 decimal places
+    if (!isNaN(num)) {
+        input.value = num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    } else {
+        input.value = '0.00';
+    }
+}
+</script>
+
 @endsection
 
 @push("page_scripts")
