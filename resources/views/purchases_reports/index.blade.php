@@ -83,6 +83,9 @@
                                         @if(auth()->user()->checkPermission('List of Supplier'))
                                         <option value="4">List of Supplier</option>
                                         @endif
+                                        @if(auth()->user()->checkPermission('Supplier Statement Report'))
+                                        <option value="8">Supplier Statement Report</option>
+                                        @endif
                                         {{--                                        <option value="5">Supplier Price Comparison</option>--}}
                                         @if(auth()->user()->checkPermission('Purchase Order Details Report'))
                                         <option value="6">Purchase Order Details Report</option>
@@ -202,6 +205,30 @@
                                         <span id="warning"
                                               style="color: #ff0000; display: none">Please select a category</span>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{--Supplier Statement Report--}}
+                    <div id="supplier_statement_options" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="supplier_statement">Supplier Name</label>
+                                    <select name="supplier_statement" class="js-example-basic-single form-control drop"
+                                            id="supplier_statement">
+                                        <option value="" selected disabled>Select Supplier...</option>
+                                        @foreach($suppliers as $supplier)
+                                            <option value="{{$supplier->id}}">{{$supplier->name}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Date Range</label>
+                                    <input type="text" name="statement_date_range" class="form-control" id="statement_date"
+                                           readonly>
                                 </div>
                             </div>
                         </div>
@@ -344,6 +371,37 @@
 
         });
 
+        // Supplier Statement Date Range
+        $(function () {
+            var start = moment().startOf('month');
+            var end = moment();
+
+            function cb(start, end) {
+                $('#statement_date').val(start.format('YYYY/MM/DD') + ' - ' + end.format('YYYY/MM/DD'));
+            }
+
+            $('#statement_date').daterangepicker({
+                startDate: start,
+                endDate: end,
+                autoUpdateInput: true,
+                locale: {
+                    format: 'YYYY/MM/DD'
+                },
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                    'This Year': [moment().startOf('year'), moment()]
+                }
+            }, cb);
+
+            cb(start, end);
+
+        });
+
 
         function reportOption() {
             var report_option = document.getElementById("report_option");
@@ -375,6 +433,11 @@
             //if Purchase Order Details or Purchase Return Report
             if (Number(report_option_index) === Number(6) || Number(report_option_index) === Number(7)) {
                 document.getElementById('order_return_options').style.display = 'block';
+            }
+
+            //if Supplier Statement Report
+            if (Number(report_option_index) === Number(8)) {
+                document.getElementById('supplier_statement_options').style.display = 'block';
             }
 
             // Other reports don't need special handling

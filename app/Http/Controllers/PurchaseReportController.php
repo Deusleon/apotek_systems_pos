@@ -9,6 +9,7 @@ use App\GoodsReceiving;
 use App\Invoice;
 use App\Order;
 use App\OrderDetail;
+use App\Payment;
 use App\PriceCategory;
 use App\PurchaseReturn;
 use App\Setting;
@@ -195,6 +196,17 @@ class PurchaseReportController extends Controller
                     'purchases_reports.purchase_return_report_pdf',
                     compact( 'data', 'pharmacy', 'branch_name'),
                     'purchase_return_report.pdf',
+                    'landscape'
+                );
+            case 8:
+                $data = $this->supplierStatementReport($request->supplier_statement, $request->statement_date_range);
+                if ($data['transactions']->isEmpty()) {
+                    return response()->view('error_pages.pdf_zero_data');
+                }
+                return $this->generateOptimizedPdf(
+                    'purchases_reports.supplier_statement_report_pdf',
+                    compact( 'data', 'pharmacy', 'branch_name'),
+                    'supplier_statement_report.pdf',
                     'landscape'
                 );
             default;
@@ -596,6 +608,122 @@ class PurchaseReportController extends Controller
         }
 
         return $returns;
+    }
+
+    private function supplierStatementReport($supplierId, $dateRange)
+    {
+        if (!$dateRange) {
+            return [
+                'transactions' => collect(),
+                'supplier' => null,
+                'from' => date('Y-m-d'),
+                'to' => date('Y-m-d'),
+                'total_invoiced' => 0,
+                'total_paid' => 0,
+                'balance' => 0
+            ];
+        }
+
+        $dates = explode(" - ", $dateRange);
+
+        if (count($dates) < 2) {
+            return [
+                'transactions' => collect(),
+                'supplier' => null,
+                'from' => date('Y-m-d'),
+                'to' => date('Y-m-d'),
+                'total_invoiced' => 0,
+                'total_paid' => 0,
+                'balance' => 0
+            ];
+        }
+
+        $from = date('Y-m-d', strtotime($dates[0]));
+        $to = date('Y-m-d', strtotime($dates[1]));
+
+        // Get supplier info
+        $supplier = null;
+        if ($supplierId) {
+            $supplier = Supplier::find($supplierId);
+        }
+
+        if (!$supplier) {
+            return [
+                'transactions' => collect(),
+                'supplier' => null,
+                'from' => $from,
+                'to' => $to,
+                'total_invoiced' => 0,
+                'total_paid' => 0,
+                'balance' => 0
+            ];
+        }
+
+        // Get invoices for this supplier within date range
+        $invoices = Invoice::where('supplier_id', $supplierId)
+            ->whereBetween(DB::raw('date(invoice_date)'), [$from, $to])
+            ->orderBy('invoice_date', 'ASC')
+            ->get();
+
+        // Get payments for this supplier within date range
+        $payments = Payment::whereHas('invoice', function($query) use ($supplierId) {
+                $query->where('supplier_id', $supplierId);
+            })
+            ->whereBetween(DB::raw('DATE(created_at)'), [$from, $to])
+            ->orderBy('created_at', 'ASC')
+            ->get();
+
+        // Build transaction list
+        $transactions = collect();
+
+        // Add invoices as transactions
+        foreach ($invoices as $invoice) {
+            $transactions->push([
+                'date' => $invoice->invoice_date,
+                'reference' => $invoice->invoice_no,
+                'type' => 'Invoice',
+                'debit' => $invoice->invoice_amount,
+                'credit' => 0,
+                'balance' => 0 // Will be calculated
+            ]);
+        }
+
+        // Add payments as transactions
+        foreach ($payments as $payment) {
+            $transactions->push([
+                'date' => $payment->created_at,
+                'reference' => $payment->receipt_number ?? 'PAY-' . $payment->id,
+                'type' => 'Payment',
+                'debit' => 0,
+                'credit' => $payment->amount,
+                'balance' => 0 // Will be calculated
+            ]);
+        }
+
+        // Sort all transactions by date
+        $transactions = $transactions->sortBy('date')->values();
+
+        // Calculate running balance
+        $runningBalance = 0;
+        foreach ($transactions as &$trans) {
+            $runningBalance += $trans['debit'] - $trans['credit'];
+            $trans['balance'] = $runningBalance;
+        }
+
+        // Calculate totals
+        $totalInvoiced = $invoices->sum('invoice_amount');
+        $totalPaid = $payments->sum('amount');
+        $outstandingBalance = $totalInvoiced - $totalPaid;
+
+        return [
+            'transactions' => $transactions,
+            'supplier' => $supplier,
+            'from' => $from,
+            'to' => $to,
+            'total_invoiced' => $totalInvoiced,
+            'total_paid' => $totalPaid,
+            'balance' => $outstandingBalance
+        ];
     }
 
 
