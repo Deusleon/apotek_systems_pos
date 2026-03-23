@@ -76,6 +76,9 @@
                                         @if(auth()->user()->checkPermission('Material Received Report'))
                                         <option value="1">Material Received Report</option>
                                         @endif
+                                        @if(auth()->user()->checkPermission('Material Received Summary Report'))
+                                        <option value="9">Material Received Summary Report</option>
+                                        @endif
                                         @if(auth()->user()->checkPermission('Invoice Summary Report'))
                                         <option value="2">Invoice Summary Report</option>
                                         @endif
@@ -424,7 +427,7 @@
             }
 
             //if Material Received
-            if (Number(report_option_index) === Number(1)) {
+            if (Number(report_option_index) === Number(1) || Number(report_option_index) === Number(9)) {
                 document.getElementById('material_options').style.display = 'block';
                 $("#suppliers").val("");
                 $("#suppliers").change();

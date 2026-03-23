@@ -209,6 +209,17 @@ class PurchaseReportController extends Controller
                     'supplier_statement_report.pdf',
                     'landscape'
                 );
+            case 9:
+                $data = $this->materialReceivedSummaryReport($request->supplier, $request->expire_dates);
+                if (empty($data)) {
+                    return response()->view('error_pages.pdf_zero_data');
+                }
+                return $this->generateOptimizedPdf(
+                    'purchases_reports.material_received_summary_report_pdf',
+                    compact('data', 'pharmacy', 'branch_name', 'store_id'),
+                    'material_received_summary_report.pdf',
+                    'landscape'
+                );
             default;
         }
     }
@@ -723,6 +734,90 @@ class PurchaseReportController extends Controller
             'total_invoiced' => $totalInvoiced,
             'total_paid' => $totalPaid,
             'balance' => $outstandingBalance
+        ];
+    }
+
+    /**
+     * Material Received Summary Report - Grouped by Supplier
+     * Shows totals per supplier without line-by-line details
+     */
+    public function materialReceivedSummaryReport($supplier, $date)
+    {
+        if (!$date) {
+            return null;
+        }
+
+        $dates = explode(" - ", $date);
+        
+        if (count($dates) < 2) {
+            return null;
+        }
+        
+        // Get branch filter
+        $store_id = $this->getBranchFilter();
+
+        // Build base query
+        $query = GoodsReceiving::whereBetween(DB::raw('date(created_at)'),
+            [date('Y-m-d', strtotime($dates[0])), date('Y-m-d', strtotime($dates[1]))])
+            ->orderBy('created_at', 'DESC');
+        
+        // Apply branch filter if not ALL
+        if ($store_id !== null) {
+            $query->where('store_id', $store_id);
+        }
+        
+        // Apply supplier filter if selected
+        if ($supplier != null) {
+            $query->where('supplier_id', $supplier);
+        }
+        
+        $datas = $query->get();
+
+        if ($datas->isEmpty()) {
+            return null;
+        }
+
+        // Group by supplier and calculate totals
+        $summaryData = [];
+        $grandTotalQty = 0;
+        $grandTotalBuy = 0;
+        $grandTotalSell = 0;
+        $grandTotalProfit = 0;
+
+        foreach ($datas as $item) {
+            $supplierName = $item->supplier->name ?? 'Unknown';
+            
+            if (!isset($summaryData[$supplierName])) {
+                $summaryData[$supplierName] = [
+                    'supplier' => $supplierName,
+                    'total_quantity' => 0,
+                    'total_buy' => 0,
+                    'total_sell' => 0,
+                    'total_profit' => 0
+                ];
+            }
+            
+            $summaryData[$supplierName]['total_quantity'] += $item->quantity;
+            $summaryData[$supplierName]['total_buy'] += $item->total_cost;
+            $summaryData[$supplierName]['total_sell'] += $item->total_sell;
+            $summaryData[$supplierName]['total_profit'] += $item->item_profit;
+            
+            $grandTotalQty += $item->quantity;
+            $grandTotalBuy += $item->total_cost;
+            $grandTotalSell += $item->total_sell;
+            $grandTotalProfit += $item->item_profit;
+        }
+
+        // Sort by supplier name
+        ksort($summaryData);
+
+        return [
+            'data' => array_values($summaryData),
+            'dates' => $dates,
+            'grand_total_quantity' => $grandTotalQty,
+            'grand_total_buy' => $grandTotalBuy,
+            'grand_total_sell' => $grandTotalSell,
+            'grand_total_profit' => $grandTotalProfit
         ];
     }
 
