@@ -134,7 +134,7 @@
                         <tr style="background: #1f273b; color: white;">
                             <th align="center" style="text-align: center;">#</th>
                             <th align="left">Product Name</th>
-                            <th align="center" style="text-align: center;">Quantity</th>
+                            <th align="center" style="text-align: center;">TRQ</th>
                             <th align="left">From Branch</th>
                             <th align="left">To Branch</th>
                             <th align="left">Status</th>
