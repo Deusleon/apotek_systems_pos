@@ -135,6 +135,7 @@
                             <th align="center" style="text-align: center;">#</th>
                             <th align="left">Product Name</th>
                             <th align="center" style="text-align: center;">TRQ</th>
+                            <th align="center" style="text-align: center;">RQT</th>
                             <th align="left">From Branch</th>
                             <th align="left">To Branch</th>
                             <th align="left">Status</th>
@@ -151,6 +152,7 @@
                             ($item->currentStock->product->sales_uom ?? '') }}
                                                 </td>
                                                 <td align="center">{{ smartFormat($item->transfer_qty ?? 0) }}</td>
+                                                <td align="center">{{ smartFormat($item->accepted_qty ?? 0) }}</td>
                                                 <td align="left">{{ $transfer->fromStore->name ?? '' }}</td>
                                                 <td align="left">{{ $transfer->toStore->name ?? '' }}</td>
                                                 <td align="left">
