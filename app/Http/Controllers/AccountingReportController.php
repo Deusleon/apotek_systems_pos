@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\CommonFunctions;
 use App\CurrentStock;
 use App\Expense;
+use App\Invoice;
+use App\Payment;
 use App\PettyCash;
 use App\PriceCategory;
 use App\PriceList;
@@ -180,6 +182,18 @@ class AccountingReportController extends Controller
                     'accounting_reports.cost_of_products_near_to_expire_report_pdf',
                     compact('data', 'expMonth', 'pharmacy'),
                     'cost_of_products_near_to_expire_report.pdf'
+                );
+            case 9:
+                $dates = explode(" - ", $request->date_range);
+                $data = $this->invoicePaymentReport($dates);
+                if ($data['payments']->isEmpty()) {
+                    return response()->view('error_pages.pdf_zero_data');
+                }
+                return $this->generateOptimizedPdf(
+                    'accounting_reports.invoice_payment_report_pdf',
+                    compact('data', 'pharmacy'),
+                    'invoice_payment_report.pdf',
+                    'landscape'
                 );
             default:
         }
@@ -751,6 +765,30 @@ private function grossProfitSummary(array $dates)
             'total_amount_received' => $total_amount_received,
             'total_expenses' => $total_expenses,
             'total_debts' => $total_debts
+        ];
+    }
+
+    private function invoicePaymentReport($dates)
+    {
+        $date[0] = date('Y-m-d', strtotime($dates[0]));
+        $date[1] = date('Y-m-d', strtotime($dates[1]));
+
+        // Get invoice payments with related data
+        $payments = Payment::with(['invoice.supplier', 'user'])
+            ->whereNotNull('invoice_id')
+            ->whereBetween(DB::raw('DATE(created_at)'), [$date[0], $date[1]])
+            ->orderBy('created_at', 'DESC')
+            ->get();
+
+        // Calculate totals
+        $total_paid = $payments->sum('amount');
+
+
+        return [
+            'payments' => $payments,
+            'from' => $date[0],
+            'to' => $date[1],
+            'total_paid' => $total_paid
         ];
     }
 

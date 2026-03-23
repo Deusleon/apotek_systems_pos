@@ -84,6 +84,9 @@
                                         @if(auth()->user()->checkPermission('Petty Cash Report'))
                                             <option value="4">Petty Cash Report</option>
                                         @endif
+                                        @if(auth()->user()->checkPermission('Invoice Payment Report'))
+                                            <option value="9">Invoice Payment Report</option>
+                                        @endif
                                         @if(auth()->user()->checkPermission('Expense Report'))
                                             <option value="5">Expense Report</option>
                                         @endif
