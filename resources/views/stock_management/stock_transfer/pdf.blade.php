@@ -121,7 +121,7 @@
             {{$pharmacy['email'] . ' | ' . $pharmacy['website']}}
         </div><br>
         <div>
-            <h3 align="center" style="font-weight: bold; margin-top: -1%">Stock Transfer Receipt</h3>
+            <h3 align="center" style="font-weight: bold; margin-top: -1%">STOCK TRANSFER RECEIPT</h3>
             <h4 align="center" style="margin-top: -1%">Transfer No: <b>{{ $transfer->transfer_no }}</b></h4>
             <h4 align="center" style="margin-top: -1%">Printed On: {{now()->format('Y-m-d H:i:s')}}</h4>
         </div>
