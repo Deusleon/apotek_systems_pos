@@ -242,8 +242,14 @@ Invoices
         var payment_due_date = invoice_date.setDate(invoice_date.getDate() + grace_period);
 
         var month = Number(invoice_date.getMonth()) + 1;
+        var day = invoice_date.getDate();
+        
+        // Add leading zeros for month and day
+        var paddedMonth = month < 10 ? '0' + month : month;
+        var paddedDay = day < 10 ? '0' + day : day;
+        
         if (typeof month == 'number') {
-            document.getElementById("due_d").value = invoice_date.getFullYear() + '-' + month + '-' + invoice_date.getDate();
+            document.getElementById("due_d").value = invoice_date.getFullYear() + '-' + paddedMonth + '-' + paddedDay;
         }
 
     }
