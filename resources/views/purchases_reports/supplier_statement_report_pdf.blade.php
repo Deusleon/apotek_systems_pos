@@ -146,26 +146,19 @@
 
         <hr>
 
-        <div class="full-row" style="padding-top: 1%">
-            <div class="col-35">
-                <div class="full-row">
-                </div>
-
-            </div>
-            <div class="col-15"></div>
-            <div class="col-50">
-                <div class="full-row">
-                    <div class="col-50" align="right"><b>Total Amount: </b></div>
-                    <div class="col-50" align="right">{{ number_format($data['total_invoiced'], 2) }}</div>
-                </div>
-                <div class="full-row">
-                    <div class="col-50" align="right"><b>Total Paid: </b></div>
-                    <div class="col-50" align="right">{{ number_format($data['total_paid'], 2) }}</div>
-                </div>
-                <div class="full-row">
-                    <div class="col-50" align="right"><b>Total Balance: </b></div>
-                    <div class="col-50" align="right">{{ number_format($data['balance'], 2) }}</div>
-                </div>
+        <div style="padding-top: 1%; width: 100%;">
+            <!-- Empty columns to align with table structure -->
+            <div style="display: inline-block; width: 5%;"></div>
+            <div style="display: inline-block; width: 10%;"></div>
+            <div style="display: inline-block; width: 10%;"></div>
+            <div style="display: inline-block; width: 20%;"></div>
+            <div style="display: inline-block; width: 18%;"></div>
+            <div style="display: inline-block; width: 18%;"></div>
+            <!-- Summary under Balance column -->
+            <div style="display: inline-block; width: 18%; text-align: right;">
+                <div style="padding: 2px 0;"><b>Total Amount:</b> {{ number_format($data['total_invoiced'], 2) }}</div>
+                <div style="padding: 2px 0;"><b>Total Paid:</b> {{ number_format($data['total_paid'], 2) }}</div>
+                <div style="padding: 2px 0;"><b>Total Balance:</b> {{ number_format($data['balance'], 2) }}</div>
             </div>
         </div>
 
