@@ -384,20 +384,61 @@
             $('#receiveOrderModal').modal('show');
         });
 
-        // Qty Updates
-        $('#order_items_body').on('input', '.receive-qty-input', function() {
+        // Qty Updates - Only update display cells, not the input value itself
+        // This prevents cursor jumping when typing decimal values
+        $('#order_items_body').on('input', '.receive-qty-input', function(e) {
+            // Allow user to type freely without cursor jumping
+            // Just validate against max on input
             const $row = $(this).closest('tr');
-            let val = $(this).val().replace(/,/g, '');
-            let receiveQtyInput = parseFloat(val) || 0;
+            let receiveQtyInput = parseFloat($(this).val()) || 0;
             const orderedQty = parseFloat($row.find('.ordered-qty').text().replace(/,/g, '')) || 0;
             const initialReceivedQty = parseFloat($row.find('.received-qty-cell').data('initial-received')) || 0;
             const remainingBeforeInput = orderedQty - initialReceivedQty;
 
-            const currentReceiveQty = receiveQtyInput > remainingBeforeInput ? remainingBeforeInput : receiveQtyInput;
-            $(this).val(currentReceiveQty);
+            // Only enforce max on input, don't reformat value
+            if (receiveQtyInput > remainingBeforeInput) {
+                receiveQtyInput = remainingBeforeInput;
+            }
+            if (receiveQtyInput < 0) {
+                receiveQtyInput = 0;
+            }
 
-            $row.find('.received-qty-cell').text((initialReceivedQty + currentReceiveQty).toLocaleString('en-US'));
-            $row.find('.remaining-qty-cell').text((orderedQty - (initialReceivedQty + currentReceiveQty)).toLocaleString('en-US'));
+            // Only update display cells, not the input field to prevent cursor jump
+            // Use proper floating-point rounding (2 decimal places) to prevent precision errors
+            const totalReceived = Math.round((initialReceivedQty + receiveQtyInput) * 100) / 100;
+            const remainingAfter = Math.round((orderedQty - totalReceived) * 100) / 100;
+
+            $row.find('.received-qty-cell').text(totalReceived.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }));
+            $row.find('.remaining-qty-cell').text(remainingAfter.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }));
+        });
+
+        // Enforce max value when user leaves the input field (blur)
+        $('#order_items_body').on('blur', '.receive-qty-input', function() {
+            const $row = $(this).closest('tr');
+            let receiveQtyInput = parseFloat($(this).val()) || 0;
+            const orderedQty = parseFloat($row.find('.ordered-qty').text().replace(/,/g, '')) || 0;
+            const initialReceivedQty = parseFloat($row.find('.received-qty-cell').data('initial-received')) || 0;
+            const remainingBeforeInput = orderedQty - initialReceivedQty;
+
+            // Enforce max limit
+            if (receiveQtyInput > remainingBeforeInput) {
+                receiveQtyInput = remainingBeforeInput;
+            }
+            if (receiveQtyInput < 0) {
+                receiveQtyInput = 0;
+            }
+
+            // Round to 2 decimal places to avoid floating-point precision errors (e.g., 0.89000000006)
+            receiveQtyInput = Math.round(receiveQtyInput * 100) / 100;
+
+            $(this).val(receiveQtyInput);
+
+            // Update display cells with proper rounding
+            const totalReceived = Math.round((initialReceivedQty + receiveQtyInput) * 100) / 100;
+            const remainingAfter = Math.round((orderedQty - totalReceived) * 100) / 100;
+
+            $row.find('.received-qty-cell').text(totalReceived.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }));
+            $row.find('.remaining-qty-cell').text(remainingAfter.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }));
         });
 
         // Submit
@@ -475,16 +516,19 @@
                 // Extract values
                 const orderedQty = parseFloat($row.find('.ordered-qty').text().replace(/,/g, '')) || 0;
                 const initialReceivedQty = parseFloat($row.find('.received-qty-cell').data('initial-received')) || 0;
-                const remaining = orderedQty - initialReceivedQty;
+                const remaining = Math.round((orderedQty - initialReceivedQty) * 100) / 100;
 
-                // Pre-fill receive input with the remaining (not ordered) ✅
-                $row.find('.receive-qty-input').val(remaining > 0 ? remaining : 0);
+                // Pre-fill receive input with the remaining (not ordered) with proper rounding
+                const roundedRemaining = remaining > 0 ? remaining : 0;
+                $row.find('.receive-qty-input').val(roundedRemaining);
 
-                // Update received cell = initial already received + remaining
-                $row.find('.received-qty-cell').text((initialReceivedQty + (remaining > 0 ? remaining : 0)).toLocaleString('en-US'));
+                // Update received cell = initial already received + remaining (with rounding)
+                const totalReceived = Math.round((initialReceivedQty + roundedRemaining) * 100) / 100;
+                $row.find('.received-qty-cell').text(totalReceived.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }));
 
-                // Update remaining cell (so it goes to 0 if all filled)
-                $row.find('.remaining-qty-cell').text((orderedQty - (initialReceivedQty + remaining)).toLocaleString('en-US'));
+                // Update remaining cell (so it goes to 0 if all filled) with rounding
+                const remainingAfter = Math.round((orderedQty - totalReceived) * 100) / 100;
+                $row.find('.remaining-qty-cell').text(remainingAfter.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }));
             });
 
             // Focus first receive input
