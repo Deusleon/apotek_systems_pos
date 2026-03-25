@@ -1,4 +1,4 @@
-d<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <title>Supplier Statement Report</title>
@@ -104,10 +104,11 @@ d<!DOCTYPE html>
                 <thead>
                 <tr style="background: #1f273b; color: white;">
                     <th align="center" style="width: 5%;">S/N</th>
-                    <th align="center" style="width: 12%;">Date</th>
-                    <th align="left" style="width: 25%;">Invoice Reference</th>
-                    <th align="right" style="width: 18%;">Debit (Invoiced)</th>
-                    <th align="right" style="width: 18%;">Credit (Paid)</th>
+                    <th align="center" style="width: 10%;">Date</th>
+                    <th align="center" style="width: 10%;">Type</th>
+                    <th align="left" style="width: 20%;">Invoice Reference</th>
+                    <th align="right" style="width: 18%;">Amount Due</th>
+                    <th align="right" style="width: 18%;">Paid</th>
                     <th align="right" style="width: 18%;">Balance</th>
                 </tr>
                 </thead>
@@ -117,6 +118,13 @@ d<!DOCTYPE html>
                     <tr>
                         <td align="center">{{ $serial++ }}</td>
                         <td align="center">{{ date('Y-m-d', strtotime($transaction['date'])) }}</td>
+                        <td align="center">
+                            @if($transaction['type'] === 'invoice')
+                                <span style="color: #e74c3c; font-weight: bold;">Invoice</span>
+                            @else
+                                <span style="color: #27ae60; font-weight: bold;">Payment</span>
+                            @endif
+                        </td>
                         <td align="left">{{ $transaction['reference'] }}</td>
                         <td align="right">{{ number_format($transaction['debit'], 2) }}</td>
                         <td align="right">
@@ -130,7 +138,7 @@ d<!DOCTYPE html>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" align="center" style="padding: 20px;">No transactions found for the selected period.</td>
+                        <td colspan="7" align="center" style="padding: 20px;">No transactions found for the selected period.</td>
                     </tr>
                 @endforelse
             </table>

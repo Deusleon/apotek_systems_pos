@@ -689,47 +689,112 @@ class PurchaseReportController extends Controller
             ->orderBy('id', 'ASC')
             ->get();
 
-        // Get all payments for this supplier's invoices (including those before date range to calculate per-invoice balance)
-        $allPayments = Payment::whereHas('invoice', function($query) use ($supplierId) {
+        // Get all payments for this supplier's invoices within date range
+        $payments = Payment::whereHas('invoice', function($query) use ($supplierId) {
                 $query->where('supplier_id', $supplierId);
             })
+            ->whereBetween(DB::raw('date(payment_date)'), [$from, $to])
             ->orderBy('payment_date', 'ASC')
+            ->orderBy('id', 'ASC')
             ->get();
 
-        // Group payments by invoice_id to calculate individual invoice balances
-        $paymentsByInvoice = [];
-        foreach ($allPayments as $payment) {
-            if (!isset($paymentsByInvoice[$payment->invoice_id])) {
-                $paymentsByInvoice[$payment->invoice_id] = 0;
-            }
-            $paymentsByInvoice[$payment->invoice_id] += $payment->amount;
-        }
+        // Build combined transaction list with invoices and payments in chronological order
+        $combinedTransactions = [];
 
-        // Build transaction list - one row per invoice with its individual balance
-        // Balance = Invoice Amount - Sum of all payments for that specific invoice
-        $transactions = collect();
-        $totalInvoiced = 0;
-        $totalPaid = 0;
-
+        // Add invoices to combined list
         foreach ($invoices as $invoice) {
-            $invoicePayments = $paymentsByInvoice[$invoice->id] ?? 0;
-            $individualBalance = $invoice->invoice_amount - $invoicePayments;
-            
-            $totalInvoiced += $invoice->invoice_amount;
-            $totalPaid += $invoicePayments;
-
-            $transactions->push([
+            $combinedTransactions[] = [
                 'date' => $invoice->invoice_date,
                 'type' => 'invoice',
                 'reference' => $invoice->invoice_no,
-                'debit' => $invoice->invoice_amount,
-                'credit' => $invoicePayments,
-                'balance' => $individualBalance
-            ]);
+                'invoice_id' => $invoice->id,
+                'invoice_amount' => $invoice->invoice_amount,
+                'amount' => 0, // For invoices, amount due is the full invoice amount
+                'paid' => 0,
+                'sort_date' => strtotime($invoice->invoice_date) . sprintf('%06d', $invoice->id)
+            ];
+        }
+
+        // Add payments to combined list
+        foreach ($payments as $payment) {
+            $combinedTransactions[] = [
+                'date' => $payment->payment_date,
+                'type' => 'payment',
+                'reference' => $payment->invoice->invoice_no ?? 'N/A',
+                'invoice_id' => $payment->invoice_id,
+                'invoice_amount' => $payment->invoice->invoice_amount ?? 0,
+                'amount' => 0, // Will be calculated below
+                'paid' => $payment->amount,
+                'payment_id' => $payment->id,
+                'sort_date' => strtotime($payment->payment_date) . sprintf('%06d', $payment->id)
+            ];
+        }
+
+        // Sort combined transactions by date
+        usort($combinedTransactions, function($a, $b) {
+            return $a['sort_date'] - $b['sort_date'];
+        });
+
+        // Calculate running balance and amounts for each transaction
+        $invoiceBalances = []; // Track balance for each invoice
+        $runningBalance = $openingBalance;
+        $totalInvoiced = 0;
+        $totalPaid = 0;
+
+        $transactions = collect();
+
+        foreach ($combinedTransactions as $trans) {
+            if ($trans['type'] === 'invoice') {
+                // Invoice transaction
+                $invoiceId = $trans['invoice_id'];
+                $invoiceAmount = $trans['invoice_amount'];
+                
+                // Initialize invoice balance if not exists
+                if (!isset($invoiceBalances[$invoiceId])) {
+                    $invoiceBalances[$invoiceId] = $invoiceAmount;
+                }
+
+                $runningBalance += $invoiceAmount;
+                $totalInvoiced += $invoiceAmount;
+
+                $transactions->push([
+                    'date' => $trans['date'],
+                    'type' => 'invoice',
+                    'type_label' => 'Invoice',
+                    'reference' => $trans['reference'],
+                    'debit' => $invoiceAmount,
+                    'credit' => 0,
+                    'balance' => $invoiceBalances[$invoiceId]
+                ]);
+            } else {
+                // Payment transaction
+                $invoiceId = $trans['invoice_id'];
+                $paymentAmount = $trans['paid'];
+                
+                // Get current balance for this invoice before payment
+                $currentInvoiceBalance = $invoiceBalances[$invoiceId] ?? 0;
+                
+                // Calculate new balance after payment
+                $newInvoiceBalance = max(0, $currentInvoiceBalance - $paymentAmount);
+                $invoiceBalances[$invoiceId] = $newInvoiceBalance;
+
+                $runningBalance -= $paymentAmount;
+                $totalPaid += $paymentAmount;
+
+                $transactions->push([
+                    'date' => $trans['date'],
+                    'type' => 'payment',
+                    'type_label' => 'Payment',
+                    'reference' => $trans['reference'],
+                    'debit' => $currentInvoiceBalance, // Amount due before payment
+                    'credit' => $paymentAmount,
+                    'balance' => $newInvoiceBalance
+                ]);
+            }
         }
 
         // Outstanding balance = sum of all individual invoice balances
-        $outstandingBalance = $totalInvoiced - $totalPaid;
+        $outstandingBalance = array_sum($invoiceBalances);
 
         return [
             'transactions' => $transactions,
