@@ -155,11 +155,7 @@
             <div class="col-15"></div>
             <div class="col-50">
                 <div class="full-row">
-                    <div class="col-50" align="right"><b>Opening Balance: </b></div>
-                    <div class="col-50" align="right">{{ number_format($data['opening_balance'] ?? 0, 2) }}</div>
-                </div>
-                <div class="full-row">
-                    <div class="col-50" align="right"><b>Total Invoiced: </b></div>
+                    <div class="col-50" align="right"><b>Total Amount: </b></div>
                     <div class="col-50" align="right">{{ number_format($data['total_invoiced'], 2) }}</div>
                 </div>
                 <div class="full-row">
@@ -167,7 +163,7 @@
                     <div class="col-50" align="right">{{ number_format($data['total_paid'], 2) }}</div>
                 </div>
                 <div class="full-row">
-                    <div class="col-50" align="right"><b>Outstanding Balance: </b></div>
+                    <div class="col-50" align="right"><b>Total Balance: </b></div>
                     <div class="col-50" align="right">{{ number_format($data['balance'], 2) }}</div>
                 </div>
             </div>
