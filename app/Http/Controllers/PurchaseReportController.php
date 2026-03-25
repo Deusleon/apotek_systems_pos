@@ -631,7 +631,8 @@ class PurchaseReportController extends Controller
                 'to' => date('Y-m-d'),
                 'total_invoiced' => 0,
                 'total_paid' => 0,
-                'balance' => 0
+                'balance' => 0,
+                'opening_balance' => 0
             ];
         }
 
@@ -645,7 +646,8 @@ class PurchaseReportController extends Controller
                 'to' => date('Y-m-d'),
                 'total_invoiced' => 0,
                 'total_paid' => 0,
-                'balance' => 0
+                'balance' => 0,
+                'opening_balance' => 0
             ];
         }
 
@@ -666,64 +668,67 @@ class PurchaseReportController extends Controller
                 'to' => $to,
                 'total_invoiced' => 0,
                 'total_paid' => 0,
-                'balance' => 0
+                'balance' => 0,
+                'opening_balance' => 0
             ];
         }
 
-        // Get invoices for this supplier within date range
+        // Calculate opening balance (all invoices before the date range)
+        // Opening balance = total invoiced before from date - total paid before from date
+        $openingInvoices = Invoice::where('supplier_id', $supplierId)
+            ->where(DB::raw('date(invoice_date)'), '<', $from)
+            ->get();
+        $openingInvoiced = $openingInvoices->sum('invoice_amount');
+        $openingPaid = $openingInvoices->sum('paid_amount');
+        $openingBalance = $openingInvoiced - $openingPaid;
+
+        // Get all invoices for this supplier within date range
         $invoices = Invoice::where('supplier_id', $supplierId)
             ->whereBetween(DB::raw('date(invoice_date)'), [$from, $to])
             ->orderBy('invoice_date', 'ASC')
+            ->orderBy('id', 'ASC')
             ->get();
 
-        // Get payments for this supplier within date range
-        $payments = Payment::whereHas('invoice', function($query) use ($supplierId) {
+        // Get all payments for this supplier's invoices (including those before date range to calculate per-invoice balance)
+        $allPayments = Payment::whereHas('invoice', function($query) use ($supplierId) {
                 $query->where('supplier_id', $supplierId);
             })
-            ->whereBetween(DB::raw('DATE(created_at)'), [$from, $to])
-            ->orderBy('created_at', 'ASC')
+            ->orderBy('payment_date', 'ASC')
             ->get();
 
-        // Build transaction list
-        $transactions = collect();
+        // Group payments by invoice_id to calculate individual invoice balances
+        $paymentsByInvoice = [];
+        foreach ($allPayments as $payment) {
+            if (!isset($paymentsByInvoice[$payment->invoice_id])) {
+                $paymentsByInvoice[$payment->invoice_id] = 0;
+            }
+            $paymentsByInvoice[$payment->invoice_id] += $payment->amount;
+        }
 
-        // Add invoices as transactions
+        // Build transaction list - one row per invoice with its individual balance
+        // Balance = Invoice Amount - Sum of all payments for that specific invoice
+        $transactions = collect();
+        $totalInvoiced = 0;
+        $totalPaid = 0;
+
         foreach ($invoices as $invoice) {
+            $invoicePayments = $paymentsByInvoice[$invoice->id] ?? 0;
+            $individualBalance = $invoice->invoice_amount - $invoicePayments;
+            
+            $totalInvoiced += $invoice->invoice_amount;
+            $totalPaid += $invoicePayments;
+
             $transactions->push([
                 'date' => $invoice->invoice_date,
+                'type' => 'invoice',
                 'reference' => $invoice->invoice_no,
-                'type' => 'Invoice',
                 'debit' => $invoice->invoice_amount,
-                'credit' => 0,
-                'balance' => 0 // Will be calculated
+                'credit' => $invoicePayments,
+                'balance' => $individualBalance
             ]);
         }
 
-        // Add payments as transactions
-        foreach ($payments as $payment) {
-            $transactions->push([
-                'date' => $payment->created_at,
-                'reference' => $payment->receipt_number ?? 'PAY-' . $payment->id,
-                'type' => 'Payment',
-                'debit' => 0,
-                'credit' => $payment->amount,
-                'balance' => 0 // Will be calculated
-            ]);
-        }
-
-        // Sort all transactions by date
-        $transactions = $transactions->sortBy('date')->values();
-
-        // Calculate running balance
-        $runningBalance = 0;
-        foreach ($transactions as &$trans) {
-            $runningBalance += $trans['debit'] - $trans['credit'];
-            $trans['balance'] = $runningBalance;
-        }
-
-        // Calculate totals
-        $totalInvoiced = $invoices->sum('invoice_amount');
-        $totalPaid = $payments->sum('amount');
+        // Outstanding balance = sum of all individual invoice balances
         $outstandingBalance = $totalInvoiced - $totalPaid;
 
         return [
@@ -733,7 +738,8 @@ class PurchaseReportController extends Controller
             'to' => $to,
             'total_invoiced' => $totalInvoiced,
             'total_paid' => $totalPaid,
-            'balance' => $outstandingBalance
+            'balance' => $outstandingBalance,
+            'opening_balance' => $openingBalance
         ];
     }
 

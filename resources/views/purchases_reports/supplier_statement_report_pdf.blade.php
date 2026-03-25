@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+d<!DOCTYPE html>
 <html>
 <head>
     <title>Supplier Statement Report</title>
@@ -103,24 +103,36 @@
             <table id="table-detail" align="center">
                 <thead>
                 <tr style="background: #1f273b; color: white;">
+                    <th align="center" style="width: 5%;">S/N</th>
                     <th align="center" style="width: 12%;">Date</th>
-                    <th align="left" style="width: 20%;">Reference</th>
-                    <th align="left" style="width: 15%;">Type</th>
-                    <th align="right" style="width: 17%;">Debit (Invoiced)</th>
-                    <th align="right" style="width: 17%;">Credit (Paid)</th>
-                    <th align="right" style="width: 17%;">Balance</th>
+                    <th align="left" style="width: 25%;">Invoice Reference</th>
+                    <th align="right" style="width: 18%;">Debit (Invoiced)</th>
+                    <th align="right" style="width: 18%;">Credit (Paid)</th>
+                    <th align="right" style="width: 18%;">Balance</th>
                 </tr>
                 </thead>
-                @foreach($data['transactions'] as $transaction)
+                @php $serial = 1; $hasTransactions = false; @endphp
+                @forelse($data['transactions'] as $transaction)
+                    @php $hasTransactions = true; @endphp
                     <tr>
+                        <td align="center">{{ $serial++ }}</td>
                         <td align="center">{{ date('Y-m-d', strtotime($transaction['date'])) }}</td>
                         <td align="left">{{ $transaction['reference'] }}</td>
-                        <td align="left">{{ $transaction['type'] }}</td>
-                        <td align="right">{{ $transaction['debit'] > 0 ? number_format($transaction['debit'], 2) : '-' }}</td>
-                        <td align="right">{{ $transaction['credit'] > 0 ? number_format($transaction['credit'], 2) : '-' }}</td>
+                        <td align="right">{{ number_format($transaction['debit'], 2) }}</td>
+                        <td align="right">
+                            @if($transaction['credit'] > 0)
+                                {{ number_format($transaction['credit'], 2) }}
+                            @else
+                                -
+                            @endif
+                        </td>
                         <td align="right">{{ number_format($transaction['balance'], 2) }}</td>
                     </tr>
-                @endforeach
+                @empty
+                    <tr>
+                        <td colspan="6" align="center" style="padding: 20px;">No transactions found for the selected period.</td>
+                    </tr>
+                @endforelse
             </table>
         </div>
 
@@ -134,6 +146,10 @@
             </div>
             <div class="col-15"></div>
             <div class="col-50">
+                <div class="full-row">
+                    <div class="col-50" align="right"><b>Opening Balance: </b></div>
+                    <div class="col-50" align="right">{{ number_format($data['opening_balance'] ?? 0, 2) }}</div>
+                </div>
                 <div class="full-row">
                     <div class="col-50" align="right"><b>Total Invoiced: </b></div>
                     <div class="col-50" align="right">{{ number_format($data['total_invoiced'], 2) }}</div>
