@@ -131,7 +131,7 @@
                             @if($transaction['credit'] > 0)
                                 {{ number_format($transaction['credit'], 2) }}
                             @else
-                                -
+                                0.00
                             @endif
                         </td>
                         <td align="right">{{ number_format($transaction['balance'], 2) }}</td>
