@@ -9,6 +9,11 @@
 @endsection
 
 @section("content")
+    @php
+        $current_store = session('current_store_id') ?? auth()->user()->store_id;
+        $is_all_branch = $current_store == 1;
+    @endphp
+
     <style>
         .ms-container {
             background: transparent url('../assets/plugins/multi-select/img/switch.png') no-repeat 50% 50%;
@@ -178,6 +183,60 @@
                 filterSupplierProductInput: '{{route('filter-product-input')}}'
             }
         };
+
+        $(document).ready(function () {
+            // Flag to prevent multiple notifications
+            let notificationShown = false;
+
+            // Check if user is in ALL branch
+            if (@json($is_all_branch)) {
+                // Prevent form interactions and show message
+                function showNotification() {
+                    if (!notificationShown) {
+                        notificationShown = true;
+                        notify('You cannot create an order in branch ALL. Please switch to another branch to proceed.', 'top', 'right', 'warning');
+                        setTimeout(() => notificationShown = false, 1000); // Reset after 1 second
+                    }
+                }
+
+                $('#supplier').on('change', function (e) {
+                    e.preventDefault();
+                    $(this).val('').trigger('change.select2');
+                    showNotification();
+                });
+
+                $('#product_status').on('change', function (e) {
+                    e.preventDefault();
+                    $(this).val('all').trigger('change');
+                    showNotification();
+                });
+
+                $('#select_id').on('focus click', function (e) {
+                    e.preventDefault();
+                    $(this).blur();
+                    showNotification();
+                });
+
+                // Disable save button
+                $('#order_form button[type="submit"]').prop('disabled', true);
+                $('#order_form button[type="submit"]').on('click', function (e) {
+                    e.preventDefault();
+                    showNotification();
+                });
+
+                // Prevent form submission
+                $('#order_form').on('submit', function (e) {
+                    e.preventDefault();
+                    showNotification();
+                });
+
+                // Also handle the Cancel button to show notification
+                $('#deselect-all').on('click', function (e) {
+                    e.preventDefault();
+                    showNotification();
+                });
+            }
+        });
     </script>
 
     <script src="{{asset("assets/apotek/js/purchases.js")}}"></script>
