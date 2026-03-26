@@ -136,7 +136,7 @@
                             {{-- <th>Code</th> --}}
                             <th style="width: auto;">Product Name</th>
                             <th>Batch No</th>
-                            {{-- <th style="text-align: center">Expiry Date</th> --}}
+                            <th style="text-align: center">Expiry Date</th>
                             <th style="text-align: center;">Quantity</th>
                         </tr>
                     </thead>
@@ -149,11 +149,11 @@
                                 {{$item['pack_size'] ?? ''}}{{$item['sales_uom'] ?? ''}}
                             </td>
                             <td style="width: 70px;">{{$item['batch_number']}}</td>
-                            {{-- @if($item['expiry_date'] === null) --}}
-                            {{-- <td align="center"></td>
+                            @if($item['expiry_date'] === null)
+                            <td align="center"></td>
                             @else
                             <td align="center">{{date('Y-m-d', strtotime($item['expiry_date']))}}</td>
-                            @endif --}}
+                            @endif
                             <td align="center" style="text-align: center;">
                                 <div>{{ smartFormat($item['quantity']) }}</div>
                             </td>
