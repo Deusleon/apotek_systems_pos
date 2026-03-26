@@ -181,9 +181,8 @@
 
                 <!-- Total Row -->
                 <tr style="font-weight: bold;">
-                    <td colspan="5" align="right" style="border-top: 2px solid #000; padding-top: 10px;"><b>Total Amount:</b></td>
+                    <td colspan="6" align="right" style="border-top: 2px solid #000; padding-top: 10px;"><b>Total Amount:</b></td>
                     <td align="right" style="border-top: 2px solid #000; padding-top: 10px;">{{number_format($total_amount, 2)}}</td>
-                    <td style="border-top: 2px solid #000; padding-top: 10px;"></td>
                 </tr>
             </table>
 
