@@ -161,7 +161,7 @@
                     <th align="left">Supplier</th>
                     <th align="center">Total Products</th>
                     <th align="right">Amount</th>
-                    <th align="left">Created By</th>
+                    <th align="center">Created By</th>
                 </tr>
                 </thead>
 
@@ -174,7 +174,7 @@
                     <td align="left">{{$order->supplier->name ?? ''}}</td>
                     <td align="center">{{$order->total_products}}</td>
                     <td align="right">{{number_format($order->total_amount, 2)}}</td>
-                    <td align="left">{{$order->user->name ?? ''}}</td>
+                    <td align="center">{{$order->user->name ?? ''}}</td>
                 </tr>
                 @php $total_amount += $order->total_amount; @endphp
                 @endforeach
