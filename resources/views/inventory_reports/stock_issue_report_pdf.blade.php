@@ -130,7 +130,6 @@
                 <thead>
                 <tr style="background: #1f273b; color: white;">
                     <th align="left" style="width: 1%;">#</th>
-                    <th align="left">Code</th>
                     <th align="left">Product Name</th>
                     <th align="right">Buy Price</th>
                     <th align="right">Sell Price</th>
@@ -144,7 +143,6 @@
                 @foreach($data as $item)
                     <tr>
                         <td align="left">{{$loop->iteration}}.</td>
-                        <td align="left">{{$item['product_id']}}</td>
                         <td align="left">{{$item['name']}}</td>
                         <td align="right">{{number_format($item['buy_price'],2)}}</td>
                         <td align="right">{{number_format($item['sell_price'],2)}}</td>
