@@ -93,6 +93,9 @@
                                         @if(auth()->user()->checkPermission('Purchase Order Details Report'))
                                         <option value="6">Purchase Order Details Report</option>
                                         @endif
+                                        @if(auth()->user()->checkPermission('Purchase Order Summary Report'))
+                                        <option value="10">Purchase Order Summary Report</option>
+                                        @endif
                                         @if(auth()->user()->checkPermission('Purchase Return Report'))
                                         <option value="7">Purchase Return Report</option>
                                         @endif
@@ -433,8 +436,8 @@
                 $("#suppliers").change();
             }
 
-            //if Purchase Order Details or Purchase Return Report
-            if (Number(report_option_index) === Number(6) || Number(report_option_index) === Number(7)) {
+            //if Purchase Order Details, Purchase Order Summary, or Purchase Return Report
+            if (Number(report_option_index) === Number(6) || Number(report_option_index) === Number(7) || Number(report_option_index) === Number(10)) {
                 document.getElementById('order_return_options').style.display = 'block';
             }
 

@@ -198,6 +198,17 @@ class PurchaseReportController extends Controller
                     'purchase_return_report.pdf',
                     'landscape'
                 );
+            case 10:
+                $data = $this->purchaseOrderSummaryReport($request->date_range);
+                if ($data->isEmpty()) {
+                    return response()->view('error_pages.pdf_zero_data');
+                }
+                return $this->generateOptimizedPdf(
+                    'purchases_reports.purchase_order_summary_report_pdf',
+                    compact( 'data', 'pharmacy', 'branch_name'),
+                    'purchase_order_summary_report.pdf',
+                    'landscape'
+                );
             case 8:
                 $data = $this->supplierStatementReport($request->supplier_statement, $request->statement_date_range);
                 if ($data['transactions']->isEmpty()) {
@@ -565,6 +576,46 @@ class PurchaseReportController extends Controller
         // Add date range to each order for PDF display
         foreach ($orders as $order) {
             $order->date_range = $dates;
+        }
+
+        return $orders;
+    }
+
+    public function purchaseOrderSummaryReport($date_range)
+    {
+        if (!$date_range) {
+            return collect(); // Return empty collection if no date range
+        }
+
+        $dates = explode(" - ", $date_range);
+
+        if (count($dates) < 2) {
+            return collect(); // Return empty collection if date range is invalid
+        }
+        
+        // Get branch filter
+        $store_id = $this->getBranchFilter();
+
+        $query = Order::with(['supplier', 'details.product', 'user'])
+            ->whereBetween(DB::raw('date(ordered_at)'), [
+                date('Y-m-d', strtotime($dates[0])),
+                date('Y-m-d', strtotime($dates[1]))
+            ])
+            ->where('status', '!=', 'cancelled')
+            ->orderBy('ordered_at', 'DESC');
+        
+        // Apply branch filter if not ALL
+        if ($store_id !== null) {
+            $query->where('store_id', $store_id);
+        }
+        
+        $orders = $query->get();
+
+        // Add date range to each order for PDF display
+        foreach ($orders as $order) {
+            $order->date_range = $dates;
+            // Calculate total products count
+            $order->total_products = $order->details->count();
         }
 
         return $orders;

@@ -196,6 +196,7 @@ class CreatePermissionsTable extends Migration
             ['name' => 'Material Received Summary Report', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'REPORTS'],
             ['name' => 'List of Supplier', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'REPORTS'],
             ['name' => 'Purchase Order Details Report', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'REPORTS'],
+            ['name' => 'Purchase Order Summary Report', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'REPORTS'],
             ['name' => 'Purchase Return Report', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'REPORTS'],
             ['name' => 'View Accounting Reports', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'REPORTS'],
             ['name' => 'Current Stock Value', 'guard_name' => 'web', 'created_at' => '2019-10-17 20:25:55', 'updated_at' => '2019-10-17 20:25:55', 'category' => 'REPORTS'],

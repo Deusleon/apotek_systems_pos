@@ -35,6 +35,23 @@ var order_history_datatable = $("#order_history_datatable").DataTable({
         },
         {
             data: "status",
+            className: "text-center",
+            render: function (status) {
+                const badgeClass = "badge btn-rounded btn-sm";
+                const style = "display:inline-block; min-width:110px;";
+                if (status == "2" || status == "1")
+                    return `<span class='${badgeClass} badge-warning' style='${style}'>Pending</span>`;
+                if (status == "3")
+                    return `<span class='${badgeClass} badge-info' style='${style}'>Partial</span>`;
+                if (status == "4")
+                    return `<span class='${badgeClass} badge-success' style='${style}'>Completed</span>`;
+                if (status === "Cancelled")
+                    return `<span class='${badgeClass} badge-warning' style='${style}'>Rejected</span>`;
+                return `<span class='${badgeClass} badge-secondary' style='${style}'>Rejected</span>`;
+            },
+        },
+        {
+            data: "status",
             render: function (status, type, row) {
                 // "Approved" state sources:
                 // - Backend flags: status === '2' or status === '3' or status === 'Approved'
