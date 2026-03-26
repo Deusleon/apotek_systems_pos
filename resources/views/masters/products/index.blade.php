@@ -572,7 +572,10 @@
                                 @if(auth()->user()->checkPermission('Manage Products'))
                             {
                                 'data': "action",
-                                defaultContent: "<button type='button' id='activate' class='btn btn-sm btn-rounded btn-success'>Activate</button>"
+                                render: function(data, type, row) {
+                                    // Only show Activate button for Inactive status - Delete button is hidden
+                                    return "<button type='button' id='activate' class='btn btn-sm btn-rounded btn-success'>Activate</button>";
+                                }
                             }
                             @endif
 
