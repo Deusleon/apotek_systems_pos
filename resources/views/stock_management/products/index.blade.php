@@ -315,11 +315,11 @@
                                 @endif
 
                                 @if(auth()->user()->checkPermission('Delete Products'))
-                                    buttons += `
-                                                                                                                                                                                <button type="button" class="btn btn-danger btn-sm btn-rounded" id="deletes">
-                                                                                                                                                                                    Delete
-                                                                                                                                                                                </button>
-                                                                                                                                                                            `;
+                                    buttons += row.status != 0 ? `
+                                        <button type="button" class="btn btn-danger btn-sm btn-rounded" id="deletes">
+                                            Delete
+                                        </button>
+                                    ` : '';
                                 @endif
 
                                                                                                     return buttons;
