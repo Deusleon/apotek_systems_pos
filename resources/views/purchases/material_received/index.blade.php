@@ -269,11 +269,20 @@
     </script>
     <script type="text/javascript">
 
+        // Global variable to track DataTable instance
+        var receivedMaterialTable = null;
+        var isLoadingData = false;
+
         $(document).ready(function () {
            getMaterialsReceived();
         });
 
         function getMaterialsReceived() {
+            // Prevent multiple simultaneous calls
+            if (isLoadingData) {
+                return;
+            }
+            
             var product_id = document.getElementById("received_product").value;
             var supplier_id = document.getElementById("supplier").value;
             var range = document.getElementById("receive_date").value;
@@ -286,10 +295,18 @@
             }
             if (product_id || date || supplier_id) {
                 // $('#loading').show();
+                isLoadingData = true;
 
-                $("#received_material_table").dataTable().fnDestroy();
+                // Properly destroy existing DataTable instance
+                if (receivedMaterialTable) {
+                    receivedMaterialTable.destroy();
+                    receivedMaterialTable = null;
+                }
+                
+                // Clear the table body completely
+                $('#received_material_table tbody').empty();
 
-                var received_material_table = $('#received_material_table').DataTable({
+                receivedMaterialTable = $('#received_material_table').DataTable({
                     "processing": true,
                     "serverSide": true,
                     "ajax": {
@@ -305,44 +322,72 @@
                         }
                     },
                     "columns": [
-                        { data: 'id' },
+                        {
+                            data: 'id',
+                            render: function (data) {
+                                return data;
+                            }
+                        },
                         {
                             data: 'product',
-                            render: function (data) {
-                                return (data.name || '') + ' ' + (data.brand || '') + ' ' + (data.pack_size || '') + (data.sales_uom || '');
+                            render: function (data, type, row) {
+                                // Defensive check: ensure data is a valid product object
+                                if (data && typeof data === 'object' && data !== null) {
+                                    var name = data.name || '';
+                                    var brand = data.brand || '';
+                                    var pack_size = data.pack_size || '';
+                                    var sales_uom = data.sales_uom || '';
+                                    return (name + ' ' + brand + ' ' + pack_size + sales_uom).trim();
+                                }
+                                // If data is an integer (product_id), return empty string
+                                if (typeof data === 'number') {
+                                    return '';
+                                }
+                                return '';
                             }
                         },
                         {
-                            data: 'ordered_qty', render: function (data) {
-                                return numberWithCommas(parseFloat(data));
+                            data: 'ordered_qty',
+                            render: function (data, type, row) {
+                                return numberWithCommas(parseFloat(data || 0));
                             }
                         },
                         {
-                            data: 'quantity', render: function (data) {
-                                return numberWithCommas(parseFloat(data));
+                            data: 'quantity',
+                            render: function (data, type, row) {
+                                return numberWithCommas(parseFloat(data || 0));
                             }
                         },
                         {
-                            data: 'remaining_qty', render: function (data) {
-                                return numberWithCommas(parseFloat(data));
+                            data: 'remaining_qty',
+                            render: function (data, type, row) {
+                                return numberWithCommas(parseFloat(data || 0));
                             }
                         },
                         {
-                            data: 'unit_cost', render: function (unit_cost) {
-                                return formatMoney(unit_cost)
+                            data: 'unit_cost',
+                            render: function (data, type, row) {
+                                return formatMoney(data || 0);
                             }
                         },
                         {
-                            data: 'total_cost', render: function (total_cost) {
-                                return formatMoney(total_cost)
+                            data: 'total_cost',
+                            render: function (data, type, row) {
+                                return formatMoney(data || 0);
                             }
                         },
                         {
-                            data: 'created_at', render: function (date) {
-                                return moment(date).format('Y-MM-DD');
+                            data: 'created_at',
+                            render: function (data, type, row) {
+                                return data ? moment(data).format('YYYY-MM-DD') : '';
                             }
                         },
-                        { data: 'user.name' },
+                        {
+                            data: 'user.name',
+                            render: function (data, type, row) {
+                                return data || '';
+                            }
+                        },
                        {
                             data: 'action',
                             defaultContent:
@@ -369,15 +414,22 @@
                         }
                         @endif
                     ],
-                    "order": [[0, "desc"]]
+                    "order": [[0, "desc"]],
+                    "drawCallback": function(settings) {
+                        // Reset loading flag when draw completes
+                        isLoadingData = false;
+                    }
 
                 });
 
                 var expire_date_enabler = document.getElementById("expire_date_enabler").value;
                 console.log(expire_date_enabler);
                 if (expire_date_enabler === "NO") {
-                    received_material_table.column(4).visible(false);
+                    receivedMaterialTable.column(4).visible(false);
                 }
+            } else {
+                // If no filters selected, reset loading flag
+                isLoadingData = false;
             }
         }
 

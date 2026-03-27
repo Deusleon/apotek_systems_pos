@@ -121,6 +121,7 @@ class MaterialReceivedController extends Controller
             )
             ->join('inv_products', 'inv_products.id', '=', 'inv_incoming_stock.product_id')
             ->join('users', 'users.id', '=', 'inv_incoming_stock.created_by')
+            ->with(['product', 'supplier', 'user'])
             ->whereBetween(DB::raw('date(inv_incoming_stock.created_at)'), [$from, $to])
             ->where('supplier_id', $request->supplier_id);
 
@@ -138,6 +139,7 @@ class MaterialReceivedController extends Controller
             )
             ->join('inv_products', 'inv_products.id', '=', 'inv_incoming_stock.product_id')
             ->join('users', 'users.id', '=', 'inv_incoming_stock.created_by')
+            ->with(['product', 'supplier', 'user'])
             ->whereBetween(DB::raw('date(inv_incoming_stock.created_at)'), [$from, $to]);
 
         if ($useStoreFilter) {
@@ -165,6 +167,7 @@ class MaterialReceivedController extends Controller
                 ->join('inv_products', 'inv_products.id', '=', 'inv_incoming_stock.product_id')
                 ->leftJoin('inv_suppliers', 'inv_suppliers.id', '=', 'inv_incoming_stock.supplier_id')
                 ->join('users', 'users.id', '=', 'inv_incoming_stock.created_by')
+                ->with(['product', 'supplier', 'user'])
                 ->whereBetween(DB::raw('date(inv_incoming_stock.created_at)'), [$from, $to])
                 ->where('supplier_id', $request->supplier_id);
 
@@ -187,6 +190,7 @@ class MaterialReceivedController extends Controller
                 ->join('inv_products', 'inv_products.id', '=', 'inv_incoming_stock.product_id')
                 ->leftJoin('inv_suppliers', 'inv_suppliers.id', '=', 'inv_incoming_stock.supplier_id')
                 ->join('users', 'users.id', '=', 'inv_incoming_stock.created_by')
+                ->with(['product', 'supplier', 'user'])
                 ->whereBetween(DB::raw('date(inv_incoming_stock.created_at)'), [$from, $to]);
     
             if ($request->supplier_search) {
@@ -215,6 +219,7 @@ class MaterialReceivedController extends Controller
                 ->join('inv_products', 'inv_products.id', '=', 'inv_incoming_stock.product_id')
                 ->leftJoin('inv_suppliers', 'inv_suppliers.id', '=', 'inv_incoming_stock.supplier_id')
                 ->join('users', 'users.id', '=', 'inv_incoming_stock.created_by')
+                ->with(['product', 'supplier', 'user'])
                 ->whereBetween(DB::raw('date(inv_incoming_stock.created_at)'), [$from, $to])
                 ->where('supplier_id', $request->supplier_id);
     
@@ -277,6 +282,7 @@ class MaterialReceivedController extends Controller
                 ->join('inv_products', 'inv_products.id', '=', 'inv_incoming_stock.product_id')
                 ->leftJoin('inv_suppliers', 'inv_suppliers.id', '=', 'inv_incoming_stock.supplier_id')
                 ->join('users', 'users.id', '=', 'inv_incoming_stock.created_by')
+                ->with(['product', 'supplier', 'user'])
                 ->whereBetween(DB::raw('date(inv_incoming_stock.created_at)'), [$from, $to]);
 
             if ($request->supplier_search) {
@@ -333,10 +339,6 @@ class MaterialReceivedController extends Controller
 
     if (!empty($material_received)) {
         foreach ($material_received as $value) {
-            $value->product;
-            $value->supplier;
-            $value->user;
-
             // Check if there's a pending purchase return for this goods_receiving_id
             $value->has_pending_return = PurchaseReturn::where('goods_receiving_id', $value->id)
                 ->where('status', PurchaseReturn::STATUS_PENDING)
@@ -415,11 +417,50 @@ class MaterialReceivedController extends Controller
         }
     }
 
+            // Reorder data to match DataTable column expectations
+            $reordered_data = [];
+            foreach ($material_received as $item) {
+                // Ensure product relationship is loaded
+                $product = $item->product;
+                if (!$product) {
+                    // Fallback: load product directly if relationship failed
+                    $product = Product::find($item->product_id);
+                }
+                
+                // Ensure user relationship is loaded
+                $user = $item->user;
+                if (!$user) {
+                    // Fallback: load user directly if relationship failed
+                    $user = \App\User::find($item->created_by);
+                }
+                
+                // Ensure supplier relationship is loaded
+                $supplier = $item->supplier;
+                if (!$supplier && $item->supplier_id) {
+                    // Fallback: load supplier directly if relationship failed
+                    $supplier = Supplier::find($item->supplier_id);
+                }
+                
+                $reordered_data[] = [
+                    'id' => $item->id,
+                    'product' => $product,
+                    'ordered_qty' => $item->ordered_qty ?? 0,
+                    'quantity' => $item->quantity,
+                    'remaining_qty' => $item->remaining_qty ?? 0,
+                    'unit_cost' => $item->unit_cost,
+                    'total_cost' => $item->total_cost,
+                    'created_at' => $item->created_at,
+                    'user' => $user,
+                    'supplier' => $supplier,
+                    'has_pending_return' => $item->has_pending_return ?? false
+                ];
+            }
+
             $json_data = array(
                 "draw" => intval($request->input('draw')),
                 "recordsTotal" => intval($totalData),
                 "recordsFiltered" => intval($totalFiltered),
-                "data" => $material_received
+                "data" => $reordered_data
             );
 
             return response()->json($json_data);
