@@ -55,7 +55,9 @@ class MaterialReceivedController extends Controller
         $update_material->item_profit = $profit;
         $update_material->supplier_id = $request->supplier_id_edit;
         $update_material->created_by = Auth::user()->id;
-        $originalTime = $update_material->created_at->format('H:i:s'); // ← preserve original time
+        
+        // Preserve original time from created_at
+        $originalTime = date('H:i:s', strtotime($update_material->created_at)); // ← preserve original time
         $newDate = date('Y-m-d', strtotime($request->receive_date_edit));
         $update_material->created_at = $newDate . ' ' . $originalTime;     // ← merge new date with original time
 
