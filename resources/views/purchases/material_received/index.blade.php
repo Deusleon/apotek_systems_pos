@@ -139,7 +139,7 @@
                         style="width:100%">
                         <thead>
                             <tr>
-                                <th>id</th>
+                                <th class="d-none">id</th>
                                 <th>Product Name</th>
                                 <th class="d-none">Ordered</th>
                                 <th>Quantity</th>
