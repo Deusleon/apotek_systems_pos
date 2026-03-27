@@ -669,13 +669,17 @@
 
     <script>
         // Step 1: Store all invoices in a JS array
-        const allInvoices = @json($invoices->map(function ($inv) {
-            return [
-                'id' => $inv->id,
-                'invoice_no' => $inv->invoice_no,
-                'supplier_id' => $inv->supplier_id
-            ];
-        }));
+        @php
+            $invoicesArray = $invoices->map(function ($inv) {
+                return [
+                    'id' => $inv->id,
+                    'invoice_no' => $inv->invoice_no,
+                    'supplier_id' => $inv->supplier_id,
+                    'received_status' => $inv->received_status
+                ];
+            })->toArray();
+        @endphp
+        const allInvoices = @json($invoicesArray);
 
         // Step 2: Function to filter invoices when supplier changes
         function goodReceivingFilterInvoiceBySupplier() {
@@ -686,8 +690,11 @@
             // Clear current invoice options
             invoiceSelect.innerHTML = '<option selected disabled>Select Invoice...</option>';
 
-            // Filter invoices based on selected supplier
-            const filteredInvoices = allInvoices.filter(inv => inv.supplier_id == supplierId);
+            // Filter invoices based on selected supplier and status (exclude Fully Received)
+            const filteredInvoices = allInvoices.filter(inv =>
+                inv.supplier_id == supplierId &&
+                (inv.received_status === 'Not Received' || inv.received_status === 'Partially Received')
+            );
 
             // Sort descending by ID (latest first)
             filteredInvoices.sort((a, b) => b.id - a.id);
