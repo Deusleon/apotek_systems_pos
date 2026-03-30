@@ -242,7 +242,12 @@ $("#cash_sale_date").on("blur", function () {
 $("#sale_discount").on("blur", function () {
     if (discount_enable === "YES") {
         var n = Math.abs(parseFloat($(this).val().replace(/\,/g, ""), 10) || 0);
-        $(this).val(n.toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+        $(this).val(
+            n.toLocaleString("en", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            }),
+        );
     }
     $("#barcode_input").focus();
 });
@@ -348,94 +353,60 @@ function applyCartEdit() {
     var row_data = cart_table.row($tr).data();
     var index = cart_table.row($tr).index();
 
-    // Calculate VAT and totals
-    var vat;
-    var unit_total;
-    var vat_money;
+    // Normalize the quantity - remove any HTML tags and commas
+    var rawQty = String(editQty.value).split("<")[0];
+    var newQty = Number(rawQty.replace(/,/g, "")) || 0;
 
-    if (fixed_price === "NO") {
-        vat = Number(
-            (parseFloat(editPrice.value.replace(/\,/g, ""), 10) * tax).toFixed(
-                2
-            )
-        );
-        unit_total = formatMoney(
-            parseFloat(editPrice.value.replace(/\,/g, ""), 10) + vat
-        );
-        vat_money = formatMoney(vat);
+    // Get stock quantity from the cart data (index 5)
+    var stockQty = Number(row_data[5]);
+
+    // Validate quantity - ensure it's positive
+    if (newQty <= 0) {
+        newQty = 1;
+    }
+
+    // Check if quantity exceeds stock (not for quotes page)
+    var exceedsStock = false;
+    if (newQty > stockQty && !$("#quotes_page").length) {
+        newQty = stockQty;
+        exceedsStock = true;
+    }
+
+    // Get the price - either from edit field or from existing row data
+    var price;
+    if (fixed_price === "NO" && editPrice) {
+        price = parseFloat(editPrice.value.replace(/,/g, ""), 10) || 0;
     } else {
-        vat = Number(
-            (parseFloat(row_data[3].replace(/\,/g, ""), 10) * tax).toFixed(2)
-        );
-        unit_total = formatMoney(
-            parseFloat(row_data[3].replace(/\,/g, ""), 10) + vat
-        );
-        vat_money = formatMoney(vat);
+        // Parse the formatted price from row data
+        price = parseFloat(String(row_data[2]).replace(/,/g, ""), 10) || 0;
     }
 
-    // Update row data
-    row_data[1] = numberWithCommas(editQty.value);
+    // Calculate VAT and totals based on the original unit price (not multiplied)
+    var vat = Number((price * tax).toFixed(2));
+    var unit_total = price + vat;
 
-    if (fixed_price === "NO") {
-        row_data[2] = formatMoney(
-            parseFloat(editPrice.value.replace(/\,/g, ""), 10)
-        );
-    }
+    // Calculate the new amounts based on quantity
+    var newVat = vat * newQty;
+    var newAmount = unit_total * newQty;
 
-    if (Number(parseFloat(row_data[1].replace(/\,/g, ""), 10)) < 0) {
-        row_data[1] = 1;
-    }
-
-    var dif;
-    if (row_data[7] == "consumable") {
-        dif = 1;
-    } else {
-        dif = row_data[5] - row_data[1].toString().replace(/,/g, "");
-    }
-
-    console.log('Fdata ',row_data);
-
-    if ($("#quotes_page").length) {
-        // Quotes has no maximum quantity
-        row_data[2] = formatMoney(
-            parseFloat(row_data[2].replace(/\,/g, ""), 10)
-        );
-        row_data[3] = formatMoney(
-            parseFloat(vat_money.replace(/\,/g, ""), 10) *
-                row_data[2].toString().replace(",", "")
-        );
-        row_data[4] = formatMoney(
-            parseFloat(unit_total.replace(/\,/g, ""), 10) *
-                row_data[2].toString().replace(",", "")
-        );
-    } else if (dif < 0) {
-        row_data[1] = row_data[5];
-        row_data[2] = formatMoney(
-            parseFloat(row_data[2].replace(/\,/g, ""), 10)
-        );
-        row_data[3] = formatMoney(
-            parseFloat(vat_money.replace(/\,/g, ""), 10) * row_data[5]
-        );
-        row_data[4] = formatMoney(
-            parseFloat(unit_total.replace(/\,/g, ""), 10) * row_data[5]
-        );
+    // Update row data with new values
+    // Index 0: Product Name (keep as is)
+    // Index 1: Quantity
+    if (exceedsStock) {
         row_data[1] =
-            numberWithCommas(row_data[5]) +
-            " " +
-            "<span class='text text-danger'>Max</span>";
+            numberWithCommas(stockQty) +
+            " <span class='text text-danger'>Max</span>";
     } else {
-        row_data[2] = formatMoney(
-            parseFloat(row_data[2].replace(/\,/g, ""), 10)
-        );
-        row_data[3] = formatMoney(
-            parseFloat(vat_money.replace(/\,/g, ""), 10) *
-                row_data[1].toString().replace(",", "")
-        );
-        row_data[4] = formatMoney(
-            parseFloat(unit_total.replace(/\,/g, ""), 10) *
-                row_data[1].toString().replace(",", "")
-        );
+        row_data[1] = numberWithCommas(newQty);
     }
+    // Index 2: Price (update if editable)
+    if (fixed_price === "NO") {
+        row_data[2] = formatMoney(price);
+    }
+    // Index 3: VAT (update with new calculated VAT)
+    row_data[3] = formatMoney(newVat);
+    // Index 4: Amount (update with new calculated amount)
+    row_data[4] = formatMoney(newAmount);
 
     cart[index] = row_data;
     discount();
@@ -552,7 +523,7 @@ function discount() {
 
                 // --- Normalize existing qty to a number (remove commas and any "<Max" html)
                 let existingQtyRaw = String(
-                    reducedCart[value[6]][1] || "0"
+                    reducedCart[value[6]][1] || "0",
                 ).split("<")[0];
                 let existingQty =
                     Number(existingQtyRaw.replace(/\,/g, "")) || 0;
@@ -571,7 +542,8 @@ function discount() {
                 }
 
                 // Sum quantities (numeric addition, no string concat)
-                let newQty = Math.round((existingQty + incomingQty) * 100) / 100;
+                let newQty =
+                    Math.round((existingQty + incomingQty) * 100) / 100;
 
                 // Now set newQty and recompute price/vat/amount using p (unit price)
                 if ($("#quotes_page").length) {
@@ -579,7 +551,7 @@ function discount() {
                     reducedCart[value[6]][2] = formatMoney(p);
                     reducedCart[value[6]][3] = formatMoney(p * newQty * tax);
                     reducedCart[value[6]][4] = formatMoney(
-                        p * newQty * (1 + tax)
+                        p * newQty * (1 + tax),
                     );
                     reducedCart[value[6]][1] = numberWithCommas(newQty);
                 } else if (newQty > reducedCart[value[5]][4]) {
@@ -590,17 +562,17 @@ function discount() {
                     // use stockQty for calculations
                     reducedCart[value[6]][2] = formatMoney(p);
                     reducedCart[value[6]][3] = formatMoney(
-                        p * reducedCart[value[6]][5] * tax
+                        p * reducedCart[value[6]][5] * tax,
                     );
                     reducedCart[value[6]][4] = formatMoney(
-                        p * reducedCart[value[6]][5] * (1 + tax)
+                        p * reducedCart[value[6]][5] * (1 + tax),
                     );
                 } else {
                     reducedCart[value[6]][1] = numberWithCommas(newQty);
                     reducedCart[value[6]][2] = formatMoney(p);
                     reducedCart[value[6]][3] = formatMoney(p * newQty * tax);
                     reducedCart[value[6]][4] = formatMoney(
-                        p * newQty * (1 + tax)
+                        p * newQty * (1 + tax),
                     );
                 }
 
@@ -609,22 +581,22 @@ function discount() {
                     //Qoutes has no maximum quantity
                     reducedCart[value[6]][2] = formatMoney(p);
                     reducedCart[value[6]][3] = formatMoney(
-                        p * reducedCart[value[6]][1] * tax
+                        p * reducedCart[value[6]][1] * tax,
                     );
                     reducedCart[value[6]][4] = formatMoney(
-                        p * reducedCart[value[6]][1] * (1 + tax)
+                        p * reducedCart[value[6]][1] * (1 + tax),
                     );
                     reducedCart[value[6]][1] = numberWithCommas(
-                        reducedCart[value[6]][1]
+                        reducedCart[value[6]][1],
                     );
                 } else if (dif < 0) {
                     reducedCart[value[6]][1] = reducedCart[value[6]][5];
                     reducedCart[value[6]][2] = formatMoney(p);
                     reducedCart[value[6]][3] = formatMoney(
-                        p * reducedCart[value[6]][5] * tax
+                        p * reducedCart[value[6]][5] * tax,
                     );
                     reducedCart[value[6]][4] = formatMoney(
-                        p * reducedCart[value[6]][5] * (1 + tax)
+                        p * reducedCart[value[6]][5] * (1 + tax),
                     );
                     reducedCart[value[6]][1] =
                         numberWithCommas(reducedCart[value[6]][1]) +
@@ -633,13 +605,13 @@ function discount() {
                 } else {
                     reducedCart[value[6]][2] = formatMoney(p);
                     reducedCart[value[6]][3] = formatMoney(
-                        p * reducedCart[value[6]][1] * tax
+                        p * reducedCart[value[6]][1] * tax,
                     );
                     reducedCart[value[6]][4] = formatMoney(
-                        p * reducedCart[value[6]][1] * (1 + tax)
+                        p * reducedCart[value[6]][1] * (1 + tax),
                     );
                     reducedCart[value[6]][1] = numberWithCommas(
-                        reducedCart[value[6]][1]
+                        reducedCart[value[6]][1],
                     );
                 } //replace the quantity with max qty on stock
             }
@@ -653,7 +625,7 @@ function discount() {
 
             bought_product.price = Number(item[2].toString().replace(/,/g, ""));
             bought_product.amount = Number(
-                item[4].toString().replace(/,/g, "")
+                item[4].toString().replace(/,/g, ""),
             );
             bought_product.product_id = item[6];
             bought_product.custom_product_name = item[0];
@@ -857,7 +829,11 @@ function saleReturn(items, sale_id) {
             item_data.push(
                 " <button class='btn btn-sm btn-rounded btn-success' disabled>Returned</button>",
             );
-        } else if (item.status === 5 || item.status === "5" || item.has_return) {
+        } else if (
+            item.status === 5 ||
+            item.status === "5" ||
+            item.has_return
+        ) {
             // Already returned (partial or has any return) - no more returns allowed
             item_data.push(
                 " <button class='btn btn-sm btn-rounded btn-success' disabled>Returned</button>",
@@ -953,7 +929,9 @@ $("#items_table tbody").on("click", "#rtn_btn", function () {
             document.getElementById("qty_error").style.display = "block";
             $("#sale-return")
                 .find(".modal-body #qty_error")
-                .text("Maximum quantity is " + numberWithCommas(maxReturnableQty));
+                .text(
+                    "Maximum quantity is " + numberWithCommas(maxReturnableQty),
+                );
         } else {
             document.getElementById("qty_error").style.display = "none";
             $("#save_btn").prop("disabled", false);
@@ -1343,10 +1321,7 @@ function populateProducts(optionsList) {
             $sel.append(
                 $("<option>", {
                     value: p.id,
-                    text: p.name +
-                        " - [QoH - " +
-                        formattedQty +
-                        "]",
+                    text: p.name + " - [QoH - " + formattedQty + "]",
                     "data-name": p.name,
                     "data-price": p.price,
                     "data-quantity": p.quantity,
@@ -1678,16 +1653,16 @@ function isNumberKey(evt, obj) {
 }
 
 function numberWithCommas(num) {
-    if (num === null || num === undefined || num === '') return '0';
-    var n = parseFloat(String(num).replace(/,/g, ''));
-    if (isNaN(n)) return '0';
+    if (num === null || num === undefined || num === "") return "0";
+    var n = parseFloat(String(num).replace(/,/g, ""));
+    if (isNaN(n)) return "0";
     // Round to 2 decimal places to avoid floating-point artifacts
     n = Math.round(n * 100) / 100;
-    var parts = n.toString().split('.');
-    var intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    var parts = n.toString().split(".");
+    var intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     if (parts.length > 1) {
-        var decPart = parts[1].replace(/0+$/, '');
-        return decPart ? intPart + '.' + decPart : intPart;
+        var decPart = parts[1].replace(/0+$/, "");
+        return decPart ? intPart + "." + decPart : intPart;
     }
     return intPart;
 }
