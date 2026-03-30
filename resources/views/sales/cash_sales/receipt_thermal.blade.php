@@ -154,19 +154,17 @@ function customRound($num) {
                             <td align="left">Sub Total</td>
                             <td align="right">{{customRound($dat[0]['grand_total'] - $dat[0]['total_vat'] + $dat[0]['discount_total'])}}</td>
                         </tr>
-                        @if($dat[0]['discount_total'] > 0)
                             <tr>
                                 <td align="left">Discount</td>
                                 <td align="right">{{customRound($dat[0]['discount_total'])}}</td>
                             </tr>
-                        @endif
                         <tr>
                             <td align="left">VAT</td>
                             <td align="right">{{customRound($dat[0]['total_vat'])}}</td>
                         </tr>
                         <tr>
-                            <td align="left"><b>Total</b></td>
-                            <td align="right"><b>{{customRound($dat[0]['grand_total'])}}</b></td>
+                            <td align="left"><b Style="font-size: 13px;">Total</b></td>
+                            <td align="right"><b Style="font-size: 13px;">{{customRound($dat[0]['grand_total'])}}</b></td>
                         </tr>
                 </tbody>
             </table>
