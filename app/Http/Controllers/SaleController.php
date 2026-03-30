@@ -857,14 +857,16 @@ class SaleController extends Controller
 
 
             if ($receipt_size == '58mm Thermal Paper' && $page == 1) {
+                $show_description = Setting::where('id', 128)->value('value') ?? 'YES';
                 $pdf = PDF::loadView('sales.cash_sales.receipt_thermal',
-                    compact('data', 'pharmacy', 'page', 'generalSettings'))
-                    ->setPaper([0, 0, 163, 600], '');
+                    compact('data', 'pharmacy', 'page', 'generalSettings', 'show_description'))
+                    ->setPaper([0, 0, 136, 600], '');
                 return $pdf->stream($request->reprint_receipt . '.pdf');
             } else if ($receipt_size == '58mm Thermal Paper' && $page == -1) {
+                $show_description = Setting::where('id', 128)->value('value') ?? 'YES';
                 $pdf = PDF::loadView('sales.cash_sales.credit_receipt_thermal',
-                    compact('data', 'pharmacy', 'page', 'generalSettings'))
-                    ->setPaper([0, 0, 163, 600], '');
+                    compact('data', 'pharmacy', 'page', 'generalSettings', 'show_description'))
+                    ->setPaper([0, 0, 136, 600], '');
                 return $pdf->stream($request->reprint_receipt . '.pdf');
             }else if ($receipt_size == 'A4 / Letter' && $page == 1) {
                 $pdf = PDF::loadView('sales.cash_sales.receipt_A4',
@@ -1236,13 +1238,14 @@ class SaleController extends Controller
         $receipt_no = !empty($data) ? array_key_first($data) : 'receipt';
 
         if ($receipt_size === '58mm Thermal Paper') {
+            $show_description = Setting::where('id', 128)->value('value') ?? 'YES';
             if ($page === "-1" || $page == -1) {
                 $pdf = PDF::loadView('sales.cash_sales.credit_receipt_thermal',
-                    compact('data', 'pharmacy', 'page', 'generalSettings'))
+                    compact('data', 'pharmacy', 'page', 'generalSettings', 'show_description'))
                     ->setPaper([0, 0, 163, 600], '');
             } else {
                 $pdf = PDF::loadView('sales.cash_sales.receipt_thermal',
-                    compact('data', 'pharmacy', 'page', 'generalSettings'))
+                    compact('data', 'pharmacy', 'page', 'generalSettings', 'show_description'))
                     ->setPaper([0, 0, 163, 600], '');
             }
 

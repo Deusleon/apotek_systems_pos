@@ -27,7 +27,7 @@ class ConfigurationsController extends Controller
         }
         session()->put( 'store', $default_store_id );
 
-        $configurations = Setting::orderBy( 'display_number', 'ASC' )->get();
+        $configurations = Setting::orderBy( 'id', 'ASC' )->get();
         $store = Store::all();
         $price_categories = PriceCategory::all();
 

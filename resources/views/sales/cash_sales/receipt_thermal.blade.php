@@ -105,9 +105,16 @@ function customRound($num) {
     <div style="width: 100%;">
         <h3><b>CASH RECEIPT</b></h3>
         <h4>{{$pharmacy['name']}}</h4>
+        @if($show_description == 'YES')
         <h5>{{$pharmacy['address']}}</h5>
+        @endif
         <h5>{{$pharmacy['phone']}}</h5>
+        @if($show_description == 'YES')
         <h5>TIN: {{$pharmacy['tin_number'] ?? 'N/A'}}</h5>
+        @endif
+        @if($show_description == 'NO')
+        <h5>Printed On: {{date('Y-m-d H:i:s')}}</h5>
+        @endif
         {{-- @dd($data) --}}
         @php
             $subTotal = 0;
@@ -119,12 +126,14 @@ function customRound($num) {
             <table>
                 <tr>
                     <td>
+                        @if($show_description == 'YES')
                         <span>Receipt #:</span> {{$datas}}<br>
                         <span>Sales Date:</span> {{date('Y-m-d', strtotime($dat[0]['created_at']))}}<br>
                         <span>Customer:</span> {{$dat[0]['customer'] ?? 'CASH'}}<br>
                         <span>TIN:</span> {{$dat[0]['customer_tin'] ?? 'N/A'}}<br>
                         <span>VRN:</span> {{$pharmacy['vrn_number'] ?? 'N/A'}}<br>
                         <span>Printed On:</span> {{date('Y-m-d H:i:s')}}
+                        @endif
                     </td>
                 </tr>
             </table>
@@ -133,7 +142,9 @@ function customRound($num) {
                 <thead>
                     <tr>
                         <th align="left" style="width: ;">Description</th>
+                        @if($show_description == 'YES')
                         <th align="center" style="width: 15%;">Qty</th>
+                        @endif
                         <th align="right" style="width: 35%;">Amount</th>
                     </tr>
                 </thead>
@@ -141,7 +152,9 @@ function customRound($num) {
                     @foreach($dat as $item)
                         <tr>
                             <td>{{$item['name']}} {{$item['brand'] ?? ''}} {{$item['pack_size'] ?? ''}}{{$item['sales_uom'] ?? ''}}</td>
+                            @if($show_description == 'YES')
                             <td align="center">{{smartFormat($item['quantity'])}}</td>
+                            @endif
                             <td align="right">{{customRound($item['price'] * $item['quantity'])}}</td>
                         </tr>
                     @endforeach
@@ -158,10 +171,12 @@ function customRound($num) {
                                 <td align="left">Discount</td>
                                 <td align="right">{{customRound($dat[0]['discount_total'])}}</td>
                             </tr>
+                        @if($show_description == 'YES')
                         <tr>
                             <td align="left">VAT</td>
                             <td align="right">{{customRound($dat[0]['total_vat'])}}</td>
                         </tr>
+                        @endif
                         <tr>
                             <td align="left"><b Style="font-size: 13px;">Total</b></td>
                             <td align="right"><b Style="font-size: 13px;">{{customRound($dat[0]['grand_total'])}}</b></td>
@@ -169,8 +184,10 @@ function customRound($num) {
                 </tbody>
             </table>
             <hr>
+            @if($show_description == 'YES')
             <h5>Issued By: {{$dat[0]['sold_by']}}</h5>
             <h5 style="font-style: italic;">{{$pharmacy['slogan']}}</h5>
+            @endif
         @endforeach
     </div>
 </body>

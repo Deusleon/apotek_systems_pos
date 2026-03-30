@@ -310,6 +310,9 @@
                 case 127:
                     document.getElementById("formInput").innerHTML = '<select  class="js-example-basic-single form-control"name="formdata" id="product_details_option"><option value="Normal">Normal</option><option value="Detailed">Detailed</option></select>';
                     break;
+                case 128:
+                    document.getElementById("formInput").innerHTML = '<select  class="js-example-basic-single form-control"name="formdata" id="show_description_58mm"><option value="YES">YES</option><option value="NO">NO</option></select>';
+                    break;
                 default:
                 // code block
             }
@@ -368,6 +371,10 @@
 
             if ($('#product_details_option').length) {
                 document.getElementById('product_details_option').value = data[2] || 'Detailed';
+            }
+
+            if ($('#show_description_58mm').length) {
+                document.getElementById('show_description_58mm').value = data[2];
             }
 
         });
