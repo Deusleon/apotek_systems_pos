@@ -38,6 +38,10 @@ class SaleQuoteController extends Controller {
         $enable_discount = Setting::where( 'id', 111 )->value( 'value' );
         $fixed_price = Setting::where('id', 124)->value('value');
 
+        // QZ Tray Silent Print Settings
+        $printer_name = Setting::where('id', 130)->value('value') ?? '';
+        $silent_print = Setting::where('id', 131)->value('value') ?? 'NO';
+
         /*get default Price Category*/
         $default_sale_type = Setting::where( 'id', 125 )->value( 'value' );
         $sale_type = PriceCategory::where( 'name', $default_sale_type )->first();
@@ -65,7 +69,9 @@ class SaleQuoteController extends Controller {
         ->with( compact( 'default_sale_type' ) )
         ->with( compact( 'current_stock' ) )
         ->with( compact( 'enable_discount' ) )
-        ->with( compact( 'fixed_price' ) );
+        ->with( compact( 'fixed_price' ) )
+        ->with( compact( 'printer_name' ) )
+        ->with( compact( 'silent_print' ) );
     }
     public function orderList() {
         $store_id = current_store_id();
@@ -134,9 +140,17 @@ class SaleQuoteController extends Controller {
     public function storeQuote( Request $request ) {
         if ( $request->ajax() ) {
             $this->store( $request );
-            return response()->json( [
-                'redirect_to' => route( 'getQuoteReceipt' )
-            ] );
+            $printReceipt = Setting::where( 'id', 117 )->value( 'value' );
+            if ( $printReceipt === 'YES' ) {
+                return response()->json( [
+                    'redirect_to' => route( 'getQuoteReceipt' )
+                ] );
+            } else {
+                return response()->json( [
+                    'status' => 'success',
+                    'message'=>'Sales Order recorded successfully'
+                ] );
+            }
         }
     }
     //Edit Sales Order
