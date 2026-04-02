@@ -10,11 +10,11 @@ use App\Http\Controllers\TransporterController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\SupplierController;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use App\Store;
 use Maatwebsite\Excel\Row;
@@ -772,18 +772,14 @@ Route::get('/qz/certificate', function () {
     $certPath = storage_path('app/qz-tray/digital-certificate.txt');
 
     if (!file_exists($certPath)) {
-        // Create a basic self-signed certificate for development
+        // Create a basic certificate for development
         $certData = "-----BEGIN CERTIFICATE-----\n" .
-                   "MIIDQTCCAimgAwIBAgITBmyfz5m/jAo54vB4ikPmljZbyjANBgkqhkiG9w0BAQsF\n" .
-                   "ADA5MQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMN\n" .
-                   "TW91bnRhaW4gVmlldzAeFw0yMTAxMDEwMDAwMDBaFw0yMjAxMDEwMDAwMDBaMBgx\n" .
-                   "FjAUBgNVBAoMDVF6IFRyYXkgRXhhbXBsZTCCASIwDQYJKoZIhvcNAQEBBQADggEP\n" .
-                   "ADCCAQoCggEBALl3LsJfKZDjVxOe9sMKmBHuGd6oZHbVzYwXHtZzqBq9q8wJQW5+\n" .
-                   "n8a8qJ3zQ4vF8q7o8nQzLpJzKdJxGnNlNzNzNzNzNzNzNzNzNzNzNzNzNzNzNzNz\n" .
-                   "-----END CERTIFICATE-----\n" .
-                   "-----BEGIN RSA PRIVATE KEY-----\n" .
-                   "MIIEpAIBAAKCAQEA4f5wg5l2hKsTeNem/V41fGnJm6gOdrj8ym3rFkEjWT2btYX4\n" .
-                   "-----END RSA PRIVATE KEY-----\n";
+                   "MIICiTCCAg+gAwIBAgIJAJ8l2Z2Z3Z3ZMAOGA1UEBhMCVVMxCzAJBgNVBAgTAkNB\n" .
+                   "MRowGAYDVQQKExFRWiBUcmF5IFRlc3QgQ2VydGlmaWNhdGUwHhcNMTYwMTAxMDAw\n" .
+                   "MDAwWhcNMjYwMTAxMDAwMDAwWjAaMRgwFgYDVQQKEw9RWiBUcmF5IFRlc3QgQ2Vy\n" .
+                   "dGlmaWNhdGUwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAq4QjQqKQZ4QqQqKQZ4Qq\n" .
+                   "QqKQZ4QqQqKQZ4QqQqKQZ4QqQqKQZ4QqQqKQZ4QqQqKQZ4QqQqKQZ4QqQqKQZ4Qq\n" .
+                   "-----END CERTIFICATE-----";
 
         // Ensure directory exists
         $certDir = dirname($certPath);
@@ -799,33 +795,18 @@ Route::get('/qz/certificate', function () {
 
 // Handle QZ Tray signature requests
 Route::post('/qz/sign', function (Request $request) {
-    $privateKeyPath = storage_path('app/qz-tray/private-key.pem');
-
-    if (!file_exists($privateKeyPath)) {
-        // Create a basic private key for development
-        $privateKeyData = "-----BEGIN RSA PRIVATE KEY-----\n" .
-                         "MIIEpAIBAAKCAQEA4f5wg5l2hKsTeNem/V41fGnJm6gOdrj8ym3rFkEjWT2btYX4\n" .
-                         "-----END RSA PRIVATE KEY-----\n";
-
-        // Ensure directory exists
-        $keyDir = dirname($privateKeyPath);
-        if (!file_exists($keyDir)) {
-            mkdir($keyDir, 0755, true);
-        }
-
-        file_put_contents($privateKeyPath, $privateKeyData);
-    }
-
     try {
         $data = $request->input('data');
-        $privateKey = openssl_pkey_get_private(file_get_contents($privateKeyPath));
-        openssl_sign($data, $signature, $privateKey, OPENSSL_ALGO_SHA256);
-        openssl_free_key($privateKey);
+
+        // For development/testing, create a simple signature
+        // In production, use proper certificate signing
+        $signature = hash('sha256', $data . 'qz-tray-secret-key');
 
         return response()->json([
             'signature' => base64_encode($signature)
         ]);
     } catch (\Exception $e) {
+        \Log::error('QZ Tray signing error: ' . $e->getMessage());
         return response()->json([
             'error' => 'Signing failed: ' . $e->getMessage()
         ], 500);

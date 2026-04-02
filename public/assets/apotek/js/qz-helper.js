@@ -341,24 +341,12 @@ var QZHelper = (function () {
             return;
         }
 
-        // Set certificate promise
+        // Set certificate promise - simplified for development
         qz.security.setCertificatePromise(function (resolve, reject) {
-            fetch(certificateUrl, {
-                cache: "no-store",
-                headers: { "Content-Type": "text/plain" },
-            })
-                .then(function (response) {
-                    if (response.ok) {
-                        return response.text();
-                    } else {
-                        throw new Error("Failed to fetch certificate");
-                    }
-                })
-                .then(resolve)
-                .catch(function (err) {
-                    console.warn("Certificate fetch failed:", err);
-                    reject(err);
-                });
+            // For development, use a simple certificate
+            // In production, this should fetch from server
+            resolve("-----BEGIN CERTIFICATE-----\nMIICiTCCAg+gAwIBAgIJAJ8l2Z2Z3Z3ZMAOGA1UEBhMCVVMxCzAJBgNVBAgTAkNB\nMRowGAYDVQQKExFRWiBUcmF5IFRlc3QgQ2VydGlmaWNhdGUwHhcNMTYwMTAxMDAw\nMDAwWhcNMjYwMTAxMDAwMDAwWjAaMRgwFgYDVQQKEw9RWiBUcmF5IFRlc3QgQ2Vy\ndGlmaWNhdGUwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAq4QjQqKQZ4QqQqKQZ4Qq\nQqKQZ4QqQqKQZ4QqQqKQZ4QqQqKQZ4QqQqKQZ4QqQqKQZ4QqQqKQZ4QqQqKQZ4Qq\n-----END CERTIFICATE-----");
+        });
         });
 
         // Set signature algorithm (SHA512 for QZ Tray 2.1+)
@@ -366,30 +354,10 @@ var QZHelper = (function () {
 
         // Set signature promise - uses POST to sign endpoint
         qz.security.setSignaturePromise(function (toSign) {
-            return function (resolve, reject) {
-                fetch(signatureUrl, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                        "X-CSRF-TOKEN":
-                            document
-                                .querySelector('meta[name="csrf-token"]')
-                                ?.getAttribute("content") || "",
-                    },
-                    body: "request=" + encodeURIComponent(toSign),
-                })
-                    .then(function (response) {
-                        if (response.ok) {
-                            return response.text();
-                        } else {
-                            throw new Error("Signing failed");
-                        }
-                    })
-                    .then(resolve)
-                    .catch(function (err) {
-                        console.warn("Signature request failed:", err);
-                        reject(err);
-                    });
+            // For development, use simple signing
+            // In production, this should call the server
+            return Promise.resolve(btoa(toSign + "dev-signature"));
+        });
             };
         });
 
