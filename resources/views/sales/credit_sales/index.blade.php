@@ -585,6 +585,11 @@
 
     {{-- For credit tracking --}}
     <script type="text/javascript">
+
+        // Set QZ Tray configuration variables
+        window.printer_name = '{{ $printer_name ?? "" }}';
+        window.silent_print = '{{ $silent_print ?? "NO" }}';
+
         $(document).ready(function () {
             setTimeout(function () { $('#credit_barcode_input').focus(); }, 150);
             var start = moment();

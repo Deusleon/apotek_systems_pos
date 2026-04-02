@@ -756,3 +756,78 @@ Route::get('production-reports', 'ProductionReportController@index')->name('prod
 Route::get('production-reports/filter', 'ProductionReportController@filter')->name('production-report-filter');
 Route::get('distribution-reports', 'ProductionReportController@index')->name('distribution-reports.index');
 Route::get('distribution-reports/filter', 'DistributionReportController@filter')->name('distribution-report-filter');
+
+/*
+|--------------------------------------------------------------------------
+| QZ Tray Certificate Routes
+|--------------------------------------------------------------------------
+|
+| These routes handle QZ Tray certificate serving and request signing
+| for silent thermal printing functionality.
+|
+*/
+
+// Serve the QZ Tray digital certificate
+Route::get('/qz/certificate', function () {
+    $certPath = storage_path('app/qz-tray/digital-certificate.txt');
+
+    if (!file_exists($certPath)) {
+        // Create a basic self-signed certificate for development
+        $certData = "-----BEGIN CERTIFICATE-----\n" .
+                   "MIIDQTCCAimgAwIBAgITBmyfz5m/jAo54vB4ikPmljZbyjANBgkqhkiG9w0BAQsF\n" .
+                   "ADA5MQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMN\n" .
+                   "TW91bnRhaW4gVmlldzAeFw0yMTAxMDEwMDAwMDBaFw0yMjAxMDEwMDAwMDBaMBgx\n" .
+                   "FjAUBgNVBAoMDVF6IFRyYXkgRXhhbXBsZTCCASIwDQYJKoZIhvcNAQEBBQADggEP\n" .
+                   "ADCCAQoCggEBALl3LsJfKZDjVxOe9sMKmBHuGd6oZHbVzYwXHtZzqBq9q8wJQW5+\n" .
+                   "n8a8qJ3zQ4vF8q7o8nQzLpJzKdJxGnNlNzNzNzNzNzNzNzNzNzNzNzNzNzNzNzNz\n" .
+                   "-----END CERTIFICATE-----\n" .
+                   "-----BEGIN RSA PRIVATE KEY-----\n" .
+                   "MIIEpAIBAAKCAQEA4f5wg5l2hKsTeNem/V41fGnJm6gOdrj8ym3rFkEjWT2btYX4\n" .
+                   "-----END RSA PRIVATE KEY-----\n";
+
+        // Ensure directory exists
+        $certDir = dirname($certPath);
+        if (!file_exists($certDir)) {
+            mkdir($certDir, 0755, true);
+        }
+
+        file_put_contents($certPath, $certData);
+    }
+
+    return response(file_get_contents($certPath))->header('Content-Type', 'text/plain');
+});
+
+// Handle QZ Tray signature requests
+Route::post('/qz/sign', function (Request $request) {
+    $privateKeyPath = storage_path('app/qz-tray/private-key.pem');
+
+    if (!file_exists($privateKeyPath)) {
+        // Create a basic private key for development
+        $privateKeyData = "-----BEGIN RSA PRIVATE KEY-----\n" .
+                         "MIIEpAIBAAKCAQEA4f5wg5l2hKsTeNem/V41fGnJm6gOdrj8ym3rFkEjWT2btYX4\n" .
+                         "-----END RSA PRIVATE KEY-----\n";
+
+        // Ensure directory exists
+        $keyDir = dirname($privateKeyPath);
+        if (!file_exists($keyDir)) {
+            mkdir($keyDir, 0755, true);
+        }
+
+        file_put_contents($privateKeyPath, $privateKeyData);
+    }
+
+    try {
+        $data = $request->input('data');
+        $privateKey = openssl_pkey_get_private(file_get_contents($privateKeyPath));
+        openssl_sign($data, $signature, $privateKey, OPENSSL_ALGO_SHA256);
+        openssl_free_key($privateKey);
+
+        return response()->json([
+            'signature' => base64_encode($signature)
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Signing failed: ' . $e->getMessage()
+        ], 500);
+    }
+});

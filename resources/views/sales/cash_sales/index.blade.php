@@ -355,6 +355,10 @@
     </script>
     <script type="text/javascript">
 
+        // Set QZ Tray configuration variables
+        window.printer_name = '{{ $printer_name ?? "" }}';
+        window.silent_print = '{{ $silent_print ?? "NO" }}';
+
         // Connect to QZ Tray when page loads
         // qz.websocket.connect().then(function() {
         //     console.log("Connected to QZ Tray");
