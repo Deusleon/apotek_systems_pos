@@ -287,8 +287,8 @@
                 data: 'quantity',
                 render: function(data, type, row) {
                     if (type === 'display') {
-                        // Display with 2 decimal places
-                        return Number(data).toFixed(2);
+                        // Preserve exact user entries without forcing decimal places
+                        return Number(data).toString();
                     }
                     return data;
                 }
@@ -328,13 +328,13 @@
     function saveQuantityChange(event, rowIndex) {
         const row = order_table.row(rowIndex).node();
         const inputField = row.querySelector('input');
-        // Round to 2 decimal places
-        const newQuantity = Math.round(parseFloat(inputField.value) * 100) / 100;
-        
+        // Preserve exact user input without rounding
+        const newQuantity = parseFloat(inputField.value);
+
         if (!isNaN(newQuantity) && newQuantity > 0) {
             const rowData = order_table.row(rowIndex).data();
             cart.editQuantity(rowData, newQuantity);
-            
+
             // Change back to Edit button
             const saveButton = row.querySelector('.btn-success');
             saveButton.textContent = 'Edit';
@@ -345,8 +345,8 @@
             // If invalid quantity, revert back to original value
             const rowData = order_table.row(rowIndex).data();
             const quantityCell = row.cells[1];
-            quantityCell.innerHTML = rowData.quantity.toLocaleString();
-            
+            quantityCell.innerHTML = rowData.quantity.toString();
+
             // Revert button back to Edit
             const saveButton = row.querySelector('.btn-success');
             saveButton.textContent = 'Edit';
