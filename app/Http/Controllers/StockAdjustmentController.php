@@ -32,6 +32,7 @@ class StockAdjustmentController extends Controller
         $adjustments = StockAdjustmentLog::join('inv_current_stock', 'stock_adjustment_logs.current_stock_id', '=', 'inv_current_stock.id')
         ->join('inv_products', 'inv_current_stock.product_id', '=', 'inv_products.id')
         ->join('inv_categories', 'inv_products.category_id', '=', 'inv_categories.id')
+        ->where('inv_products.status', 1)
         ->select(
             'stock_adjustment_logs.current_stock_id',
             'inv_products.id as product_id',
@@ -84,12 +85,13 @@ class StockAdjustmentController extends Controller
         $stocks = DB::table('inv_current_stock')
             ->join('inv_products','inv_current_stock.product_id','=','inv_products.id')
             ->join('inv_categories','inv_products.category_id','=','inv_categories.id')
+            ->where('inv_products.status', 1)
             ->select('inv_current_stock.id', 'inv_current_stock.product_id','inv_products.name','inv_products.sales_uom',
                 'inv_products.brand', 'inv_products.pack_size',
                 DB::raw('sum(inv_current_stock.quantity) as quantity'),
                 'inv_categories.name as cat_name')
             ->where('inv_current_stock.store_id',$store_id)
-            ->groupBy(['inv_current_stock.product_id', 'inv_products.name', 
+            ->groupBy(['inv_current_stock.product_id', 'inv_products.name',
                 'inv_products.brand', 'inv_products.pack_size', 'inv_categories.name'])
             ->havingRaw(DB::raw('sum(quantity) > 0'))
             ->get();
@@ -97,12 +99,13 @@ class StockAdjustmentController extends Controller
         $allStocks = DB::table('inv_current_stock')
             ->join('inv_products','inv_current_stock.product_id','=','inv_products.id')
             ->join('inv_categories','inv_products.category_id','=','inv_categories.id')
+            ->where('inv_products.status', 1)
             ->select('inv_current_stock.id','inv_current_stock.product_id','inv_products.name','inv_products.sales_uom',
                 'inv_products.brand', 'inv_products.pack_size',
                 DB::raw('sum(inv_current_stock.quantity) as quantity'),
                 'inv_categories.name as cat_name')
             ->where('inv_current_stock.store_id',$store_id)
-            ->groupBy(['inv_current_stock.product_id', 'inv_products.name', 
+            ->groupBy(['inv_current_stock.product_id', 'inv_products.name',
                 'inv_products.brand', 'inv_products.pack_size', 'inv_categories.name'])
             ->orderBy('inv_products.id', 'desc')
             ->get();
@@ -110,6 +113,7 @@ class StockAdjustmentController extends Controller
         $detailed = DB::table('inv_current_stock')
             ->join('inv_products','inv_current_stock.product_id','=','inv_products.id')
             ->join('inv_categories','inv_products.category_id','=','inv_categories.id')
+            ->where('inv_products.status', 1)
             ->select('inv_current_stock.id', 'inv_current_stock.product_id', 'inv_products.name', 'inv_products.sales_uom', 'inv_current_stock.unit_cost',
                 'inv_products.brand', 'inv_products.pack_size', 'inv_categories.name as cat_name',
                 'inv_current_stock.quantity',
@@ -122,6 +126,7 @@ class StockAdjustmentController extends Controller
         $allDetailed = DB::table('inv_current_stock')
             ->join('inv_products','inv_current_stock.product_id','=','inv_products.id')
             ->join('inv_categories','inv_products.category_id','=','inv_categories.id')
+            ->where('inv_products.status', 1)
             ->select('inv_current_stock.id', 'inv_current_stock.product_id','inv_products.name', 'inv_products.sales_uom', 'inv_current_stock.unit_cost',
                 'inv_products.brand', 'inv_products.pack_size', 'inv_categories.name as cat_name',
                 'inv_current_stock.quantity',
@@ -134,6 +139,7 @@ class StockAdjustmentController extends Controller
         $outstock = DB::table('inv_current_stock')
             ->join('inv_products', 'inv_current_stock.product_id', '=', 'inv_products.id')
             ->join('inv_categories', 'inv_products.category_id', '=', 'inv_categories.id')
+            ->where('inv_products.status', 1)
             ->select(
                 'inv_current_stock.id',
                 'inv_current_stock.product_id',
@@ -161,6 +167,7 @@ class StockAdjustmentController extends Controller
         $outDetailed = DB::table('inv_current_stock')
             ->join('inv_products','inv_current_stock.product_id','=','inv_products.id')
             ->join('inv_categories','inv_products.category_id','=','inv_categories.id')
+            ->where('inv_products.status', 1)
             ->select('inv_current_stock.id','inv_current_stock.product_id','inv_products.name', 'inv_products.sales_uom', 'inv_current_stock.unit_cost',
                 'inv_products.brand', 'inv_products.pack_size', 'inv_categories.name as cat_name',
                 'inv_current_stock.quantity',
