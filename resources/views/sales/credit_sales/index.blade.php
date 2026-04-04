@@ -571,7 +571,9 @@
                 storeCreditSale: '{{route('credit-sales.storeCreditSale')}}',
                 filterProductByWord: '{{route('filter-product-by-word')}}',
                 getCreditSale: '{{route('getCreditSale')}}'
-            }
+            },
+            printerName: '{{ $printer_name ?? "" }}',
+            silentPrint: '{{ $silent_print ?? "NO" }}'
         };
         var canAddCreditPayment = {{ auth()->user()->checkPermission('Add Credit Payment') ? 'true' : 'false' }};
 

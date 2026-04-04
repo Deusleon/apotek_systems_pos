@@ -378,8 +378,9 @@
                 selectProducts: '{{route('selectProducts')}}',
                 storeCashSale: '{{route('cash-sales.storeCashSale')}}',
                 filterProductByWord: '{{route('filter-product-by-word')}}'
-
-            }
+            },
+            printerName: window.printer_name || '',
+            silentPrint: window.silent_print || 'NO'
         };
 
         // Load cart from localStorage on page load

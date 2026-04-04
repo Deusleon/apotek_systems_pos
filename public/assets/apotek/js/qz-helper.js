@@ -341,23 +341,58 @@ var QZHelper = (function () {
             return;
         }
 
-        // Set certificate promise - simplified for development
+        // Set certificate promise - fetches from server endpoint
         qz.security.setCertificatePromise(function (resolve, reject) {
-            // For development, use a simple certificate
-            // In production, this should fetch from server
-            resolve("-----BEGIN CERTIFICATE-----\nMIICiTCCAg+gAwIBAgIJAJ8l2Z2Z3Z3ZMAOGA1UEBhMCVVMxCzAJBgNVBAgTAkNB\nMRowGAYDVQQKExFRWiBUcmF5IFRlc3QgQ2VydGlmaWNhdGUwHhcNMTYwMTAxMDAw\nMDAwWhcNMjYwMTAxMDAwMDAwWjAaMRgwFgYDVQQKEw9RWiBUcmF5IFRlc3QgQ2Vy\ndGlmaWNhdGUwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAq4QjQqKQZ4QqQqKQZ4Qq\nQqKQZ4QqQqKQZ4QqQqKQZ4QqQqKQZ4QqQqKQZ4QqQqKQZ4QqQqKQZ4QqQqKQZ4Qq\n-----END CERTIFICATE-----");
-        });
+            fetch(certificateUrl, {
+                method: "GET",
+                headers: { Accept: "text/plain" },
+            })
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error(
+                            "Failed to fetch certificate: " + response.status,
+                        );
+                    }
+                    return response.text();
+                })
+                .then(resolve)
+                .catch(function (err) {
+                    console.error("Certificate fetch error:", err);
+                    reject(err);
+                });
         });
 
         // Set signature algorithm (SHA512 for QZ Tray 2.1+)
         qz.security.setSignatureAlgorithm("SHA512");
 
-        // Set signature promise - uses POST to sign endpoint
+        // Set signature promise - POSTs to server signing endpoint
         qz.security.setSignaturePromise(function (toSign) {
-            // For development, use simple signing
-            // In production, this should call the server
-            return Promise.resolve(btoa(toSign + "dev-signature"));
-        });
+            return function (resolve, reject) {
+                fetch(signatureUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                        "X-CSRF-TOKEN":
+                            document
+                                .querySelector('meta[name="csrf-token"]')
+                                ?.getAttribute("content") || "",
+                    },
+                    body: JSON.stringify({ request: toSign }),
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error(
+                                "Signing request failed: " + response.status,
+                            );
+                        }
+                        return response.text();
+                    })
+                    .then(resolve)
+                    .catch(function (err) {
+                        console.error("Signature error:", err);
+                        reject(err);
+                    });
             };
         });
 

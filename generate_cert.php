@@ -1,14 +1,15 @@
 <?php
-// Generate a simple working certificate for QZ Tray
+// Generate a working certificate for QZ Tray
 $config = [
-    "digest_alg" => "sha256",
-    "private_key_bits" => 1024, // Smaller key for simplicity
+    "digest_alg" => "sha512",
+    "private_key_bits" => 2048,
     "private_key_type" => OPENSSL_KEYTYPE_RSA,
 ];
 
 $dn = [
-    "countryName" => "US",
-    "commonName" => "localhost",
+    "countryName" => "TZ",
+    "commonName" => "Apotek POS",
+    "organizationName" => "Apotek Systems",
 ];
 
 // Generate private key
@@ -23,7 +24,7 @@ if (!$csr) {
     die("Failed to generate CSR: " . openssl_error_string() . "\n");
 }
 
-$cert = openssl_csr_sign($csr, null, $privkey, 365, $config);
+$cert = openssl_csr_sign($csr, null, $privkey, 3650, $config);
 if (!$cert) {
     die("Failed to generate certificate: " . openssl_error_string() . "\n");
 }
@@ -49,11 +50,11 @@ file_put_contents("$certDir/digital-certificate.txt", $certout);
 
 echo "Certificate and private key generated successfully!\n";
 
-// Test signing
+// Test signing with SHA512 (matching QZ Tray signing endpoint)
 $data = 'test';
 $signature = '';
-if (openssl_sign($data, $signature, $privkey, OPENSSL_ALGO_SHA256)) {
-    echo "Test signing successful!\n";
+if (openssl_sign($data, $signature, $privkey, OPENSSL_ALGO_SHA512)) {
+    echo "Test signing (SHA512) successful!\n";
 } else {
     echo "Test signing failed: " . openssl_error_string() . "\n";
 }
