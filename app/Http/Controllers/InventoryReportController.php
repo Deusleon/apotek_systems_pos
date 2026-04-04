@@ -449,6 +449,7 @@ class InventoryReportController extends Controller
         $query = CurrentStock::with(['product', 'store'])
             ->join('inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id')
             ->join('inv_categories', 'inv_categories.id', '=', 'inv_products.category_id')
+            ->where('inv_products.status', 1)
             ->select(
                 'inv_current_stock.product_id',
                 'inv_current_stock.store_id',
@@ -499,6 +500,7 @@ class InventoryReportController extends Controller
         $query = CurrentStock::with(['product', 'store'])
             ->join('inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id')
             ->join('inv_categories', 'inv_categories.id', '=', 'inv_products.category_id')
+            ->where('inv_products.status', 1)
             ->select(
                 'inv_current_stock.product_id',
                 'inv_current_stock.store_id',
@@ -566,6 +568,7 @@ class InventoryReportController extends Controller
         }
         $query = CurrentStock::join('inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id')
             ->join('inv_categories', 'inv_categories.id', '=', 'inv_products.category_id')
+            ->where('inv_products.status', 1)
             ->select(
                 'inv_current_stock.product_id',
                 'inv_current_stock.store_id',
@@ -628,6 +631,7 @@ class InventoryReportController extends Controller
             if (!is_all_store()) {
                 if ($category != null) {
                     $products = Product::join('inv_current_stock', 'inv_current_stock.product_id', '=', 'inv_products.id')
+                                ->where('inv_products.status', 1)
                                 ->where('category_id', $category)
                                 ->where('inv_current_stock.store_id', $store_id)
                                 ->select('inv_products.*') // Only select needed columns
@@ -645,6 +649,7 @@ class InventoryReportController extends Controller
                                 });
                 } else {
                     $products = Product::join('inv_current_stock', 'inv_current_stock.product_id', '=', 'inv_products.id')
+                                ->where('inv_products.status', 1)
                                 ->where('inv_current_stock.store_id', $store_id)
                                 ->select('inv_products.*')
                                 ->chunk(500, function($chunk) use (&$results_data) {
@@ -662,7 +667,8 @@ class InventoryReportController extends Controller
                 }
             } else {
                 if ($category != null) {
-                    Product::where('category_id', $category)
+                    Product::where('status', 1)
+                          ->where('category_id', $category)
                           ->select('id', 'name', 'brand', 'pack_size', 'sales_uom', 'category_id')
                           ->chunk(1000, function($chunk) use (&$results_data) {
                               foreach ($chunk as $product) {
@@ -677,7 +683,8 @@ class InventoryReportController extends Controller
                               }
                           });
                 } else {
-                    Product::select('id', 'name', 'brand', 'pack_size', 'sales_uom', 'category_id')
+                    Product::where('status', 1)
+                          ->select('id', 'name', 'brand', 'pack_size', 'sales_uom', 'category_id')
                           ->chunk(1000, function($chunk) use (&$results_data) {
                               foreach ($chunk as $product) {
                                   $results_data[] = [
@@ -1107,6 +1114,7 @@ class InventoryReportController extends Controller
     // Main query: products LEFT JOIN aggregates
     // ----------------------------------------------
     $query = DB::table('inv_products as p')
+        ->where('p.status', 1)
         ->joinSub($salesSub, 's', 's.product_id', '=', 'p.id')
         ->leftJoinSub($stockSub, 'cs', 'cs.product_id', '=', 'p.id')
         ->select(
@@ -1172,6 +1180,7 @@ class InventoryReportController extends Controller
     // --------------------------------------------------
     $query = DB::table('inv_current_stock as cs')
         ->join('inv_products as p', 'p.id', '=', 'cs.product_id')
+        ->where('p.status', 1)
         ->select(
             'p.id as product_id',
             'p.name',
@@ -1449,6 +1458,7 @@ class InventoryReportController extends Controller
 
         foreach ($stocks as $stock) {
             $product = Product::select('id', 'name', 'brand', 'pack_size', 'sales_uom', 'max_quantinty')
+                ->where('status', 1)
                 ->where('id', $stock->product_id)
                 ->where('max_quantinty', '<', $stock->qty)
                 ->first();
@@ -1478,6 +1488,7 @@ class InventoryReportController extends Controller
         $stocks = $query->get();
         foreach ($stocks as $stock) {
             $product = Product::select('id', 'name', 'brand', 'pack_size', 'sales_uom', 'min_quantinty')
+                ->where('status', 1)
                 ->where('id', $stock->product_id)
                 ->where('min_quantinty', '>', $stock->qty)
                 ->first();

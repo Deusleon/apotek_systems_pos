@@ -9,6 +9,92 @@ var customer_option = document.getElementById("customers").value;
 
 var tax = Number(document.getElementById("vat").value);
 
+// QZ Tray Printer Configuration
+var config = {
+    token: window.csrf_token || "",
+    routes: {
+        selectProducts: "/sales/select-products",
+        storeCashSale: "/sales/cash-sales",
+        filterProductByWord: "/sales/sale/filter-by-word",
+    },
+    printerName: window.printer_name || "",
+    silentPrint: window.silent_print || "YES",
+};
+
+// Initialize QZ Tray connection when page loads
+$(document).ready(function () {
+    if (typeof QZHelper !== "undefined" && QZHelper.isAvailable()) {
+        QZHelper.connect()
+            .then(function () {
+                console.log("QZ Tray connected - Silent printing enabled");
+            })
+            .catch(function (err) {
+                console.warn(
+                    "QZ Tray not available. Please ensure QZ Tray is installed and running.",
+                );
+                console.warn(
+                    "Receipt will open in new window instead of silent print.",
+                );
+            });
+    }
+});
+
+/**
+ * Silent print receipt using QZ Tray
+ * Falls back to opening PDF in new window if QZ Tray is not available
+ * @param {string} pdfUrl - URL of the PDF receipt
+ */
+function silentPrintReceipt(pdfUrl) {
+    // Check if QZ Tray helper is available and configured for silent print
+    if (
+        typeof QZHelper !== "undefined" &&
+        QZHelper.isAvailable() &&
+        config.silentPrint === "YES"
+    ) {
+        // Attempt silent print via QZ Tray
+        var printerName = config.printerName || null; // Use configured printer or default
+
+        QZHelper.printPdfFromUrl(pdfUrl, printerName, {
+            // Thermal printer options
+            margins: 0,
+            scaleContent: true,
+            rasterize: true,
+            colorType: "grayscale",
+        })
+            .then(function () {
+                console.log("Receipt printed silently via QZ Tray");
+                if (typeof notify === "function") {
+                    notify(
+                        "Receipt printed successfully",
+                        "top",
+                        "right",
+                        "success",
+                    );
+                }
+            })
+            .catch(function (err) {
+                console.warn(
+                    "Silent print failed, opening in new window:",
+                    err,
+                );
+                // Fallback to opening in new window
+                window.open(pdfUrl);
+                if (typeof notify === "function") {
+                    notify(
+                        "Silent print unavailable - opened in new window",
+                        "top",
+                        "right",
+                        "info",
+                    );
+                }
+            });
+    } else {
+        // QZ Tray not available - open PDF in new window
+        console.log("QZ Tray not available, opening receipt in new window");
+        window.open(pdfUrl);
+    }
+}
+
 // if (typeof fixed_price === 'undefined') {
 let fixed_price;
 let discount_enable;
@@ -1531,9 +1617,10 @@ function saveCashSale() {
         cache: "false",
         data: form,
         success: function (response) {
-            window.open(response.redirect_to);
+            if (response.redirect_to) {
+                silentPrintReceipt(response.redirect_to);
+            }
             $("#save_btn").attr("disabled", false);
-            printReceipt(response.redirect_to);
         },
         complete: function () {
             notify("Sales recorded successfully", "top", "right", "success");

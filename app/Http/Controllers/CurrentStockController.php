@@ -30,6 +30,7 @@ class CurrentStockController extends Controller
         $stocks = DB::table('inv_current_stock')
             ->join('inv_products','inv_current_stock.product_id','=','inv_products.id')
             ->join('inv_categories','inv_products.category_id','=','inv_categories.id')
+            ->where('inv_products.status', 1)
             ->select('inv_current_stock.product_id','inv_products.name','inv_products.sales_uom',
                 'inv_products.brand', 'inv_products.pack_size',
                 DB::raw('sum(inv_current_stock.quantity) as quantity'),
@@ -38,7 +39,7 @@ class CurrentStockController extends Controller
             ->when(!is_all_store(), function ($query) use ($store_id) {
                 return $query->where('inv_current_stock.store_id', $store_id);
             })
-            ->groupBy(['inv_current_stock.product_id', 'inv_products.name', 
+            ->groupBy(['inv_current_stock.product_id', 'inv_products.name',
                 'inv_products.brand', 'inv_products.pack_size', 'inv_categories.name'])
             ->havingRaw(DB::raw('sum(quantity) > 0'))
             ->get();
@@ -46,6 +47,7 @@ class CurrentStockController extends Controller
         $allStocks = DB::table('inv_current_stock')
             ->join('inv_products','inv_current_stock.product_id','=','inv_products.id')
             ->join('inv_categories','inv_products.category_id','=','inv_categories.id')
+            ->where('inv_products.status', 1)
             ->select('inv_current_stock.id','inv_current_stock.product_id','inv_products.name','inv_products.sales_uom',
                 'inv_products.brand', 'inv_products.pack_size',
                 DB::raw('sum(inv_current_stock.quantity) as quantity'),
@@ -54,7 +56,7 @@ class CurrentStockController extends Controller
             ->when(!is_all_store(), function ($query) use ($store_id) {
                 return $query->where('inv_current_stock.store_id', $store_id);
             })
-            ->groupBy(['inv_current_stock.product_id', 'inv_products.name', 
+            ->groupBy(['inv_current_stock.product_id', 'inv_products.name',
                 'inv_products.brand', 'inv_products.pack_size', 'inv_categories.name'])
             ->orderBy('inv_products.id', 'desc')
             ->get();
@@ -62,6 +64,7 @@ class CurrentStockController extends Controller
         $detailed = DB::table('inv_current_stock')
             ->join('inv_products','inv_current_stock.product_id','=','inv_products.id')
             ->join('inv_categories','inv_products.category_id','=','inv_categories.id')
+            ->where('inv_products.status', 1)
             ->select('inv_current_stock.product_id','inv_products.name', 'inv_products.sales_uom', 'inv_current_stock.unit_cost',
                 'inv_products.brand', 'inv_products.pack_size', 'inv_categories.name as cat_name',
                 'inv_current_stock.quantity',
@@ -77,6 +80,7 @@ class CurrentStockController extends Controller
         $allDetailed = DB::table('inv_current_stock')
             ->join('inv_products','inv_current_stock.product_id','=','inv_products.id')
             ->join('inv_categories','inv_products.category_id','=','inv_categories.id')
+            ->where('inv_products.status', 1)
             ->select('inv_current_stock.id', 'inv_current_stock.product_id','inv_products.name', 'inv_products.sales_uom', 'inv_current_stock.unit_cost',
                 'inv_products.brand', 'inv_products.pack_size', 'inv_categories.name as cat_name',
                 'inv_current_stock.quantity',
@@ -92,6 +96,7 @@ class CurrentStockController extends Controller
         $outstock = DB::table('inv_current_stock')
             ->join('inv_products', 'inv_current_stock.product_id', '=', 'inv_products.id')
             ->join('inv_categories', 'inv_products.category_id', '=', 'inv_categories.id')
+            ->where('inv_products.status', 1)
             ->select(
                 'inv_current_stock.id',
                 'inv_current_stock.product_id',
@@ -122,6 +127,7 @@ class CurrentStockController extends Controller
         $outDetailed = DB::table('inv_current_stock')
             ->join('inv_products','inv_current_stock.product_id','=','inv_products.id')
             ->join('inv_categories','inv_products.category_id','=','inv_categories.id')
+            ->where('inv_products.status', 1)
             ->select('inv_current_stock.id','inv_current_stock.product_id','inv_products.name', 'inv_products.sales_uom', 'inv_current_stock.unit_cost',
                 'inv_products.brand', 'inv_products.pack_size', 'inv_categories.name as cat_name',
                 'inv_current_stock.quantity',
@@ -544,6 +550,7 @@ class CurrentStockController extends Controller
             $query = DB::table('inv_current_stock')
                 ->join('inv_products', 'inv_current_stock.product_id', '=', 'inv_products.id')
                 ->join('inv_categories', 'inv_products.category_id', '=', 'inv_categories.id')
+                ->where('inv_products.status', 1)
                 ->leftJoin('sales_prices', function($join) {
                     $join->on('inv_current_stock.id', '=', 'sales_prices.stock_id')
                          ->where('sales_prices.status', '=', 1);
@@ -832,6 +839,7 @@ class CurrentStockController extends Controller
                 if ($request->category != 0) {
                     $stocks = CurrentStock::select('product_id', DB::raw('sum(quantity) as quantity'))
                         ->join('inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id')
+                        ->where('inv_products.status', 1)
                         ->where('inv_products.category_id', $request->category)
                         ->where('inv_current_stock.store_id', $request->store_id)
                         ->groupBy('inv_current_stock.product_id')
@@ -843,6 +851,7 @@ class CurrentStockController extends Controller
                 } else {
                     $stocks = CurrentStock::select('product_id', DB::raw('sum(quantity) as quantity'))
                         ->join('inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id')
+                        ->where('inv_products.status', 1)
                         ->where('inv_current_stock.store_id', $request->store_id)
                         ->groupBy('inv_current_stock.product_id')
                         ->havingRaw(DB::raw('sum(quantity) > 0'))
@@ -954,6 +963,7 @@ class CurrentStockController extends Controller
                 if ($request->category != 0) {
                     $stocks = CurrentStock::select('product_id', DB::raw('sum(quantity) as quantity'))
                         ->join('inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id')
+                        ->where('inv_products.status', 1)
                         ->where('category_id', $request->category)
                         ->where('store_id', $request->store_id)
                         ->groupBy('product_id')
@@ -965,6 +975,7 @@ class CurrentStockController extends Controller
                 } else {
                     $stocks = CurrentStock::select('product_id', DB::raw('sum(quantity) as quantity'))
                         ->join('inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id')
+                        ->where('inv_products.status', 1)
                         ->where('store_id', $request->store_id)
                         ->groupBy('product_id')
                         ->havingRaw(DB::raw('sum(quantity) <= 0'))

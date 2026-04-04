@@ -21,6 +21,7 @@ class StockDetailsController extends Controller
         $detailed = DB::table('inv_current_stock')
             ->join('inv_products','inv_current_stock.product_id','=','inv_products.id')
             ->join('inv_categories','inv_products.category_id','=','inv_categories.id')
+            ->where('inv_products.status', 1)
             ->select('inv_current_stock.id', 'inv_current_stock.product_id','inv_products.name', 'inv_products.sales_uom', 'inv_current_stock.unit_cost',
                 'inv_products.brand', 'inv_products.pack_size', 'inv_categories.name as cat_name',
                 'inv_current_stock.quantity',

@@ -10,11 +10,11 @@ use App\Http\Controllers\TransporterController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\SupplierController;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use App\Store;
 use Maatwebsite\Excel\Row;
@@ -756,3 +756,59 @@ Route::get('production-reports', 'ProductionReportController@index')->name('prod
 Route::get('production-reports/filter', 'ProductionReportController@filter')->name('production-report-filter');
 Route::get('distribution-reports', 'ProductionReportController@index')->name('distribution-reports.index');
 Route::get('distribution-reports/filter', 'DistributionReportController@filter')->name('distribution-report-filter');
+
+/*
+|--------------------------------------------------------------------------
+| QZ Tray Certificate Routes
+|--------------------------------------------------------------------------
+|
+| These routes handle QZ Tray certificate serving and request signing
+| for silent thermal printing functionality.
+|
+*/
+
+// Serve the QZ Tray digital certificate
+Route::get('/qz/certificate', function () {
+    $certPath = storage_path('app/qz-tray/digital-certificate.txt');
+
+    if (!file_exists($certPath)) {
+        // Create a basic certificate for development
+        $certData = "-----BEGIN CERTIFICATE-----\n" .
+                   "MIICiTCCAg+gAwIBAgIJAJ8l2Z2Z3Z3ZMAOGA1UEBhMCVVMxCzAJBgNVBAgTAkNB\n" .
+                   "MRowGAYDVQQKExFRWiBUcmF5IFRlc3QgQ2VydGlmaWNhdGUwHhcNMTYwMTAxMDAw\n" .
+                   "MDAwWhcNMjYwMTAxMDAwMDAwWjAaMRgwFgYDVQQKEw9RWiBUcmF5IFRlc3QgQ2Vy\n" .
+                   "dGlmaWNhdGUwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAq4QjQqKQZ4QqQqKQZ4Qq\n" .
+                   "QqKQZ4QqQqKQZ4QqQqKQZ4QqQqKQZ4QqQqKQZ4QqQqKQZ4QqQqKQZ4QqQqKQZ4Qq\n" .
+                   "-----END CERTIFICATE-----";
+
+        // Ensure directory exists
+        $certDir = dirname($certPath);
+        if (!file_exists($certDir)) {
+            mkdir($certDir, 0755, true);
+        }
+
+        file_put_contents($certPath, $certData);
+    }
+
+    return response(file_get_contents($certPath))->header('Content-Type', 'text/plain');
+});
+
+// Handle QZ Tray signature requests
+Route::post('/qz/sign', function (Request $request) {
+    try {
+        $data = $request->input('data');
+
+        // For development/testing, create a simple signature
+        // In production, use proper certificate signing
+        $signature = hash('sha256', $data . 'qz-tray-secret-key');
+
+        return response()->json([
+            'signature' => base64_encode($signature)
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('QZ Tray signing error: ' . $e->getMessage());
+        return response()->json([
+            'error' => 'Signing failed: ' . $e->getMessage()
+        ], 500);
+    }
+});

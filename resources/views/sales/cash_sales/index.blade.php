@@ -273,7 +273,91 @@
 @endsection
 @push("page_scripts")
     @include('partials.notification')
+
+    {{-- QZ Tray Silent Printing --}}
+    <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.2.4/qz-tray.min.js"></script>
+    <script src="{{asset('assets/apotek/js/qz-helper.js')}}"></script>
+
     <script type="text/javascript">
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
+        var config = {
+            token: '{{ csrf_token() }}',
+            routes: {
+                selectProducts: '{{route('selectProducts')}}',
+                storeCashSale: '{{route('cash-sales.storeCashSale')}}',
+                filterProductByWord: '{{route('filter-product-by-word')}}'
+            },
+            // QZ Tray Printer Configuration
+            // Set your thermal printer name here, or leave empty to use system default
+            // Example: 'POS-80C', 'EPSON TM-T20II', 'Star TSP100', etc.
+            printerName: '{{ $printer_name ?? '' }}',
+            silentPrint: '{{ $silent_print ?? 'YES' }}'
+        };
+
+        // Initialize QZ Tray connection when page loads
+        $(document).ready(function() {
+            if (typeof QZHelper !== 'undefined' && QZHelper.isAvailable()) {
+                QZHelper.connect()
+                    .then(function() {
+                        console.log('QZ Tray connected - Silent printing enabled');
+                        // Optionally list available printers for debugging
+                        return QZHelper.getPrinters();
+                    })
+                    .then(function(printers) {
+                        console.log('Available printers:', printers);
+                    })
+                    .catch(function(err) {
+                        console.warn('QZ Tray not available. Please ensure QZ Tray is installed and running.');
+                        console.warn('Receipt will open in new window instead of silent print.');
+                    });
+            }
+        });
+
+        /**
+         * Silent print receipt using QZ Tray
+         * Falls back to opening PDF in new window if QZ Tray is not available
+         * @param {string} pdfUrl - URL of the PDF receipt
+         */
+        function silentPrintReceipt(pdfUrl) {
+            // Check if QZ Tray helper is available and configured for silent print
+            if (typeof QZHelper !== 'undefined' && QZHelper.isAvailable() && config.silentPrint === 'YES') {
+                // Attempt silent print via QZ Tray
+                var printerName = config.printerName || null; // Use configured printer or default
+
+                QZHelper.printPdfFromUrl(pdfUrl, printerName, {
+                    // Thermal printer options
+                    margins: 0,
+                    scaleContent: true,
+                    rasterize: true,
+                    colorType: 'grayscale'
+                })
+                .then(function() {
+                    console.log('Receipt printed silently via QZ Tray');
+                    notify("Receipt printed successfully", "top", "right", "success");
+                })
+                .catch(function(err) {
+                    console.warn('Silent print failed, opening in new window:', err);
+                    // Fallback to opening in new window
+                    window.open(pdfUrl);
+                    notify("Silent print unavailable - opened in new window", "top", "right", "info");
+                });
+            } else {
+                // QZ Tray not available - open PDF in new window
+                console.log('QZ Tray not available, opening receipt in new window');
+                window.open(pdfUrl);
+            }
+        }
+    </script>
+    <script type="text/javascript">
+
+        // Set QZ Tray configuration variables
+        window.printer_name = '{{ $printer_name ?? "" }}';
+        window.silent_print = '{{ $silent_print ?? "NO" }}';
 
         // Connect to QZ Tray when page loads
         // qz.websocket.connect().then(function() {

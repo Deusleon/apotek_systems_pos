@@ -39,6 +39,10 @@ class SaleController extends Controller
             $enable_discount = Setting::where('id', 111)->value('value');
             $enable_paid = Setting::where('id', 112)->value('value');
 
+            // QZ Tray Silent Print Settings
+            $printer_name = Setting::where('id', 130)->value('value') ?? '';
+            $silent_print = Setting::where('id', 131)->value('value') ?? 'NO';
+
             /*get default Price Category*/
             $default_sale_type = Setting::where('id', 125)->value('value');
             $sale_type = PriceCategory::where('name', $default_sale_type)->orderBy('name', 'ASC')->first();
@@ -79,6 +83,8 @@ class SaleController extends Controller
                 ->with(compact('default_sale_type'))
                 ->with(compact('default_customer'))
                 ->with(compact('vat'))->with(compact('fixed_price'))
+                ->with(compact('printer_name'))
+                ->with(compact('silent_print'))
                 ->with('warnings', $warnings);
         } catch (\Exception $e) {
             Log::error('Error in cashSale method: ' . $e->getMessage());
@@ -97,6 +103,10 @@ class SaleController extends Controller
         $back_date = Setting::where('id', 114)->value('value');
         $fixed_price = Setting::where('id', 124)->value('value');
         $enable_discount = Setting::where('id', 111)->value('value');
+
+        // QZ Tray Silent Print Settings
+        $printer_name = Setting::where('id', 130)->value('value') ?? '';
+        $silent_print = Setting::where('id', 131)->value('value') ?? 'NO';
 
         /*get default Price Category*/
         $default_sale_type = Setting::where('id', 125)->value('value');
@@ -123,7 +133,9 @@ class SaleController extends Controller
             ->with(compact('back_date'))
             ->with(compact('current_stock'))->with(compact('enable_discount'))
             ->with(compact('default_sale_type'))
-            ->with(compact('vat'))->with(compact('fixed_price'));
+            ->with(compact('vat'))->with(compact('fixed_price'))
+            ->with(compact('printer_name'))
+            ->with(compact('silent_print'));
     }
     public function getCreditsCustomers()
     {

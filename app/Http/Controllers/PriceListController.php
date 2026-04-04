@@ -32,7 +32,9 @@ class PriceListController extends Controller {
         $query = DB::table( 'inv_current_stock' )
         ->join( 'inv_products', 'inv_current_stock.product_id', '=', 'inv_products.id' )
         ->join( 'sales_prices', 'inv_current_stock.id', '=', 'sales_prices.stock_id' )
+        ->where('inv_products.status', 1)
         ->join( 'price_categories', 'sales_prices.price_category_id', '=', 'price_categories.id' )
+        ->where('inv_products.status', 1)
         ->select(
             'inv_products.name as product_name',
             'inv_products.brand as brand',
@@ -94,6 +96,7 @@ class PriceListController extends Controller {
                  ->where('sp.price_category_id', '=', $categoryId);
         })
         ->join('inv_products as p', 'cs.product_id', '=', 'p.id')
+        ->where('p.status', 1)
         ->select(
             'p.name as product_name',
             'p.brand as brand',
@@ -118,6 +121,7 @@ class PriceListController extends Controller {
             $query = DB::table('inv_current_stock as cs')
                 ->join('sales_prices as sp', 'cs.id', '=', 'sp.stock_id')
                 ->join('inv_products as p', 'cs.product_id', '=', 'p.id')
+                ->where('p.status', 1)
                 ->select(
                     'p.name as product_name',
                     'p.brand as brand',
@@ -139,10 +143,11 @@ class PriceListController extends Controller {
                 }
                 $stocks = $query->get();
         } else {
-            $query = DB::table('inv_incoming_stock as iis')
-                ->join('inv_current_stock as cs', 'cs.incoming_stock_id', '=', 'iis.id')
-                ->join('sales_prices as sp', 'cs.id', '=', 'sp.stock_id')
-                ->join('inv_products as p', 'cs.product_id', '=', 'p.id')
+                $query = DB::table('inv_incoming_stock as iis')
+                    ->join('inv_current_stock as cs', 'cs.incoming_stock_id', '=', 'iis.id')
+                    ->join('sales_prices as sp', 'cs.id', '=', 'sp.stock_id')
+                    ->join('inv_products as p', 'cs.product_id', '=', 'p.id')
+                    ->where('p.status', 1)
                 ->select(
                     'p.name as product_name',
                     'p.brand as brand',
@@ -335,6 +340,7 @@ class PriceListController extends Controller {
                     ->join('sales_prices as sp', 'cs.id', '=', 'sp.stock_id')
                     ->join('inv_products as p', 'iis.product_id', '=', 'p.id')
                     ->join('price_categories as pc', 'sp.price_category_id', '=', 'pc.id')
+                    ->where('p.status', 1)
                     ->select(
                         'iis.id as incoming_stock_id',
                         'iis.product_id',

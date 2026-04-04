@@ -313,6 +313,18 @@
                 case 128:
                     document.getElementById("formInput").innerHTML = '<select  class="js-example-basic-single form-control"name="formdata" id="show_description_58mm"><option value="YES">YES</option><option value="NO">NO</option></select>';
                     break;
+                case 130:
+                    element.setAttribute("type", "text");
+                    element.setAttribute("id", "appended");
+                    element.setAttribute("value", data[2]);
+                    element.setAttribute("name", "formdata");
+                    element.setAttribute("class", "form-control");
+                    element.setAttribute("placeholder", "Enter Printer Name");
+                    document.getElementById("formInput").appendChild(element);
+                    break;
+                case 131:
+                    document.getElementById("formInput").innerHTML = '<select  class="js-example-basic-single form-control"name="formdata" id="auto_print"><option value="YES">YES</option><option value="NO">NO</option></select>';
+                    break;
                 default:
                 // code block
             }
@@ -375,6 +387,10 @@
 
             if ($('#show_description_58mm').length) {
                 document.getElementById('show_description_58mm').value = data[2];
+            }
+
+            if ($('#auto_print').length) {
+                document.getElementById('auto_print').value = data[2];
             }
 
         });
