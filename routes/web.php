@@ -18,8 +18,13 @@ use App\Http\Controllers\SupplierController;
 use Illuminate\Http\Request;
 use App\Store;
 use Maatwebsite\Excel\Row;
+use App\Http\Controllers\QZSignController;
 
 Route::post('/login', 'Auth\LoginController@login')->middleware('web');
+
+// QZ Tray signing routes for silent printing
+Route::post('/qz/sign', [QZSignController::class, 'sign'])->name('qz.sign');
+Route::get('/qz/certificate', [QZSignController::class, 'certificate'])->name('qz.certificate');
 
 
 // Route::get('/', 'HomeController@login')->name('login');
@@ -766,76 +771,3 @@ Route::get('distribution-reports/filter', 'DistributionReportController@filter')
 | for silent thermal printing functionality.
 |
 */
-
-// Serve the QZ Tray digital certificate
-Route::get('/qz/certificate', function () {
-    $certPath = storage_path('app/qz-tray/digital-certificate.txt');
-
-    if (!file_exists($certPath)) {
-        // Auto-generate certificate if missing
-        $config = [
-            "digest_alg" => "sha512",
-            "private_key_bits" => 2048,
-            "private_key_type" => OPENSSL_KEYTYPE_RSA,
-        ];
-        $dn = [
-            "countryName" => "TZ",
-            "commonName" => "Apotek POS",
-            "organizationName" => "Apotek Systems",
-        ];
-        $privkey = openssl_pkey_new($config);
-        if (!$privkey) {
-            return response('Certificate generation failed', 500);
-        }
-        $csr = openssl_csr_new($dn, $privkey, $config);
-        $cert = openssl_csr_sign($csr, null, $privkey, 3650, $config);
-        openssl_pkey_export($privkey, $pkeyout);
-        openssl_x509_export($cert, $certout);
-
-        $certDir = dirname($certPath);
-        if (!file_exists($certDir)) {
-            mkdir($certDir, 0755, true);
-        }
-        file_put_contents(storage_path('app/qz-tray/private-key.pem'), $pkeyout);
-        file_put_contents($certPath, $certout);
-    }
-
-    return response(file_get_contents($certPath))->header('Content-Type', 'text/plain');
-});
-
-// Handle QZ Tray signature requests
-Route::post('/qz/sign', function (Request $request) {
-    try {
-        $toSign = $request->input('request');
-
-        if (empty($toSign)) {
-            return response('No data to sign', 400)->header('Content-Type', 'text/plain');
-        }
-
-        $keyPath = storage_path('app/qz-tray/private-key.pem');
-
-        if (!file_exists($keyPath)) {
-            \Log::error('QZ Tray private key not found at: ' . $keyPath);
-            return response('Signing key not found', 500)->header('Content-Type', 'text/plain');
-        }
-
-        $privateKey = openssl_pkey_get_private(file_get_contents($keyPath));
-        if (!$privateKey) {
-            \Log::error('QZ Tray failed to load private key: ' . openssl_error_string());
-            return response('Invalid signing key', 500)->header('Content-Type', 'text/plain');
-        }
-
-        $signature = '';
-        $signed = openssl_sign($toSign, $signature, $privateKey, OPENSSL_ALGO_SHA512);
-
-        if (!$signed) {
-            \Log::error('QZ Tray signing failed: ' . openssl_error_string());
-            return response('Signing failed', 500)->header('Content-Type', 'text/plain');
-        }
-
-        return response(base64_encode($signature))->header('Content-Type', 'text/plain');
-    } catch (\Exception $e) {
-        \Log::error('QZ Tray signing error: ' . $e->getMessage());
-        return response('Signing error', 500)->header('Content-Type', 'text/plain');
-    }
-});

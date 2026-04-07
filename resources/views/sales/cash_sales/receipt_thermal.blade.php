@@ -46,7 +46,7 @@ function customRound($num) {
         body {
             font-size: 10px;
             margin: 0;
-            padding: 10px 30px 10px 10px;
+            padding: 10px 10px 10px 10px;
             /* font-weight: bold; */
         }
 
