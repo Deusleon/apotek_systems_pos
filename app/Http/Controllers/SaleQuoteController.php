@@ -866,17 +866,21 @@ class SaleQuoteController extends Controller {
         $data = $grouped_sales;
 
         if ( $receipt_size === '58mm Thermal Paper' ) {
-            $pdf = PDF::loadView( 'sales.sale_quotes.quote_receipt_A4',
-            compact( 'data', 'pharmacy', 'page', 'generalSettings' ) );
+            $pdf = PDF::loadView( 'sales.sale_quotes.quote_receipt_thermal_58',
+            compact( 'data', 'pharmacy', 'page', 'generalSettings' ) )
+                ->setPaper([0, 0, 136, 600], '');
         } else if ( $receipt_size === 'A4 / Letter' ) {
             $pdf = PDF::loadView( 'sales.sale_quotes.quote_receipt_A4',
-            compact( 'data', 'pharmacy', 'page', 'generalSettings' ) );
+            compact( 'data', 'pharmacy', 'page', 'generalSettings' ) )
+                ->setPaper('a4', '');
         } else if ( $receipt_size === '80mm Thermal Paper' ) {
-            $pdf = PDF::loadView( 'sales.sale_quotes.quote_receipt_A4',
-            compact( 'data', 'pharmacy', 'page', 'generalSettings' ) );
+            $pdf = PDF::loadView( 'sales.sale_quotes.quote_receipt_thermal_80',
+            compact( 'data', 'pharmacy', 'page', 'generalSettings' ) )
+                ->setPaper([0, 0, 227, 600], '');
         } else if ( $receipt_size === 'A5 / Half Letter' ) {
-            $pdf = PDF::loadView( 'sales.sale_quotes.quote_receipt_A4',
-            compact( 'data', 'pharmacy', 'page', 'generalSettings' ) );
+            $pdf = PDF::loadView( 'sales.sale_quotes.quote_receipt_A5',
+            compact( 'data', 'pharmacy', 'page', 'generalSettings' ) )
+                ->setPaper('a5', '');
         }else {
             return redirect()->back()->with('alert-success', 'Sales Order recorded successfully');
         }
@@ -953,21 +957,21 @@ class SaleQuoteController extends Controller {
             $data = $grouped_sales;
 
             if ( $receipt_size === '58mm Thermal Paper' ) {
-                $pdf = PDF::loadView( 'sales.sale_quotes.quote_receipt_A4',
+                $pdf = PDF::loadView( 'sales.sale_quotes.quote_receipt_thermal_58',
                 compact( 'data', 'pharmacy', 'page', 'generalSettings' ) )
-                    ->setPaper('a4', '');
+                    ->setPaper([0, 0, 136, 600], '');
             } else if ( $receipt_size === '80mm Thermal Paper' ) {
-                $pdf = PDF::loadView( 'sales.sale_quotes.quote_receipt_A4',
+                $pdf = PDF::loadView( 'sales.sale_quotes.quote_receipt_thermal_80',
                 compact( 'data', 'pharmacy', 'page', 'generalSettings' ) )
-                    ->setPaper('a4', '');
+                    ->setPaper([0, 0, 227, 600], '');
             } else if ( $receipt_size === 'A4 / Letter' ) {
                 $pdf = PDF::loadView( 'sales.sale_quotes.quote_receipt_A4',
                 compact( 'data', 'pharmacy', 'page', 'generalSettings' ) )
                     ->setPaper('a4', '');
             } else if ( $receipt_size === 'A5 / Half Letter' )  {
-                $pdf = PDF::loadView( 'sales.sale_quotes.quote_receipt_A4',
+                $pdf = PDF::loadView( 'sales.sale_quotes.quote_receipt_A5',
                 compact( 'data', 'pharmacy', 'page', 'generalSettings' ) )
-                    ->setPaper('a4', '');
+                    ->setPaper('a5', '');
             } else{
                 $pdf = PDF::loadView( 'sales.sale_quotes.quote_receipt_A4',
                 compact( 'data', 'pharmacy', 'page', 'generalSettings' ) )
@@ -1314,8 +1318,27 @@ class SaleQuoteController extends Controller {
 
             $data = $grouped_sales;
 
-            $pdf = PDF::loadView( 'sales.delivery_notes.delivery_note',
-            compact( 'data', 'pharmacy', 'page', 'generalSettings' ) );
+            if ( $receipt_size === '58mm Thermal Paper' ) {
+                $pdf = PDF::loadView( 'sales.delivery_notes.delivery_note_thermal_58',
+                compact( 'data', 'pharmacy', 'page', 'generalSettings' ) )
+                    ->setPaper([0, 0, 136, 600], '');
+            } elseif ( $receipt_size === 'A4 / Letter' ) {
+                $pdf = PDF::loadView( 'sales.delivery_notes.delivery_note',
+                compact( 'data', 'pharmacy', 'page', 'generalSettings' ) )
+                    ->setPaper('a4', '');
+            } elseif ( $receipt_size === '80mm Thermal Paper' ) {
+                $pdf = PDF::loadView( 'sales.delivery_notes.delivery_note_thermal_80',
+                compact( 'data', 'pharmacy', 'page', 'generalSettings' ) )
+                    ->setPaper([0, 0, 227, 600], '');
+            } elseif ( $receipt_size === 'A5 / Half Letter' ) {
+                $pdf = PDF::loadView( 'sales.delivery_notes.delivery_note_A5',
+                compact( 'data', 'pharmacy', 'page', 'generalSettings' ) )
+                    ->setPaper('a5', '');
+            } else {
+                $pdf = PDF::loadView( 'sales.delivery_notes.delivery_note',
+                compact( 'data', 'pharmacy', 'page', 'generalSettings' ) )
+                    ->setPaper('a4', '');
+            }
 
             return $pdf->stream( 'DELIVERY-NOTE-' . $id . '.pdf' );
 
