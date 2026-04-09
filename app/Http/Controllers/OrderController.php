@@ -153,8 +153,10 @@ public function approve(Request $request, $id)
                     ->orderBy('inv_incoming_stock.id', 'desc')
                     ->first();
 
+                $quantity = \App\CurrentStock::where('product_id', $product->id)->where('store_id', $store_id)->sum('quantity');
+
                 $max_prices[] = [
-                    'name' => $product->name . ' ' . ($product->brand ?? '') . ' ' . ($product->pack_size ?? '') . ($product->sales_uom ?? ''),
+                    'name' => $product->name . ' ' . ($product->brand ?? '') . ' ' . ($product->pack_size ?? '') . ($product->sales_uom ?? '') . ' [ QOH - ' . $quantity . ' ]',
                     'unit_cost' => $data->unit_cost ?? 0,
                     'product_id' => $product->id,
                     'incoming_id' => $data->id ?? null
@@ -208,8 +210,9 @@ public function approve(Request $request, $id)
                     ->first();
 
                 if ($data) {
+                    $quantity = \App\CurrentStock::where('product_id', $stock->id)->where('store_id', $store_id)->sum('quantity');
                     array_push($max_prices, array(
-                        'name' => $stock->name . ' ' . ($stock->brand ?? '') . ' ' . ($stock->pack_size ?? '') . ' ' . ($stock->sales_uom ?? ''),
+                        'name' => $stock->name . ' ' . ($stock->brand ?? '') . ' ' . ($stock->pack_size ?? '') . ' ' . ($stock->sales_uom ?? '') . ' [ QOH - ' . $quantity . ' ]',
                         'unit_cost' => $data->unit_cost,
                         'product_id' => $stock->id,
                         'incoming_id' => $data->id

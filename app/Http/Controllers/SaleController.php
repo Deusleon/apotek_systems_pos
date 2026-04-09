@@ -321,7 +321,7 @@ class SaleController extends Controller
                 ->sum('quantity');
                 
         if ($quantity > 0) {
-            $name = $product->name.' '.($product->brand ? $product->brand.' ' : '').$product->pack_size.$product->sales_uom;
+            $name = $product->name.' '.($product->brand ? $product->brand.' ' : '').$product->pack_size.$product->sales_uom . ' [ QOH - ' . $quantity . ' ]';
             $output[] = [
                 "id"       => $product->id,
                 "name"     => $name,
