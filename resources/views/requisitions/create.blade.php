@@ -287,8 +287,8 @@
                 data: 'quantity',
                 render: function(data, type, row) {
                     if (type === 'display') {
-                        // Preserve exact user entries without forcing decimal places
-                        return Number(data).toString();
+                        // Format with commas
+                        return Number(data).toLocaleString();
                     }
                     return data;
                 }
@@ -305,31 +305,40 @@
         const row = event.target.closest('tr');
         const rowIndex = order_table.row(row).index();
         const rowData = order_table.row(rowIndex).data();
-        
+
         // Replace quantity text with input field
         const quantityCell = row.cells[1];
         quantityCell.innerHTML = `
-            <input type="text" 
-                   class="form-control" 
-                   value="${rowData.quantity}" 
+            <input type="text"
+                   class="form-control"
+                   value="${Number(rowData.quantity).toLocaleString()}"
                    step="any"
                    min="1"
+                   oninput="formatNumber(this)"
                    onblur="saveQuantityChange(event, ${rowIndex})"
                    onkeypress="handleQuantityKeyPress(event, ${rowIndex})">
         `;
-        
+
         // Focus the input field
         const inputField = quantityCell.querySelector('input');
         inputField.focus();
         inputField.select();
-        
+
+    }
+
+    function formatNumber(input) {
+        // Remove all non-digit characters except decimal point
+        let value = input.value.replace(/[^\d]/g, '');
+        // Add commas every 3 digits
+        value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        input.value = value;
     }
 
     function saveQuantityChange(event, rowIndex) {
         const row = order_table.row(rowIndex).node();
         const inputField = row.querySelector('input');
-        // Preserve exact user input without rounding
-        const newQuantity = parseFloat(inputField.value);
+        // Remove commas and parse as float
+        const newQuantity = parseFloat(inputField.value.replace(/,/g, ''));
 
         if (!isNaN(newQuantity) && newQuantity > 0) {
             const rowData = order_table.row(rowIndex).data();
@@ -345,7 +354,7 @@
             // If invalid quantity, revert back to original value
             const rowData = order_table.row(rowIndex).data();
             const quantityCell = row.cells[1];
-            quantityCell.innerHTML = rowData.quantity.toString();
+            quantityCell.innerHTML = Number(rowData.quantity).toLocaleString();
 
             // Revert button back to Edit
             const saveButton = row.querySelector('.btn-success');
