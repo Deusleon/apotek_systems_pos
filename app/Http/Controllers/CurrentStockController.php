@@ -325,7 +325,8 @@ class CurrentStockController extends Controller
                     'p.pack_size',
                     'p.sales_uom',
                     'latest_stock.unit_cost']
-                );
+                )
+                ->havingRaw('SUM(ics.quantity) > 0');
 
             if (!is_all_store()) {
                 $stocks->where('ics.store_id', $store_id);
@@ -401,7 +402,8 @@ class CurrentStockController extends Controller
                         'os.buy_price',
                         'os.sell_price'
                     ]
-                );
+                )
+                ->havingRaw('SUM(os.quantity) > 0');
 
             if ($price_category !== null) {
                 $query->where('os.price_category_id', $price_category);
