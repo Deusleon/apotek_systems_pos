@@ -1127,7 +1127,7 @@ function addProductToCart(product) {
     } else {
         // New item: create array-format row to match existing code
         var item = [
-            product.name,
+            product.cart_name || product.name,
             1,
             formatMoney(priceNum),
             formatMoney(vatUnit),
@@ -1334,12 +1334,13 @@ function populateProducts(optionsList) {
 
     if (Array.isArray(optionsList) && optionsList.length) {
         optionsList.forEach(function (p) {
-            const formattedQty = numberWithCommas(p.quantity);
+            const cartName = p.cart_name || p.name;
+            const displayName = p.name;
             $sel.append(
                 $("<option>", {
                     value: p.id,
-                    text: p.name + " - [QoH - " + formattedQty + "]",
-                    "data-name": p.name,
+                    text: displayName,
+                    "data-name": cartName,
                     "data-price": p.price,
                     "data-quantity": p.quantity,
                 }),

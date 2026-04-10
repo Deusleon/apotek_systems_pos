@@ -321,10 +321,12 @@ class SaleController extends Controller
                 ->sum('quantity');
                 
         if ($quantity > 0) {
-            $name = $product->name.' '.($product->brand ? $product->brand.' ' : '').$product->pack_size.$product->sales_uom . ' [ QOH - ' . $quantity . ' ]';
+            $cart_name = $product->name.' '.($product->brand ? $product->brand.' ' : '').$product->pack_size.$product->sales_uom;
+            $display_name = $cart_name . ' [ QOH - ' . $quantity . ' ]';
             $output[] = [
                 "id"       => $product->id,
-                "name"     => $name,
+                "name"     => $display_name,
+                "cart_name" => $cart_name,
                 "price"    => $latest->price ?? 0,
                 "quantity" => $quantity
             ];
@@ -387,14 +389,15 @@ class SaleController extends Controller
                     ->sum('quantity');
 
                 if ($quantity > 0) {
-                    $name = $product->name.' '
+                    $cart_name = $product->name.' '
                         .($product->brand ? $product->brand.' ' : '')
                         .$product->pack_size
                         .$product->sales_uom;
 
                     $output[] = [
                         "id"       => $product->id,
-                        "name"     => $name,
+                        "name"     => $cart_name,
+                        "cart_name" => $cart_name,
                         "price"    => $latest->price ?? 0,
                         "quantity" => $quantity,
                     ];
