@@ -492,7 +492,7 @@ function filterSupplierProduct() {
             );
             $.each(data, function (id, detail) {
                 var datas = [
-                    detail.name,
+                    detail.cart_name,
                     detail.unit_cost,
                     detail.product_id,
                     detail.incoming_id,
@@ -544,7 +544,7 @@ $("#select_id").select2({
                     );
                     $.each(data, function (id, detail) {
                         var datas = [
-                            detail.name,
+                            detail.cart_name,
                             detail.unit_cost,
                             detail.product_id,
                             detail.incoming_id,
