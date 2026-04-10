@@ -58,7 +58,7 @@ class ImportDataController extends Controller {
         $sheet = $spreadsheet->getActiveSheet();
 
         // Headers
-        $sheet->setCellValue( 'A1', 'Product Code' );
+        $sheet->setCellValue( 'A1', 'Code' );
         $sheet->setCellValue( 'B1', 'Product Name' );
         $sheet->setCellValue( 'C1', 'Buy Price' );
         $sheet->setCellValue( 'D1', 'Sell Price' );
@@ -67,7 +67,7 @@ class ImportDataController extends Controller {
             $sheet->setCellValue( 'F1', 'Expiry' );
         }
         // Fetch all products from database
-        $products = Product::orderBy( 'name' )->get();
+        $products = Product::orderBy( 'id' )->get();
 
         $row = 2;
         foreach ( $products as $product ) {
