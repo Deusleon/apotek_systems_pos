@@ -819,7 +819,7 @@
                                 $("<option>", {
                                     value: p.id,
                                     text: p.name,
-                                    "data-name": p.name,
+                                    "data-name": p.cart_name || p.name,
                                     "data-price": p.price,
                                     "data-quantity": p.quantity,
                                 })
@@ -963,7 +963,7 @@
                 } else {
                     // New item: create array-format row to match existing code
                     var item = [
-                        product.name,
+                        product.cart_name || product.name,
                         1,
                         formatMoney(priceNum),
                         formatMoney(vatUnit),
