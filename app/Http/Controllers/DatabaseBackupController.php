@@ -439,7 +439,8 @@ class DatabaseBackupController extends Controller
                 if ($tableName !== 'settings' && $tableName !== 'users' &&
                     $tableName !== 'inv_stores' && $tableName !== 'roles' &&
                     $tableName !== 'permissions' && $tableName !== 'role_has_permissions' &&
-                    $tableName !== 'model_has_roles' && $tableName !== 'model_has_permissions') {
+                    $tableName !== 'model_has_roles' && $tableName !== 'model_has_permissions' &&
+                    $tableName !== 'payment_method') {
                     $tablesToClear[] = $tableName;
                 }
             }
