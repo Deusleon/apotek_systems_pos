@@ -71,7 +71,7 @@
 
 @section('content-sub-title')
     <li class="breadcrumb-item"><a href="{{route('home')}}"><i class="feather icon-home"></i></a></li>
-    <li class="breadcrumb-item"><a href="#">Inventory / Products Import / Stocks Import</a></li>
+    <li class="breadcrumb-item"><a href="#">Inventory / Products Import / Stock Import</a></li>
 @endsection
 
 @section("content")
@@ -83,7 +83,7 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link active text-uppercase" id="invoice-received" href="{{ route('import-data') }}"
-                    role="tab" aria-controls="quotes_list" aria-selected="false">Stocks Import</a>
+                    role="tab" aria-controls="quotes_list" aria-selected="false">Stock Import</a>
             </li>
             {{-- @if (auth()->user()->checkPermission('Download Import Templates')) --}}
                 <li class="nav-item">

@@ -102,7 +102,7 @@ Route::middleware(["auth","main_branch"])->group(function () {
 
     // Product Import Routes
     Route::prefix('import')->group(function () {
-        Route::get('/stocks', 'ImportDataController@importData')->name('import-data');
+        Route::get('/stock', 'ImportDataController@importData')->name('import-data');
         Route::get('/products', 'ImportDataController@index' )->name('import-products');
         Route::get('/download-template', 'ImportDataController@downloadStockTemplate')->name('download-template');
         Route::get('/download-products-template', 'ImportDataController@downloadTemplate' )->name('download-products-template');
