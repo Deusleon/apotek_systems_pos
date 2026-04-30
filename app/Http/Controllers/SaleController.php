@@ -1181,7 +1181,10 @@ class SaleController extends Controller
         $generalSettings = GeneralSetting::first();
 
 
-        $id = SalesDetail::orderBy('id', 'desc')->value('sale_id');
+        $id = SalesDetail::join('sales', 'sales.id', '=', 'sales_details.sale_id')
+            ->where('sales.created_by', Auth::id())
+            ->orderBy('sales_details.id', 'desc')
+            ->value('sales_details.sale_id');
 
         $paid = null;
         $balance = null;
@@ -1348,7 +1351,10 @@ class SaleController extends Controller
         $pharmacy['tin_number'] = Setting::where('id', 102)->value('value');
         $pharmacy['vrn_number'] = Setting::where('id', 103)->value('value');
 
-        $id = SalesDetail::orderBy('id', 'desc')->value('sale_id');
+        $id = SalesDetail::join('sales', 'sales.id', '=', 'sales_details.sale_id')
+            ->where('sales.created_by', Auth::id())
+            ->orderBy('sales_details.id', 'desc')
+            ->value('sales_details.sale_id');
         $sale_detail = SalesDetail::join('sales_credits', 'sales_credits.sale_id', '=', 'sales_details.sale_id')
             ->where('sales_credits.sale_id', $id)->get();
         $sales = array();
