@@ -62,6 +62,27 @@ class LoginController extends Controller {
         return $this->sendFailedLoginResponse($request);
     }
 
+    /**
+     * Override sendLoginResponse to attach no-cache headers so that browsers
+     * never cache the post-login redirect response.  Without this, the browser
+     * may serve a cached 302 from a previous session and appear to stay on the
+     * login page even though the credentials were accepted.
+     */
+    protected function sendLoginResponse(Request $request)
+    {
+        $request->session()->regenerate();
+        $this->clearLoginAttempts($request);
+
+        $response = $this->authenticated($request, $this->guard()->user())
+            ?: redirect()->intended($this->redirectPath());
+
+        return $response->withHeaders([
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma'        => 'no-cache',
+            'Expires'       => '0',
+        ]);
+    }
+
     protected function authenticated(Request $request, $user)
     {
         // Ensure user has a store relationship

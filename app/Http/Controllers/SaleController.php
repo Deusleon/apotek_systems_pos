@@ -285,129 +285,140 @@ class SaleController extends Controller
     }
     public function selectProducts(Request $request)
     {
-        /*get default store*/
         $default_store = current_store_id();
+        $category_id   = $request->get('id');
 
-        $products = PriceList::where('price_category_id', $request->get('id'))
-            ->join('inv_current_stock', 'inv_current_stock.id', '=', 'sales_prices.stock_id')
-            ->join('inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id')
-            ->where('quantity', '>', 0)
-            ->where('inv_products.status', '=', 1)
-            ->where('inv_current_stock.store_id', $default_store)
-            ->select('inv_products.id as id', 'name', 'barcode', 'inv_products.brand', 'inv_products.pack_size', 'sales_uom')
-            ->groupBy('product_id')
-            ->orderby('name', 'asc')
-            // ->limit(100)
+        // Subquery: highest stock_id per product for this price category.
+        // sales_prices has no product_id – we get it via inv_current_stock.
+        $latestStockPerProduct = DB::table('sales_prices as sp2')
+            ->join('inv_current_stock as cs2', 'cs2.id', '=', 'sp2.stock_id')
+            ->select('cs2.product_id', DB::raw('MAX(sp2.stock_id) as max_stock_id'))
+            ->where('sp2.price_category_id', $category_id)
+            ->groupBy('cs2.product_id');
+
+        // Subquery: total quantity per product in the current store
+        $quantityPerProduct = DB::table('inv_current_stock')
+            ->select('product_id', DB::raw('SUM(quantity) as total_quantity'))
+            ->where('store_id', $default_store)
+            ->groupBy('product_id');
+
+        // Single optimised query – no more N+1 loops
+        $products = DB::table('sales_prices as sp')
+            ->join('inv_current_stock as cs', 'cs.id', '=', 'sp.stock_id')
+            ->join('inv_products as p', 'p.id', '=', 'cs.product_id')
+            ->joinSub($latestStockPerProduct, 'lp', function ($join) {
+                $join->on('cs.product_id', '=', 'lp.product_id')
+                     ->on('sp.stock_id',   '=', 'lp.max_stock_id');
+            })
+            ->joinSub($quantityPerProduct, 'qp', 'p.id', '=', 'qp.product_id')
+            ->where('sp.price_category_id', $category_id)
+            ->where('p.status', 1)
+            ->where('qp.total_quantity', '>', 0)
+            ->select(
+                'p.id',
+                'p.name',
+                'p.brand',
+                'p.pack_size',
+                'p.sales_uom',
+                'sp.price',
+                'qp.total_quantity as quantity'
+            )
+            ->orderBy('p.name')
             ->get();
-            
-        if ($products->count() <= 0) {
-            return response()->json([
-                "message" => "No Products Found",
-                "data" => []
-            ]);
+
+        if ($products->isEmpty()) {
+            return response()->json(["message" => "No Products Found", "data" => []]);
         }
 
         $output = [];
         foreach ($products as $product) {
-            $latest = PriceList::where('price_category_id', $request->get('id'))
-                ->join('inv_current_stock', 'inv_current_stock.id', '=', 'sales_prices.stock_id')
-                ->join('inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id')
-                ->orderBy('stock_id', 'desc')
-                ->where('product_id', $product->id)
-                ->first('price');
-
-            $quantity = CurrentStock::where('product_id', $product->id)
-                ->where('store_id', $default_store)
-                ->sum('quantity');
-                
-        if ($quantity > 0) {
-            $cart_name = $product->name.' '.($product->brand ? $product->brand.' ' : '').$product->pack_size.$product->sales_uom;
-            $display_name = $cart_name . ' [ QOH - ' . $quantity . ' ]';
+            $cart_name    = $product->name . ' ' . ($product->brand ? $product->brand . ' ' : '') . $product->pack_size . $product->sales_uom;
+            $display_name = $cart_name . ' [ QOH - ' . $product->quantity . ' ]';
             $output[] = [
-                "id"       => $product->id,
-                "name"     => $display_name,
+                "id"        => $product->id,
+                "name"      => $display_name,
                 "cart_name" => $cart_name,
-                "price"    => $latest->price ?? 0,
-                "quantity" => $quantity
+                "price"     => $product->price ?? 0,
+                "quantity"  => $product->quantity,
             ];
         }
-        }
 
-        return response()->json([
-            "message" => "Products Found",
-            "data"    => $output
-        ]);
+        return response()->json(["message" => "Products Found", "data" => $output]);
     }
     public function filterProductByWord(Request $request)
     {
         $default_store_id = current_store_id();
 
         if ($request->ajax()) {
-            $products = PriceList::where('price_category_id', $request->price_category_id)
-                ->join('inv_current_stock', 'inv_current_stock.id', '=', 'sales_prices.stock_id')
-                ->join('inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id')
-                ->where('inv_current_stock.quantity', '>', 0)
-                ->where('inv_products.status', '=', 1)
-                ->where('inv_current_stock.store_id', $default_store_id)
-                ->where(function ($query) use ($request) {
-                    $query->where('inv_products.name', 'LIKE', "%{$request->word}%")
-                        ->orWhere('inv_products.barcode',$request->word)
-                        ->orWhere('inv_products.brand', 'LIKE', "%{$request->word}%")
-                        ->orWhere('inv_products.pack_size', 'LIKE', "%{$request->word}%")
-                        ->orWhere('inv_products.sales_uom', 'LIKE', "%{$request->word}%");
+            $category_id = $request->price_category_id;
+            $word        = $request->word;
+
+            // Subquery: highest stock_id per product for this price category.
+            // sales_prices has no product_id – we get it via inv_current_stock.
+            $latestStockPerProduct = DB::table('sales_prices as sp2')
+                ->join('inv_current_stock as cs2', 'cs2.id', '=', 'sp2.stock_id')
+                ->select('cs2.product_id', DB::raw('MAX(sp2.stock_id) as max_stock_id'))
+                ->where('sp2.price_category_id', $category_id)
+                ->groupBy('cs2.product_id');
+
+            // Subquery: total quantity per product in the current store
+            $quantityPerProduct = DB::table('inv_current_stock')
+                ->select('product_id', DB::raw('SUM(quantity) as total_quantity'))
+                ->where('store_id', $default_store_id)
+                ->groupBy('product_id');
+
+            // Single optimised query – no more N+1 loops
+            $products = DB::table('sales_prices as sp')
+                ->join('inv_current_stock as cs', 'cs.id', '=', 'sp.stock_id')
+                ->join('inv_products as p', 'p.id', '=', 'cs.product_id')
+                ->joinSub($latestStockPerProduct, 'lp', function ($join) {
+                    $join->on('cs.product_id', '=', 'lp.product_id')
+                         ->on('sp.stock_id',   '=', 'lp.max_stock_id');
+                })
+                ->joinSub($quantityPerProduct, 'qp', 'p.id', '=', 'qp.product_id')
+                ->where('sp.price_category_id', $category_id)
+                ->where('p.status', 1)
+                ->where('qp.total_quantity', '>', 0)
+                ->where(function ($q) use ($word) {
+                    $q->where('p.name',      'LIKE', "%{$word}%")
+                      ->orWhere('p.barcode',  $word)
+                      ->orWhere('p.brand',    'LIKE', "%{$word}%")
+                      ->orWhere('p.pack_size','LIKE', "%{$word}%")
+                      ->orWhere('p.sales_uom','LIKE', "%{$word}%");
                 })
                 ->select(
-                    'inv_products.id as id',
-                    'inv_products.name',
-                    'inv_products.brand',
-                    'inv_products.pack_size',
-                    'inv_products.sales_uom',
+                    'p.id',
+                    'p.name',
+                    'p.brand',
+                    'p.pack_size',
+                    'p.sales_uom',
+                    'sp.price',
+                    'qp.total_quantity as quantity'
                 )
-                ->groupBy('inv_products.id')
-                ->orderby('name', 'asc')
-                // ->limit(20)
+                ->orderBy('p.name')
                 ->get();
-                
-            if ($products->count() <= 0) {
-                return response()->json([
-                    "message" => "No Products Found",
-                    "data"    => []
-                ]);
+
+            if ($products->isEmpty()) {
+                return response()->json(["message" => "No Products Found", "data" => []]);
             }
 
             $output = [];
             foreach ($products as $product) {
-                $latest = PriceList::where('price_category_id', $request->price_category_id)
-                    ->join('inv_current_stock', 'inv_current_stock.id', '=', 'sales_prices.stock_id')
-                    ->join('inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id')
-                    ->orderBy('stock_id', 'desc')
-                    ->where('product_id', $product->id)
-                    ->first('price');
+                $cart_name = $product->name . ' '
+                    . ($product->brand ? $product->brand . ' ' : '')
+                    . $product->pack_size
+                    . $product->sales_uom;
 
-                $quantity = CurrentStock::where('product_id', $product->id)
-                    ->where('store_id', $default_store_id)
-                    ->sum('quantity');
-
-                if ($quantity > 0) {
-                    $cart_name = $product->name.' '
-                        .($product->brand ? $product->brand.' ' : '')
-                        .$product->pack_size
-                        .$product->sales_uom;
-
-                    $output[] = [
-                        "id"       => $product->id,
-                        "name"     => $cart_name,
-                        "cart_name" => $cart_name,
-                        "price"    => $latest->price ?? 0,
-                        "quantity" => $quantity,
-                    ];
-                }
+                $output[] = [
+                    "id"        => $product->id,
+                    "name"      => $cart_name,
+                    "cart_name" => $cart_name,
+                    "price"     => $product->price ?? 0,
+                    "quantity"  => $product->quantity,
+                ];
             }
 
-            return response()->json([
-                "message" => "Product Selected",
-                "data"    => $output
-            ]);
+            return response()->json(["message" => "Product Selected", "data" => $output]);
         }
     }
 
@@ -549,7 +560,7 @@ class SaleController extends Controller
                     ->setPaper('a4', '');
             }
 
-            return $pdf->stream($request->reprint_receipt . '.pdf');
+            return $this->pdfStreamNoCache($pdf, $request->reprint_receipt . '.pdf');
 
         }catch (Exception $e)
         {
@@ -767,6 +778,10 @@ class SaleController extends Controller
 
                 DB::commit();
                 Log::info('Sales recorded successfully', ['receipt_number' => $receipt_number, 'user_id' => Auth::id()]);
+                // Store the receipt number in session so getCashReceipt always prints the
+                // sale that was just created – prevents a different (cached/stale) receipt
+                // from being printed when multiple sales happen in the same session.
+                session(['last_receipt_number' => $receipt_number, 'last_sale_id' => $sale]);
                 session()->flash("alert-success", "Sales recorded successfully!");
 
             } catch (\Exception $e) {
@@ -897,43 +912,43 @@ class SaleController extends Controller
                 $pdf = PDF::loadView('sales.cash_sales.receipt_thermal',
                     compact('data', 'pharmacy', 'page', 'generalSettings', 'show_description'))
                     ->setPaper([0, 0, 136, 600], '');
-                return $pdf->stream($request->reprint_receipt . '.pdf');
+                return $this->pdfStreamNoCache($pdf, $request->reprint_receipt . '.pdf');
             } else if ($receipt_size == '58mm Thermal Paper' && $page == -1) {
                 $show_description = Setting::where('id', 128)->value('value') ?? 'YES';
                 $pdf = PDF::loadView('sales.cash_sales.credit_receipt_thermal',
                     compact('data', 'pharmacy', 'page', 'generalSettings', 'show_description'))
                     ->setPaper([0, 0, 136, 600], '');
-                return $pdf->stream($request->reprint_receipt . '.pdf');
+                return $this->pdfStreamNoCache($pdf, $request->reprint_receipt . '.pdf');
             }else if ($receipt_size == 'A4 / Letter' && $page == 1) {
                 $pdf = PDF::loadView('sales.cash_sales.receipt_A4',
                     compact('data', 'pharmacy', 'page', 'generalSettings'))
                     ->setPaper('a4', '');
-                return $pdf->stream($request->reprint_receipt . '.pdf');
+                return $this->pdfStreamNoCache($pdf, $request->reprint_receipt . '.pdf');
             }else if ($receipt_size == 'A4 / Letter' && $page == -1) {
                 $pdf = PDF::loadView('sales.cash_sales.credit_receipt_A4',
                     compact('data', 'pharmacy', 'page', 'generalSettings'))
                     ->setPaper('a4', '');
-                return $pdf->stream($request->reprint_receipt . '.pdf');
+                return $this->pdfStreamNoCache($pdf, $request->reprint_receipt . '.pdf');
             } else if ($receipt_size == '80mm Thermal Paper' && $page == 1) {
                 $pdf = PDF::loadView('sales.cash_sales.receipt_thermal_80',
                     compact('data', 'pharmacy', 'page', 'generalSettings'))
                     ->setPaper([0, 0, 227, 600], '');
-                return $pdf->stream($request->reprint_receipt . '.pdf');
+                return $this->pdfStreamNoCache($pdf, $request->reprint_receipt . '.pdf');
             } else if ($receipt_size == '80mm Thermal Paper' && $page == -1) {
                 $pdf = PDF::loadView('sales.cash_sales.credit_receipt_thermal_80',
                     compact('data', 'pharmacy', 'page', 'generalSettings'))
                     ->setPaper([0, 0, 227, 600], '');
-                return $pdf->stream($request->reprint_receipt . '.pdf');
+                return $this->pdfStreamNoCache($pdf, $request->reprint_receipt . '.pdf');
             } else if ($receipt_size == 'A5 / Half Letter' && $page == 1) {
                 $pdf = PDF::loadView('sales.cash_sales.receipt',
                     compact('data', 'pharmacy', 'page', 'generalSettings'))
                     ->setPaper('a5', '');
-                return $pdf->stream($request->reprint_receipt . '.pdf');
+                return $this->pdfStreamNoCache($pdf, $request->reprint_receipt . '.pdf');
             } else if ($receipt_size == 'A5 / Half Letter' && $page == -1) {
                 $pdf = PDF::loadView('sales.cash_sales.credit_receipt',
                     compact('data', 'pharmacy', 'page', 'generalSettings'))
                     ->setPaper('a5', '');
-                return $pdf->stream($request->reprint_receipt . '.pdf');
+                return $this->pdfStreamNoCache($pdf, $request->reprint_receipt . '.pdf');
             } else {
                 echo "<script>window.close();</script>";
             }
@@ -1180,10 +1195,23 @@ class SaleController extends Controller
         // Get general settings for terms & conditions
         $generalSettings = GeneralSetting::first();
 
-
-        $id = Sale::where('created_by', Auth::id())
-            ->orderBy('date', 'desc')
-            ->value('id');
+        // Prefer the receipt stored in session after the most-recent sale.
+        // This guarantees we always print the sale that was JUST created and
+        // prevents a stale/cached receipt from being reprinted for a different sale.
+        $id = null;
+        $last_receipt = session('last_receipt_number');
+        if ($last_receipt) {
+            $id = Sale::where('receipt_number', $last_receipt)
+                      ->where('created_by', Auth::id())
+                      ->value('id');
+        }
+        // Fallback: order by primary key (not date – multiple sales on the same
+        // day share the same date value, making ORDER BY date non-deterministic)
+        if (!$id) {
+            $id = Sale::where('created_by', Auth::id())
+                      ->orderBy('id', 'desc')
+                      ->value('id');
+        }
 
         $paid = null;
         $balance = null;
@@ -1287,7 +1315,7 @@ class SaleController extends Controller
                     ->setPaper([0, 0, 163, 600], '');
             }
 
-            return $pdf->stream($receipt_no . '.pdf');
+            return $this->pdfStreamNoCache($pdf, $receipt_no . '.pdf');
 
         }
         else if ($receipt_size === '80mm Thermal Paper') {
@@ -1301,7 +1329,7 @@ class SaleController extends Controller
                     ->setPaper([0, 0, 227, 600], '');
             }
 
-            return $pdf->stream($receipt_no . '.pdf');
+            return $this->pdfStreamNoCache($pdf, $receipt_no . '.pdf');
 
         }
         else if ($receipt_size === 'A4 / Letter') {
@@ -1315,7 +1343,7 @@ class SaleController extends Controller
                     ->setPaper( 'a4', '' );
             }
 
-            return $pdf->stream($receipt_no . '.pdf');
+            return $this->pdfStreamNoCache($pdf, $receipt_no . '.pdf');
 
         }
         else if ($receipt_size === 'A5 / Half Letter') {
@@ -1329,7 +1357,7 @@ class SaleController extends Controller
                     ->setPaper( 'a5', '' );
             }
 
-            return $pdf->stream($receipt_no . '.pdf');
+            return $this->pdfStreamNoCache($pdf, $receipt_no . '.pdf');
 
         }
 
@@ -1338,6 +1366,20 @@ class SaleController extends Controller
         }
 
     }
+
+    /**
+     * Stream a PDF with no-cache headers so the browser never serves a stale
+     * receipt from its cache for a different sale.
+     */
+    private function pdfStreamNoCache($pdf, string $filename)
+    {
+        $response = $pdf->stream($filename);
+        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        $response->headers->set('Pragma',        'no-cache');
+        $response->headers->set('Expires',       '0');
+        return $response;
+    }
+
     public function getCreditReceipt()
     {
         if (!Auth()->user()->checkPermission('View Credit Sales')) {
