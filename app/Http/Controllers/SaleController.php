@@ -93,13 +93,15 @@ class SaleController extends Controller
     }
     public function creditSale()
     {
-        if (!auth()->user()->checkPermission('View Credit Sales') && 
-            !auth()->user()->checkPermission('View Credit Tracking') && 
-            !auth()->user()->checkPermission('View Credit Payment')) {
+        if (
+            !auth()->user()->checkPermission('View Credit Sales') &&
+            !auth()->user()->checkPermission('View Credit Tracking') &&
+            !auth()->user()->checkPermission('View Credit Payment')
+        ) {
             abort(403, 'Access Denied');
         }
 
-        $vat = Setting::where('id', 120)->value('value') / 100;//Get VAT %
+        $vat = Setting::where('id', 120)->value('value') / 100; //Get VAT %
         $back_date = Setting::where('id', 114)->value('value');
         $fixed_price = Setting::where('id', 124)->value('value');
         $enable_discount = Setting::where('id', 111)->value('value');
@@ -173,9 +175,11 @@ class SaleController extends Controller
                 /*return all by date*/
                 $payments = SalesCredit::join('sales', 'sales.id', '=', 'sales_credits.sale_id')
                     ->join('customers', 'customers.id', '=', 'sales.customer_id')
-                    ->whereBetween(DB::raw('date(created_at)'), [date('Y-m-d', strtotime($dates[0])),
-                        date('Y-m-d', strtotime($dates[1]))])
-                        ->orderBy('sales_credits.created_at', 'desc')
+                    ->whereBetween(DB::raw('date(created_at)'), [
+                        date('Y-m-d', strtotime($dates[0])),
+                        date('Y-m-d', strtotime($dates[1]))
+                    ])
+                    ->orderBy('sales_credits.created_at', 'desc')
                     ->get();
             } else {
                 if ($request->date === null) {
@@ -187,17 +191,17 @@ class SaleController extends Controller
                 } else {
                     $payments = SalesCredit::join('sales', 'sales.id', '=', 'sales_credits.sale_id')
                         ->join('customers', 'customers.id', '=', 'sales.customer_id')
-                        ->whereBetween(DB::raw('date(created_at)'), [date('Y-m-d', strtotime($dates[0])),
-                            date('Y-m-d', strtotime($dates[1]))])
+                        ->whereBetween(DB::raw('date(created_at)'), [
+                            date('Y-m-d', strtotime($dates[0])),
+                            date('Y-m-d', strtotime($dates[1]))
+                        ])
                         ->where('sales.customer_id', $request->customer_id)
                         ->orderBy('sales_credits.created_at', 'desc')
                         ->get();
                 }
-
             }
 
             return $payments;
-
         }
     }
     public function CreditSalePayment(Request $request)
@@ -206,8 +210,7 @@ class SaleController extends Controller
             abort(403, 'Access Denied');
         }
         //Validating amount before submitting
-        if($request->paid_amount>$request->balance)
-        {
+        if ($request->paid_amount > $request->balance) {
             session()->flash("alert-danger", "Amount paid should not exceed amount owed!");
             return back();
         }
@@ -225,7 +228,6 @@ class SaleController extends Controller
         $customer->save();
         session()->flash("alert-success", "Payment recorded successfully!");
         return back();
-
     }
     public function getCreditSale(Request $request)
     {
@@ -248,11 +250,11 @@ class SaleController extends Controller
                     ->groupBy('sales_credits.sale_id')
                     ->orderBy('sales.id', 'DESC');
 
-                    if (!is_all_store()) {
-                       $query->where('inv_current_stock.store_id', $store_id);
-                    }
+                if (!is_all_store()) {
+                    $query->where('inv_current_stock.store_id', $store_id);
+                }
 
-                    $sales = $query->get();
+                $sales = $query->get();
             } else {
                 $query = Sale::where('date', '>=', $from)
                     ->where('date', '<=', $to)
@@ -262,11 +264,11 @@ class SaleController extends Controller
                     ->join('inv_current_stock', 'inv_current_stock.id', '=', 'sales_details.stock_id')
                     ->groupBy('sales_credits.sale_id')
                     ->orderBy('sales.id', 'DESC');
-                    
-                    if (!is_all_store()) {
-                       $query->where('inv_current_stock.store_id', $store_id);
-                    }
-                    $sales = $query->get();
+
+                if (!is_all_store()) {
+                    $query->where('inv_current_stock.store_id', $store_id);
+                }
+                $sales = $query->get();
             }
 
             foreach ($sales as $sale) {
@@ -274,7 +276,7 @@ class SaleController extends Controller
                 $discount = SalesDetail::where('sale_id', $sale->sale_id)->sum('discount');
                 $amount = SalesDetail::where('sale_id', $sale->sale_id)->sum('amount');
                 $sale->paid_amount = SalesCredit::where('sale_id', $sale->sale_id)->sum('paid_amount');
-                $sale->balance = $outstanding->balance-$discount;
+                $sale->balance = $outstanding->balance - $discount;
                 $sale->total_amount = $amount - $discount;
             }
 
@@ -308,7 +310,7 @@ class SaleController extends Controller
             ->join('inv_products as p', 'p.id', '=', 'cs.product_id')
             ->joinSub($latestStockPerProduct, 'lp', function ($join) {
                 $join->on('cs.product_id', '=', 'lp.product_id')
-                     ->on('sp.stock_id',   '=', 'lp.max_stock_id');
+                    ->on('sp.stock_id',   '=', 'lp.max_stock_id');
             })
             ->joinSub($quantityPerProduct, 'qp', 'p.id', '=', 'qp.product_id')
             ->where('sp.price_category_id', $category_id)
@@ -373,7 +375,7 @@ class SaleController extends Controller
                 ->join('inv_products as p', 'p.id', '=', 'cs.product_id')
                 ->joinSub($latestStockPerProduct, 'lp', function ($join) {
                     $join->on('cs.product_id', '=', 'lp.product_id')
-                         ->on('sp.stock_id',   '=', 'lp.max_stock_id');
+                        ->on('sp.stock_id',   '=', 'lp.max_stock_id');
                 })
                 ->joinSub($quantityPerProduct, 'qp', 'p.id', '=', 'qp.product_id')
                 ->where('sp.price_category_id', $category_id)
@@ -381,10 +383,10 @@ class SaleController extends Controller
                 ->where('qp.total_quantity', '>', 0)
                 ->where(function ($q) use ($word) {
                     $q->where('p.name',      'LIKE', "%{$word}%")
-                      ->orWhere('p.barcode',  $word)
-                      ->orWhere('p.brand',    'LIKE', "%{$word}%")
-                      ->orWhere('p.pack_size','LIKE', "%{$word}%")
-                      ->orWhere('p.sales_uom','LIKE', "%{$word}%");
+                        ->orWhere('p.barcode',  $word)
+                        ->orWhere('p.brand',    'LIKE', "%{$word}%")
+                        ->orWhere('p.pack_size', 'LIKE', "%{$word}%")
+                        ->orWhere('p.sales_uom', 'LIKE', "%{$word}%");
                 })
                 ->select(
                     'p.id',
@@ -430,8 +432,8 @@ class SaleController extends Controller
             $pharmacy['address'] = Setting::where('id', 106)->value('value');
             $pharmacy['tin_number'] = Setting::where('id', 102)->value('value');
             $pharmacy['phone'] = Setting::where('id', 107)->value('value');
-            $pharmacy[ 'website' ] = Setting::where( 'id', 109 )->value( 'value' );
-            $pharmacy[ 'email' ] = Setting::where( 'id', 108 )->value( 'value' );
+            $pharmacy['website'] = Setting::where('id', 109)->value('value');
+            $pharmacy['email'] = Setting::where('id', 108)->value('value');
             $pharmacy['slogan'] = Setting::where('id', 104)->value('value');
             $pharmacy['vrn_number'] = Setting::where('id', 103)->value('value');
 
@@ -539,35 +541,41 @@ class SaleController extends Controller
             $receipt_size = Setting::where('id', 119)->value('value');
 
             if ($receipt_size === '58mm Thermal Paper') {
-                $pdf = PDF::loadView('sales.delivery_notes.delivery_note_pdf_thermal_58',
-                    compact('data', 'pharmacy', 'page', 'generalSettings'))
+                $pdf = PDF::loadView(
+                    'sales.delivery_notes.delivery_note_pdf_thermal_58',
+                    compact('data', 'pharmacy', 'page', 'generalSettings')
+                )
                     ->setPaper([0, 0, 136, 600], '');
             } elseif ($receipt_size === 'A4 / Letter') {
-                $pdf = PDF::loadView('sales.delivery_notes.delivery_note_pdf',
-                    compact('data', 'pharmacy', 'page', 'generalSettings'))
+                $pdf = PDF::loadView(
+                    'sales.delivery_notes.delivery_note_pdf',
+                    compact('data', 'pharmacy', 'page', 'generalSettings')
+                )
                     ->setPaper('a4', '');
             } elseif ($receipt_size === '80mm Thermal Paper') {
-                $pdf = PDF::loadView('sales.delivery_notes.delivery_note_pdf_thermal_80',
-                    compact('data', 'pharmacy', 'page', 'generalSettings'))
+                $pdf = PDF::loadView(
+                    'sales.delivery_notes.delivery_note_pdf_thermal_80',
+                    compact('data', 'pharmacy', 'page', 'generalSettings')
+                )
                     ->setPaper([0, 0, 227, 600], '');
             } elseif ($receipt_size === 'A5 / Half Letter') {
-                $pdf = PDF::loadView('sales.delivery_notes.delivery_note_pdf_A5',
-                    compact('data', 'pharmacy', 'page', 'generalSettings'))
+                $pdf = PDF::loadView(
+                    'sales.delivery_notes.delivery_note_pdf_A5',
+                    compact('data', 'pharmacy', 'page', 'generalSettings')
+                )
                     ->setPaper('a5', '');
             } else {
-                $pdf = PDF::loadView('sales.delivery_notes.delivery_note_pdf',
-                    compact('data', 'pharmacy', 'page', 'generalSettings'))
+                $pdf = PDF::loadView(
+                    'sales.delivery_notes.delivery_note_pdf',
+                    compact('data', 'pharmacy', 'page', 'generalSettings')
+                )
                     ->setPaper('a4', '');
             }
 
             return $this->pdfStreamNoCache($pdf, $request->reprint_receipt . '.pdf');
-
-        }catch (Exception $e)
-        {
-            Log::info("Error",['PrintingError'=>$e]);
+        } catch (Exception $e) {
+            Log::info("Error", ['PrintingError' => $e]);
         }
-
-
     }
 
     public function storeCashSale(Request $request)
@@ -579,13 +587,13 @@ class SaleController extends Controller
 
         if ($request->ajax()) {
             $this->store($request);
-            
+
             $receipt_print = Setting::where('id', 117)->value('value');
-            if($receipt_print === "YES"){
+            if ($receipt_print === "YES") {
                 return response()->json([
                     'redirect_to' => route('getCashReceipt', '1')
                 ]);
-            }else{
+            } else {
                 $this->cashSale();
                 return;
             }
@@ -597,7 +605,7 @@ class SaleController extends Controller
             $default_store = current_store_id();
 
             //some attributes declaration
-            $vat = Setting::where('id', 120)->value('value') / 100;//Get VAT %
+            $vat = Setting::where('id', 120)->value('value') / 100; //Get VAT %
             $receipt_number = strtoupper(substr(md5(microtime()), rand(0, 24), 8));
             $cart = json_decode($request->cart, true);
             $discount = $request->discount_amount;
@@ -691,15 +699,15 @@ class SaleController extends Controller
                                     $details->stock_id = $stock->id;
                                     $details->quantity = $qty;
                                     $details->price = $price;
-                                    $details->vat = (($details->price*$details->quantity) - $sale_discount) * $vat;
+                                    $details->vat = (($details->price * $details->quantity) - $sale_discount) * $vat;
                                     Log::info('Amount before sale detail', [
                                         'sale_id' => $sale,
                                         'stock_id' => $stock->id,
                                         'quantity' => $qty,
                                         'unit_price' => $price,
-                                        'amount_after_vat' => ($price*$qty) + $details->vat,
+                                        'amount_after_vat' => ($price * $qty) + $details->vat,
                                     ]);
-                                    $details->amount = ($details->price*$details->quantity) + $details->vat;
+                                    $details->amount = ($details->price * $details->quantity) + $details->vat;
                                     Log::info('Amount after sale detail', [
                                         'sale_id' => $sale,
                                         'stock_id' => $stock->id,
@@ -707,7 +715,7 @@ class SaleController extends Controller
                                         'unit_price' => $price,
                                         'unit_discount' => $unit_discount,
                                         'sale_discount' => $sale_discount,
-                                        'amount_after_vat' => ($details->price*$details->quantity) + $details->vat,
+                                        'amount_after_vat' => ($details->price * $details->quantity) + $details->vat,
                                     ]);
                                     $details->discount = $sale_discount;
                                     $details->save();
@@ -730,13 +738,12 @@ class SaleController extends Controller
                                 $stock_tracking->updated_by = Auth::user()->id;
                                 if ($request->credit == 'Yes') {
                                     $stock_tracking->out_mode = 'Credit Sales';
-                                }else{
+                                } else {
                                     $stock_tracking->out_mode = 'Cash Sales';
                                 }
                                 $stock_tracking->updated_at = date('Y/m/d');
                                 $stock_tracking->movement = 'OUT';
                                 $stock_tracking->save();
-
                             }
                         }
                     }
@@ -753,7 +760,7 @@ class SaleController extends Controller
                             DB::rollBack();
                             return back();
                         }
-                        
+
                         $credit = new SalesCredit;
                         $credit->sale_id = $sale;
                         $credit->paid_amount = $request->paid_amount ?? 0;
@@ -773,7 +780,7 @@ class SaleController extends Controller
                         ]);
                         throw $e; // Re-throw to trigger rollback
                     }
-                  // session()->flash("alert-success", "Sale recorded successfully!");
+                    // session()->flash("alert-success", "Sale recorded successfully!");
                 }
 
                 DB::commit();
@@ -783,20 +790,17 @@ class SaleController extends Controller
                 // from being printed when multiple sales happen in the same session.
                 session(['last_receipt_number' => $receipt_number, 'last_sale_id' => $sale]);
                 session()->flash("alert-success", "Sales recorded successfully!");
-
             } catch (\Exception $e) {
                 DB::rollBack();
                 Log::error('Database error in sale store: ' . $e->getMessage());
                 session()->flash("alert-danger", "Failed to record sales. Please try again.");
                 return back();
             }
-
         } catch (\Exception $e) {
             Log::error('Error in sale store method: ' . $e->getMessage());
             session()->flash("alert-danger", "An unexpected error occurred. Please try again.");
             return back();
         }
-
     }
     public function receiptReprint($receipt, Request $request)
     {
@@ -807,8 +811,8 @@ class SaleController extends Controller
             $pharmacy['address'] = Setting::where('id', 106)->value('value');
             $pharmacy['tin_number'] = Setting::where('id', 102)->value('value');
             $pharmacy['phone'] = Setting::where('id', 107)->value('value');
-            $pharmacy[ 'website' ] = Setting::where( 'id', 109 )->value( 'value' );
-            $pharmacy[ 'email' ] = Setting::where( 'id', 108 )->value( 'value' );
+            $pharmacy['website'] = Setting::where('id', 109)->value('value');
+            $pharmacy['email'] = Setting::where('id', 108)->value('value');
             $pharmacy['slogan'] = Setting::where('id', 104)->value('value');
             $pharmacy['vrn_number'] = Setting::where('id', 103)->value('value');
 
@@ -852,7 +856,7 @@ class SaleController extends Controller
             // Group by product name, sum quantities and amounts
             $productMap = [];
             foreach ($sale_detail as $item) {
-                $name = $item->currentStock['product']['name'].' '.$item->currentStock['product']['brand'].' '.$item->currentStock['product']['pack_size'].$item->currentStock['product']['sales_uom'];
+                $name = $item->currentStock['product']['name'] . ' ' . $item->currentStock['product']['brand'] . ' ' . $item->currentStock['product']['pack_size'] . $item->currentStock['product']['sales_uom'];
                 $key = $name;
 
                 if (!isset($productMap[$key])) {
@@ -890,7 +894,7 @@ class SaleController extends Controller
                 $productMap[$key]['amount'] += $item->amount - $item->discount;
                 $productMap[$key]['sub_total'] += $item->amount + $item->discount - $item->vat;
             }
-            
+
             $sn = 0;
             foreach ($productMap as $row) {
                 $sn++;
@@ -909,56 +913,68 @@ class SaleController extends Controller
 
             if ($receipt_size == '58mm Thermal Paper' && $page == 1) {
                 $show_description = Setting::where('id', 128)->value('value') ?? 'YES';
-                $pdf = PDF::loadView('sales.cash_sales.receipt_thermal',
-                    compact('data', 'pharmacy', 'page', 'generalSettings', 'show_description'))
+                $pdf = PDF::loadView(
+                    'sales.cash_sales.receipt_thermal',
+                    compact('data', 'pharmacy', 'page', 'generalSettings', 'show_description')
+                )
                     ->setPaper([0, 0, 136, 600], '');
                 return $this->pdfStreamNoCache($pdf, $request->reprint_receipt . '.pdf');
             } else if ($receipt_size == '58mm Thermal Paper' && $page == -1) {
                 $show_description = Setting::where('id', 128)->value('value') ?? 'YES';
-                $pdf = PDF::loadView('sales.cash_sales.credit_receipt_thermal',
-                    compact('data', 'pharmacy', 'page', 'generalSettings', 'show_description'))
+                $pdf = PDF::loadView(
+                    'sales.cash_sales.credit_receipt_thermal',
+                    compact('data', 'pharmacy', 'page', 'generalSettings', 'show_description')
+                )
                     ->setPaper([0, 0, 136, 600], '');
                 return $this->pdfStreamNoCache($pdf, $request->reprint_receipt . '.pdf');
-            }else if ($receipt_size == 'A4 / Letter' && $page == 1) {
-                $pdf = PDF::loadView('sales.cash_sales.receipt_A4',
-                    compact('data', 'pharmacy', 'page', 'generalSettings'))
+            } else if ($receipt_size == 'A4 / Letter' && $page == 1) {
+                $pdf = PDF::loadView(
+                    'sales.cash_sales.receipt_A4',
+                    compact('data', 'pharmacy', 'page', 'generalSettings')
+                )
                     ->setPaper('a4', '');
                 return $this->pdfStreamNoCache($pdf, $request->reprint_receipt . '.pdf');
-            }else if ($receipt_size == 'A4 / Letter' && $page == -1) {
-                $pdf = PDF::loadView('sales.cash_sales.credit_receipt_A4',
-                    compact('data', 'pharmacy', 'page', 'generalSettings'))
+            } else if ($receipt_size == 'A4 / Letter' && $page == -1) {
+                $pdf = PDF::loadView(
+                    'sales.cash_sales.credit_receipt_A4',
+                    compact('data', 'pharmacy', 'page', 'generalSettings')
+                )
                     ->setPaper('a4', '');
                 return $this->pdfStreamNoCache($pdf, $request->reprint_receipt . '.pdf');
             } else if ($receipt_size == '80mm Thermal Paper' && $page == 1) {
-                $pdf = PDF::loadView('sales.cash_sales.receipt_thermal_80',
-                    compact('data', 'pharmacy', 'page', 'generalSettings'))
+                $pdf = PDF::loadView(
+                    'sales.cash_sales.receipt_thermal_80',
+                    compact('data', 'pharmacy', 'page', 'generalSettings')
+                )
                     ->setPaper([0, 0, 227, 600], '');
                 return $this->pdfStreamNoCache($pdf, $request->reprint_receipt . '.pdf');
             } else if ($receipt_size == '80mm Thermal Paper' && $page == -1) {
-                $pdf = PDF::loadView('sales.cash_sales.credit_receipt_thermal_80',
-                    compact('data', 'pharmacy', 'page', 'generalSettings'))
+                $pdf = PDF::loadView(
+                    'sales.cash_sales.credit_receipt_thermal_80',
+                    compact('data', 'pharmacy', 'page', 'generalSettings')
+                )
                     ->setPaper([0, 0, 227, 600], '');
                 return $this->pdfStreamNoCache($pdf, $request->reprint_receipt . '.pdf');
             } else if ($receipt_size == 'A5 / Half Letter' && $page == 1) {
-                $pdf = PDF::loadView('sales.cash_sales.receipt',
-                    compact('data', 'pharmacy', 'page', 'generalSettings'))
+                $pdf = PDF::loadView(
+                    'sales.cash_sales.receipt',
+                    compact('data', 'pharmacy', 'page', 'generalSettings')
+                )
                     ->setPaper('a5', '');
                 return $this->pdfStreamNoCache($pdf, $request->reprint_receipt . '.pdf');
             } else if ($receipt_size == 'A5 / Half Letter' && $page == -1) {
-                $pdf = PDF::loadView('sales.cash_sales.credit_receipt',
-                    compact('data', 'pharmacy', 'page', 'generalSettings'))
+                $pdf = PDF::loadView(
+                    'sales.cash_sales.credit_receipt',
+                    compact('data', 'pharmacy', 'page', 'generalSettings')
+                )
                     ->setPaper('a5', '');
                 return $this->pdfStreamNoCache($pdf, $request->reprint_receipt . '.pdf');
             } else {
                 echo "<script>window.close();</script>";
             }
-
-        }catch (Exception $e)
-        {
-            Log::info("Error",['PrintingError'=>$e]);
+        } catch (Exception $e) {
+            Log::info("Error", ['PrintingError' => $e]);
         }
-
-
     }
     public function storeCreditSale(Request $request)
     {
@@ -981,15 +997,15 @@ class SaleController extends Controller
                 $this->store($request);
 
                 $receipt_print = Setting::where('id', 117)->value('value');
-                if($receipt_print === "YES"){
+                if ($receipt_print === "YES") {
                     return response()->json([
                         'to' => 'receipt',
                         'redirect_to' => route('getCashReceipt', '-1')
                     ]);
-                }else{
+                } else {
                     return response()->json([
                         'to' => 'sale',
-                        'redirect_to' => route('credit-sales.creditSale') 
+                        'redirect_to' => route('credit-sales.creditSale')
                     ]);
                 }
             }
@@ -998,15 +1014,15 @@ class SaleController extends Controller
                 $request->merge(['customer_id' => (int) $request->customer_id]);
                 $this->store($request);
                 $receipt_print = Setting::where('id', 117)->value('value');
-                if($receipt_print === "YES"){
+                if ($receipt_print === "YES") {
                     return response()->json([
                         'to' => 'receipt',
                         'redirect_to' => route('getCashReceipt', '-1')
                     ]);
-                }else{
+                } else {
                     return response()->json([
                         'to' => 'sale',
-                        'redirect_to' => route('credit-sales.creditSale') 
+                        'redirect_to' => route('credit-sales.creditSale')
                     ]);
                 }
             }
@@ -1050,7 +1066,7 @@ class SaleController extends Controller
             // Apply store filter inside subquery so joinSub uses it
             ->when(!is_all_store(), function ($q) use ($storeId) {
                 $q->join('inv_current_stock', 'sales_details.stock_id', '=', 'inv_current_stock.id')
-                ->where('inv_current_stock.store_id', $storeId);
+                    ->where('inv_current_stock.store_id', $storeId);
             })
             ->groupBy('sale_id');
 
@@ -1068,12 +1084,12 @@ class SaleController extends Controller
 
         // Select columns (ensure sales.* so Eloquent can hydrate model)
         $sales = $query->select([
-                'sales.*',
-                'sales_summary.total_amount',
-                'sales_summary.total_discount',
-                'sales_summary.total_vat',
-                'sales_summary.items_count'
-            ])
+            'sales.*',
+            'sales_summary.total_amount',
+            'sales_summary.total_discount',
+            'sales_summary.total_vat',
+            'sales_summary.items_count'
+        ])
             ->orderBy('sales.id', 'desc')
             ->get();
 
@@ -1091,22 +1107,22 @@ class SaleController extends Controller
 
         // Get aggregated data for sales_details
         $salesDetails = DB::table('sales_details')
-                    ->join('inv_current_stock', 'sales_details.stock_id', '=', 'inv_current_stock.id')
-                    ->join('inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id')
-                    ->where('sale_id', $saleReceipt);
+            ->join('inv_current_stock', 'sales_details.stock_id', '=', 'inv_current_stock.id')
+            ->join('inv_products', 'inv_products.id', '=', 'inv_current_stock.product_id')
+            ->where('sale_id', $saleReceipt);
 
         // Store filter
         if (!is_all_store()) {
-        $salesDetails->where('inv_current_stock.store_id', $storeId);
+            $salesDetails->where('inv_current_stock.store_id', $storeId);
         }
 
         $results = $salesDetails->select('sales_details.*', 'inv_products.name', 'inv_products.brand', 'inv_products.pack_size', 'inv_products.sales_uom')
-        ->orderBy('id', 'asc')
-        ->get();
-        
+            ->orderBy('id', 'asc')
+            ->get();
+
         $groupedData = [];
         foreach ($results as $item) {
-            $productName = $item->name.' '.($item->brand ?? '').' '.$item->pack_size.$item->sales_uom;
+            $productName = $item->name . ' ' . ($item->brand ?? '') . ' ' . $item->pack_size . $item->sales_uom;
             $key = $productName;
             if (!isset($groupedData[$key])) {
                 $groupedData[$key] = [
@@ -1136,21 +1152,21 @@ class SaleController extends Controller
 
         $finalResults = array_values($groupedData);
 
-            
+
         return response()->json([
             "data" => $finalResults
         ]);
-    } 
+    }
     public function salesDetailsData(Request $request)
     {
 
         $data = DB::table('sales')
-            ->join('customers','customers.id','=','sales.customer_id')
-            ->join('sales_details','sales.id','=','sales_details.sale_id')
-            ->join('inv_current_stock','sales_details.stock_id','=','inv_current_stock.id')
-            ->join('inv_products','inv_current_stock.product_id','=','inv_products.id')
-            ->select('inv_products.name','sales_details.price','sales_details.quantity','customers.name as customer_name')
-            ->where('sales.receipt_number','=',$request->receipt_number)
+            ->join('customers', 'customers.id', '=', 'sales.customer_id')
+            ->join('sales_details', 'sales.id', '=', 'sales_details.sale_id')
+            ->join('inv_current_stock', 'sales_details.stock_id', '=', 'inv_current_stock.id')
+            ->join('inv_products', 'inv_current_stock.product_id', '=', 'inv_products.id')
+            ->select('inv_products.name', 'sales_details.price', 'sales_details.quantity', 'customers.name as customer_name')
+            ->where('sales.receipt_number', '=', $request->receipt_number)
             ->get();
 
         return $data;
@@ -1161,9 +1177,9 @@ class SaleController extends Controller
             abort(403, 'Access Denied');
         }
 
-        $vat = Setting::where('id', 120)->value('value') / 100; 
+        $vat = Setting::where('id', 120)->value('value') / 100;
         $customers = Customer::orderBy('name', 'ASC')->get();
-        $enable_discount = Setting::where( 'id', 111 )->value( 'value' );
+        $enable_discount = Setting::where('id', 111)->value('value');
         return View::make('sales.sales_history.index')
             ->with(compact('vat'))->with(compact('customers', 'enable_discount'));
     }
@@ -1187,8 +1203,8 @@ class SaleController extends Controller
         $pharmacy['address'] = Setting::where('id', 106)->value('value');
         $pharmacy['tin_number'] = Setting::where('id', 102)->value('value');
         $pharmacy['phone'] = Setting::where('id', 107)->value('value');
-        $pharmacy[ 'website' ] = Setting::where( 'id', 109 )->value( 'value' );
-        $pharmacy[ 'email' ] = Setting::where( 'id', 108 )->value( 'value' );
+        $pharmacy['website'] = Setting::where('id', 109)->value('value');
+        $pharmacy['email'] = Setting::where('id', 108)->value('value');
         $pharmacy['slogan'] = Setting::where('id', 104)->value('value');
         $pharmacy['vrn_number'] = Setting::where('id', 103)->value('value');
 
@@ -1202,15 +1218,15 @@ class SaleController extends Controller
         $last_receipt = session('last_receipt_number');
         if ($last_receipt) {
             $id = Sale::where('receipt_number', $last_receipt)
-                      ->where('created_by', Auth::id())
-                      ->value('id');
+                ->where('created_by', Auth::id())
+                ->value('id');
         }
         // Fallback: order by primary key (not date – multiple sales on the same
         // day share the same date value, making ORDER BY date non-deterministic)
         if (!$id) {
             $id = Sale::where('created_by', Auth::id())
-                      ->orderBy('id', 'desc')
-                      ->value('id');
+                ->orderBy('id', 'desc')
+                ->value('id');
         }
 
         $paid = null;
@@ -1227,24 +1243,24 @@ class SaleController extends Controller
             $balance = $amounts->balance;
             $remark = $amounts->remark;
             $grace_pr = $amounts->grace_period;
-            if($grace_pr > 1){
-                $grace_period = $grace_pr.' Days';
-            }else{
-                $grace_period = $grace_pr.' Day';
+            if ($grace_pr > 1) {
+                $grace_period = $grace_pr . ' Days';
+            } else {
+                $grace_period = $grace_pr . ' Day';
             }
         }
 
         $sale_detail = SalesDetail::where('sale_id', $id)->get();
         // $sale_date = Sale::select('date')->where('id', $id)->get();
-            // dd($id);
+        // dd($id);
         $sales = array();
         $grouped_sales = array();
         $sn = 0;
-        
+
         // Group by product name, sum quantities and amounts
         $productMap = [];
         foreach ($sale_detail as $item) {
-            $name = $item->currentStock['product']['name'].' '.$item->currentStock['product']['brand'].' '.$item->currentStock['product']['pack_size'].$item->currentStock['product']['sales_uom'];
+            $name = $item->currentStock['product']['name'] . ' ' . $item->currentStock['product']['brand'] . ' ' . $item->currentStock['product']['pack_size'] . $item->currentStock['product']['sales_uom'];
             $key = $name;
 
             if (!isset($productMap[$key])) {
@@ -1282,7 +1298,7 @@ class SaleController extends Controller
             $productMap[$key]['amount'] += $item->amount - $item->discount;
             $productMap[$key]['sub_total'] += $item->amount + $item->discount - $item->vat;
         }
-        
+
         $sn = 0;
         foreach ($productMap as $row) {
             $sn++;
@@ -1298,7 +1314,7 @@ class SaleController extends Controller
 
         $data = $grouped_sales;
 
-        Log::info('Data'.json_encode($data));
+        Log::info('Data' . json_encode($data));
 
         // Get the receipt number from the sale data
         $receipt_no = !empty($data) ? array_key_first($data) : 'receipt';
@@ -1306,71 +1322,72 @@ class SaleController extends Controller
         if ($receipt_size === '58mm Thermal Paper') {
             $show_description = Setting::where('id', 128)->value('value') ?? 'YES';
             if ($page === "-1" || $page == -1) {
-                $pdf = PDF::loadView('sales.cash_sales.credit_receipt_thermal',
-                    compact('data', 'pharmacy', 'page', 'generalSettings', 'show_description'))
+                $pdf = PDF::loadView(
+                    'sales.cash_sales.credit_receipt_thermal',
+                    compact('data', 'pharmacy', 'page', 'generalSettings', 'show_description')
+                )
                     ->setPaper([0, 0, 163, 600], '');
             } else {
-                $pdf = PDF::loadView('sales.cash_sales.receipt_thermal',
-                    compact('data', 'pharmacy', 'page', 'generalSettings', 'show_description'))
+                $pdf = PDF::loadView(
+                    'sales.cash_sales.receipt_thermal',
+                    compact('data', 'pharmacy', 'page', 'generalSettings', 'show_description')
+                )
                     ->setPaper([0, 0, 163, 600], '');
             }
 
             return $this->pdfStreamNoCache($pdf, $receipt_no . '.pdf');
-
-        }
-        else if ($receipt_size === '80mm Thermal Paper') {
+        } else if ($receipt_size === '80mm Thermal Paper') {
             if ($page === "-1") {
-                $pdf = PDF::loadView('sales.cash_sales.credit_receipt_thermal_80',
-                    compact('data', 'pharmacy', 'page', 'generalSettings'))
+                $pdf = PDF::loadView(
+                    'sales.cash_sales.credit_receipt_thermal_80',
+                    compact('data', 'pharmacy', 'page', 'generalSettings')
+                )
                     ->setPaper([0, 0, 227, 600], '');
             } else {
-                $pdf = PDF::loadView('sales.cash_sales.receipt_thermal_80',
-                    compact('data', 'pharmacy', 'page', 'generalSettings'))
+                $pdf = PDF::loadView(
+                    'sales.cash_sales.receipt_thermal_80',
+                    compact('data', 'pharmacy', 'page', 'generalSettings')
+                )
                     ->setPaper([0, 0, 227, 600], '');
             }
 
             return $this->pdfStreamNoCache($pdf, $receipt_no . '.pdf');
-
-        }
-        else if ($receipt_size === 'A4 / Letter') {
+        } else if ($receipt_size === 'A4 / Letter') {
             if ($page === "-1") {
-                $pdf = PDF::loadView('sales.cash_sales.credit_receipt_A4',
-                    compact('data', 'pharmacy', 'page', 'generalSettings'))
-                    ->setPaper( 'a4', '' );
+                $pdf = PDF::loadView(
+                    'sales.cash_sales.credit_receipt_A4',
+                    compact('data', 'pharmacy', 'page', 'generalSettings')
+                )
+                    ->setPaper('a4', '');
             } else {
-                $pdf = PDF::loadView('sales.cash_sales.receipt_A4',
-                    compact('data', 'pharmacy', 'page', 'generalSettings'))
-                    ->setPaper( 'a4', '' );
+                $pdf = PDF::loadView(
+                    'sales.cash_sales.receipt_A4',
+                    compact('data', 'pharmacy', 'page', 'generalSettings')
+                )
+                    ->setPaper('a4', '');
             }
 
             return $this->pdfStreamNoCache($pdf, $receipt_no . '.pdf');
-
-        }
-        else if ($receipt_size === 'A5 / Half Letter') {
+        } else if ($receipt_size === 'A5 / Half Letter') {
             if ($page === "-1") {
-                $pdf = PDF::loadView('sales.cash_sales.credit_receipt',
-                    compact('data', 'pharmacy', 'page', 'generalSettings'))
-                    ->setPaper( 'a5', '' );
+                $pdf = PDF::loadView(
+                    'sales.cash_sales.credit_receipt',
+                    compact('data', 'pharmacy', 'page', 'generalSettings')
+                )
+                    ->setPaper('a5', '');
             } else {
-                $pdf = PDF::loadView('sales.cash_sales.receipt',
-                    compact('data', 'pharmacy', 'page', 'generalSettings'))
-                    ->setPaper( 'a5', '' );
+                $pdf = PDF::loadView(
+                    'sales.cash_sales.receipt',
+                    compact('data', 'pharmacy', 'page', 'generalSettings')
+                )
+                    ->setPaper('a5', '');
             }
 
             return $this->pdfStreamNoCache($pdf, $receipt_no . '.pdf');
-
-        }
-
-        else {
+        } else {
             echo "<script>window.close();</script>";
         }
-
     }
-
-    /**
-     * Stream a PDF with no-cache headers so the browser never serves a stale
-     * receipt from its cache for a different sale.
-     */
     private function pdfStreamNoCache($pdf, string $filename)
     {
         $response = $pdf->stream($filename);
@@ -1400,11 +1417,11 @@ class SaleController extends Controller
         $sales = array();
         $grouped_sales = array();
         $sn = 0;
-                
+
         // Group by product name, sum quantities and amounts
         $productMap = [];
         foreach ($sale_detail as $item) {
-            $name = $item->currentStock['product']['name'].' '.$item->currentStock['product']['brand'].' '.$item->currentStock['product']['pack_size'].$item->currentStock['product']['sales_uom'];
+            $name = $item->currentStock['product']['name'] . ' ' . $item->currentStock['product']['brand'] . ' ' . $item->currentStock['product']['pack_size'] . $item->currentStock['product']['sales_uom'];
             $key = $name;
 
             if (!isset($productMap[$key])) {
@@ -1442,7 +1459,7 @@ class SaleController extends Controller
             $productMap[$key]['amount'] += $item->amount - $item->discount;
             $productMap[$key]['sub_total'] += $item->amount + $item->discount - $item->vat;
         }
-        
+
         $sn = 0;
         foreach ($productMap as $row) {
             $sn++;
@@ -1456,14 +1473,13 @@ class SaleController extends Controller
             }
         }
         $data = $grouped_sales;
-        $pdf = PDF::loadView('sales.credit_sales.receipt',
-            compact('data', 'pharmacy'));
+        $pdf = PDF::loadView(
+            'sales.credit_sales.receipt',
+            compact('data', 'pharmacy')
+        );
         return $pdf->download('Recept.pdf');
     }
 
-    /**
-     * Mobile POS - Show mobile-only POS interface
-     */
     public function mobilePOS()
     {
         try {
@@ -1478,44 +1494,36 @@ class SaleController extends Controller
         }
     }
 
-    /**
-     * Get products for mobile POS (simplified)
-     */
- public function getMobileProducts(Request $request)
-{
-    try {
-        $search = $request->get('search', '');
+    public function getMobileProducts(Request $request)
+    {
+        try {
+            $search = $request->get('search', '');
 
-        $products = Product::where('inv_products.status', 1)
-            ->when($search, function($query) use ($search) {
-                return $query->where(function($q) use ($search) {
-                    $q->where('inv_products.name', 'LIKE', "%{$search}%")
-                      ->orWhere('inv_products.barcode', 'LIKE', "%{$search}%")
-                      ->orWhere('inv_products.brand', 'LIKE', "%{$search}%");
-                });
-            })
-            ->select(
-                'inv_products.id as product_id',
-                'inv_products.name',
-                'inv_products.brand',
-                'inv_products.pack_size',
-                'inv_products.barcode',
-                'inv_products.sales_uom'
-            )
-            ->limit(50)
-            ->get();
+            $products = Product::where('inv_products.status', 1)
+                ->when($search, function ($query) use ($search) {
+                    return $query->where(function ($q) use ($search) {
+                        $q->where('inv_products.name', 'LIKE', "%{$search}%")
+                            ->orWhere('inv_products.barcode', 'LIKE', "%{$search}%")
+                            ->orWhere('inv_products.brand', 'LIKE', "%{$search}%");
+                    });
+                })
+                ->select(
+                    'inv_products.id as product_id',
+                    'inv_products.name',
+                    'inv_products.brand',
+                    'inv_products.pack_size',
+                    'inv_products.barcode',
+                    'inv_products.sales_uom'
+                )
+                ->limit(50)
+                ->get();
 
-        return response()->json(['success' => true, 'products' => $products]);
-
-    } catch (\Exception $e) {
-        Log::error('Error in getMobileProducts: ' . $e->getMessage());
-        return response()->json(['success' => false, 'message' => 'Error fetching products'], 500);
+            return response()->json(['success' => true, 'products' => $products]);
+        } catch (\Exception $e) {
+            Log::error('Error in getMobileProducts: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Error fetching products'], 500);
+        }
     }
-}
-
-    /**
-     * Store mobile POS sale
-     */
 
     public function storeMobileSale(Request $request)
     {
@@ -1544,8 +1552,8 @@ class SaleController extends Controller
             $pharmacy['address'] = Setting::where('id', 106)->value('value');
             $pharmacy['tin_number'] = Setting::where('id', 102)->value('value');
             $pharmacy['phone'] = Setting::where('id', 107)->value('value');
-            $pharmacy[ 'website' ] = Setting::where( 'id', 109 )->value( 'value' );
-            $pharmacy[ 'email' ] = Setting::where( 'id', 108 )->value( 'value' );
+            $pharmacy['website'] = Setting::where('id', 109)->value('value');
+            $pharmacy['email'] = Setting::where('id', 108)->value('value');
             $pharmacy['slogan'] = Setting::where('id', 104)->value('value');
             $pharmacy['vrn_number'] = Setting::where('id', 103)->value('value');
 
@@ -1578,7 +1586,6 @@ class SaleController extends Controller
                 'company_vrn' => $pharmacy['vrn_number'],
                 'total' => $request->price,
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error in storeMobileSale: ' . $e->getMessage());

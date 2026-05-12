@@ -102,16 +102,6 @@
                             </div>
                         </div>
 
-                        <!-- ajax loading gif -->
-                        {{-- <div id="loading">
-                            <image id="loading-image" src="{{asset('assets/images/spinner.gif')}}"></image>
-                        </div>
-
-                        <input type="hidden" value="" id="category">
-                        <input type="hidden" value="" id="customers">
-                        <input type="hidden" value="" id="print">
-                        <input type="hidden" value="" id="fixed_price"> --}}
-
                     </div>
                     {{-- Sales Return End--}}
 

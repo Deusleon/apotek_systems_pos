@@ -846,16 +846,7 @@ function saleReturn(items, sale_id) {
             item_data.push(
                 " <button class='btn btn-sm btn-rounded btn-success' disabled>Returned</button>",
             );
-        } else if (
-            item.status === 5 ||
-            item.status === "5" ||
-            item.has_return
-        ) {
-            // Already returned (partial or has any return) - no more returns allowed
-            item_data.push(
-                " <button class='btn btn-sm btn-rounded btn-success' disabled>Returned</button>",
-            );
-        } else if (item.status === 2 || item.status === "2") {
+        }else if (item.status === 2 || item.status === "2") {
             // Waiting for approval
             item_data.push(
                 " <button class='btn btn-sm btn-rounded btn-warning' disabled>Pending</button>",
@@ -939,6 +930,7 @@ $("#items_table tbody").on("click", "#rtn_btn", function () {
     $("#sale-return").find(".modal-body #og_item_qty").val(data[2]);
     $("#sale-return").find(".modal-body #name_of_item").val(data[1]);
     document.getElementById("save_btn").style.display = "block";
+    document.getElementById("qty_debug").value = maxReturnableQty;
     $("#sale-return").on("change", "#rtn_qty_to_show", function () {
         var quantity = document.getElementById("rtn_qty").value;
         if (Number(quantity) > maxReturnableQty || Number(quantity) < 0) {
